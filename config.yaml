@@ -1,0 +1,28 @@
+mode: paper
+timezone: Europe/Berlin
+
+scanner:
+  pair_age_hours_min: 30
+  pair_age_hours_max: 72
+  market_cap_usd_min: 300000
+  market_cap_usd_max: 20000000
+
+risk_filters:
+  require_mint_authority_revoked: true
+  require_lp_burned_or_locked: true
+  reject_liquidity_below_usd: 40000
+  reject_top10_share_above_pct: 25
+  reject_dev_share_above_pct: 3
+
+paper_trading:
+  max_position_pct: 8
+  initial_stop_loss_pct: 6
+  trailing_activation_profit_pct: 12
+  trailing_distance_pct: 6
+
+debate:
+  bear_objections_required: 3
+  unresolved_objection_veto: true
+
+schedule:
+  interval_minutes: 15
