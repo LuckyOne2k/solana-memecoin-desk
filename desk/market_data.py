@@ -1,9 +1,8 @@
+
 import requests
 
 
-BASE_URL = (
-    "https://api.geckoterminal.com/api/v2"
-)
+BASE_URL = "https://api.geckoterminal.com/api/v2"
 
 
 class MarketDataError(Exception):
@@ -59,8 +58,42 @@ def fetch_new_pools(page=1, timeout=15):
 
 if __name__ == "__main__":
     result = fetch_new_pools()
-
     pools = result["data"]
+    included = result.get("included", [])
 
     print("GeckoTerminal Verbindung erfolgreich.")
     print(f"Gefundene Pools: {len(pools)}")
+    print()
+
+    print("VERFÜGBARE DATENFELDER:")
+    if pools and isinstance(pools[0].get("attributes"), dict):
+        attributes = pools[0]["attributes"]
+        print(", ".join(sorted(attributes.keys())))
+    else:
+        print("Keine Pool-Attribute gefunden.")
+
+    print()
+    print("BEISPIELDATEN DER ERSTEN 3 POOLS:")
+
+    for index, pool in enumerate(pools[:3], start=1):
+        attributes = pool.get("attributes", {})
+        if not isinstance(attributes, dict):
+            continue
+
+        print()
+        print(f"Pool {index}:")
+        for key in (
+            "name",
+            "address",
+            "pool_created_at",
+            "reserve_in_usd",
+            "market_cap_usd",
+            "fdv_usd",
+            "base_token_price_usd",
+        ):
+            if key in attributes:
+                print(f"  {key}: {attributes[key]}")
+
+    print()
+    print("Eingebundene Zusatzdaten:", len(included))
+    
