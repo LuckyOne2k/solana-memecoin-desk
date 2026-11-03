@@ -26,7 +26,8 @@ jobs:
 
       - name: Automatische Tests ausführen
         run: python -m pytest -v
-
+      - name: Live-Verbindung zu GeckoTerminal prüfen
+        run: python -m desk.market_data
       - name: Programm starten
         run: python -m desk
 
