@@ -1,8 +1,10 @@
 
+import json
 import requests
 
 
 BASE_URL = "https://api.geckoterminal.com/api/v2"
+DEXPAPRIKA_URL = "https://api.dexpaprika.com"
 
 
 class MarketDataError(Exception):
@@ -15,10 +17,6 @@ def fetch_new_pools(page=1, timeout=15):
 
     url = f"{BASE_URL}/networks/solana/new_pools"
 
-    headers = {
-        "Accept": "application/json;version=20230203"
-    }
-
     try:
         response = requests.get(
             url,
@@ -26,10 +24,11 @@ def fetch_new_pools(page=1, timeout=15):
                 "page": page,
                 "include": "base_token,quote_token",
             },
-            headers=headers,
+            headers={
+                "Accept": "application/json;version=20230203"
+            },
             timeout=timeout,
         )
-
         response.raise_for_status()
         payload = response.json()
 
@@ -40,60 +39,100 @@ def fetch_new_pools(page=1, timeout=15):
 
     except ValueError as error:
         raise MarketDataError(
-            "Invalid JSON response from GeckoTerminal"
+            "Invalid GeckoTerminal JSON response"
+        ) from error
+
+    if not isinstance(payload, dict):
+        raise MarketDataError("Unexpected API response")
+
+    if not isinstance(payload.get("data"), list):
+        raise MarketDataError("Invalid pool list")
+
+    return payload
+
+
+def fetch_pools_by_age(timeout=20):
+    url = f"{DEXPAPRIKA_URL}/networks/solana/pools/search"
+
+    try:
+        response = requests.get(
+            url,
+            params={
+                "order_by": "created_at",
+                "sort": "desc",
+                "created_after": "-72h",
+                "created_before": "-30h",
+                "limit": 50,
+                "detailed": "true",
+            },
+            timeout=timeout,
+        )
+
+        response.raise_for_status()
+        payload = response.json()
+
+    except requests.RequestException as error:
+        raise MarketDataError(
+            f"DexPaprika request failed: {error}"
+        ) from error
+
+    except ValueError as error:
+        raise MarketDataError(
+            "Invalid DexPaprika JSON response"
         ) from error
 
     if not isinstance(payload, dict):
         raise MarketDataError(
-            "Unexpected API response format"
+            "Unexpected DexPaprika response"
         )
 
-    if not isinstance(payload.get("data"), list):
+    if not isinstance(payload.get("results"), list):
         raise MarketDataError(
-            "API response contains no valid pool list"
+            "DexPaprika returned no valid results list"
         )
 
     return payload
 
 
 if __name__ == "__main__":
-    result = fetch_new_pools()
-    pools = result["data"]
-    included = result.get("included", [])
-
-    print("GeckoTerminal Verbindung erfolgreich.")
-    print(f"Gefundene Pools: {len(pools)}")
-    print()
-
-    print("VERFÜGBARE DATENFELDER:")
-    if pools and isinstance(pools[0].get("attributes"), dict):
-        attributes = pools[0]["attributes"]
-        print(", ".join(sorted(attributes.keys())))
-    else:
-        print("Keine Pool-Attribute gefunden.")
+    print("SOLANA MEMECOIN DESK")
+    print("===================")
 
     print()
-    print("BEISPIELDATEN DER ERSTEN 3 POOLS:")
+    print("1. GeckoTerminal")
 
-    for index, pool in enumerate(pools[:3], start=1):
-        attributes = pool.get("attributes", {})
-        if not isinstance(attributes, dict):
-            continue
+    gecko = fetch_new_pools()
+    print("Verbindung erfolgreich.")
+    print("Neue Pools:", len(gecko["data"]))
+
+    print()
+    print("2. DexPaprika")
+
+    paprika = fetch_pools_by_age()
+    pools = paprika["results"]
+
+    print("Verbindung erfolgreich.")
+    print("Pools im Altersfenster 30-72 Stunden:", len(pools))
+
+    if pools:
+        print()
+        print("VERFUEGBARE DATENFELDER:")
+        print(", ".join(sorted(pools[0].keys())))
 
         print()
-        print(f"Pool {index}:")
-        for key in (
-            "name",
-            "address",
-            "pool_created_at",
-            "reserve_in_usd",
-            "market_cap_usd",
-            "fdv_usd",
-            "base_token_price_usd",
-        ):
-            if key in attributes:
-                print(f"  {key}: {attributes[key]}")
+        print("BEISPIELDATEN:")
+
+        for index, pool in enumerate(pools[:3], start=1):
+            print()
+            print(f"Pool {index}:")
+            print(json.dumps(
+                pool,
+                indent=2,
+                ensure_ascii=False
+            )[:2500])
+    else:
+        print("Keine Pools im Altersfenster gefunden.")
 
     print()
-    print("Eingebundene Zusatzdaten:", len(included))
-    
+    print("Live-Trading: Deaktiviert")
+    print("Paper-Trading: Noch nicht aktiviert")
