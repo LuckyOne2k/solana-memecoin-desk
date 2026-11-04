@@ -58,6 +58,7 @@ def fetch_pools_by_age(timeout=20, max_pages=10):
     cursor = None
     all_pools = []
     seen_ids = set()
+    seen_cursors = set()
     pages_fetched = 0
     duplicates = 0
     has_next_page = False
@@ -71,14 +72,22 @@ def fetch_pools_by_age(timeout=20, max_pages=10):
             "sort": "desc",
             "created_after": "-72h",
             "created_before": "-30h",
+            "liquidity_usd_min": 40000,
             "limit": 100,
             "detailed": "true",
         }
 
         if cursor:
+            if cursor in seen_cursors:
+                raise MarketDataError(
+                    "DexPaprika pagination cursor repeated"
+                )
+
+            seen_cursors.add(cursor)
             params["cursor"] = cursor
 
         headers = {}
+
         if api_key:
             headers["Authorization"] = api_key
 
@@ -137,12 +146,15 @@ def fetch_pools_by_age(timeout=20, max_pages=10):
 
         next_cursor = payload.get("next_cursor")
 
-        if not next_cursor or next_cursor == cursor:
-            break
+        if not next_cursor:
+            raise MarketDataError(
+                "DexPaprika reports more pages but provides no cursor"
+            )
 
-        if not api_key:
-            cursor = next_cursor
-            break
+        if next_cursor in seen_cursors:
+            raise MarketDataError(
+                "DexPaprika returned a repeated pagination cursor"
+            )
 
         cursor = next_cursor
 
@@ -153,6 +165,11 @@ def fetch_pools_by_age(timeout=20, max_pages=10):
         "pages_fetched": pages_fetched,
         "duplicates_removed": duplicates,
         "api_key_used": bool(api_key),
+        "pagination_complete": not has_next_page,
+        "max_pages_reached": (
+            has_next_page and pages_fetched >= max_pages
+        ),
+        "liquidity_filter_usd": 40000,
     }
 
 
@@ -249,6 +266,7 @@ def prepare_pool(
         missing.append("24h_activity_data")
 
     token = _resolve_token(pool.get("tokens"))
+
     if token is None:
         missing.append("unambiguous_base_token")
 
@@ -316,7 +334,16 @@ if __name__ == "__main__":
     )
 
     print("Verbindung erfolgreich.")
-    print("API-Key verwendet:", paprika["api_key_used"])
+    print("API-Key mitgesendet:", paprika["api_key_used"])
+    print("Pagination vollständig:", paprika["pagination_complete"])
+    print("Liquiditätsfilter:", paprika["liquidity_filter_usd"], "USD")
+
+    if paprika["max_pages_reached"]:
+        print(
+            "WARNUNG: Seitenlimit erreicht. "
+            "Weitere Pools wurden noch nicht geladen."
+        )
+
     print("Abgerufene Seiten:", paprika["pages_fetched"])
     print("Pools insgesamt:", len(pools))
     print("Doppelte Pools entfernt:", paprika["duplicates_removed"])
@@ -327,6 +354,7 @@ if __name__ == "__main__":
 
     if prepared:
         print("\nBEISPIELE DER AUFBEREITETEN DATEN:")
+
         for item in prepared[:3]:
             print(json.dumps(item, indent=2, ensure_ascii=False))
 
