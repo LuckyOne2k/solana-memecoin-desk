@@ -1,5 +1,7 @@
+
 from dataclasses import dataclass
 from typing import Optional
+
 
 @dataclass
 class Candidate:
@@ -8,13 +10,15 @@ class Candidate:
     mint_authority_revoked: Optional[bool]
     lp_burned_or_locked: Optional[bool]
     liquidity_usd: float
-    top10_share_pct: float
-    dev_share_pct: float
+    top10_share_pct: Optional[float]
+    dev_share_pct: Optional[float]
+
 
 @dataclass
 class FilterResult:
     accepted: bool
     reasons: list[str]
+
 
 def screen_candidate(c: Candidate, cfg: dict) -> FilterResult:
     s = cfg["scanner"]
@@ -23,17 +27,30 @@ def screen_candidate(c: Candidate, cfg: dict) -> FilterResult:
 
     if not s["pair_age_hours_min"] <= c.pair_age_hours <= s["pair_age_hours_max"]:
         reasons.append("pair_age_out_of_range")
+
     if not s["market_cap_usd_min"] <= c.market_cap_usd <= s["market_cap_usd_max"]:
         reasons.append("market_cap_out_of_range")
+
     if r["require_mint_authority_revoked"] and c.mint_authority_revoked is not True:
         reasons.append("mint_authority_not_confirmed_revoked")
+
     if r["require_lp_burned_or_locked"] and c.lp_burned_or_locked is not True:
         reasons.append("lp_burn_or_lock_not_verified")
+
     if c.liquidity_usd < r["reject_liquidity_below_usd"]:
         reasons.append("liquidity_below_minimum")
-    if c.top10_share_pct > r["reject_top10_share_above_pct"]:
+
+    if c.top10_share_pct is None:
+        reasons.append("top10_concentration_unknown")
+    elif c.top10_share_pct > r["reject_top10_share_above_pct"]:
         reasons.append("top10_concentration_too_high")
-    if c.dev_share_pct > r["reject_dev_share_above_pct"]:
+
+    if c.dev_share_pct is None:
+        reasons.append("developer_share_unknown")
+    elif c.dev_share_pct > r["reject_dev_share_above_pct"]:
         reasons.append("developer_share_too_high")
 
-    return FilterResult(accepted=not reasons, reasons=reasons)
+    return FilterResult(
+        accepted=not reasons,
+        reasons=reasons,
+    )
