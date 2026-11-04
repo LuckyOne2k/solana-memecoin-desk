@@ -1,4 +1,3 @@
-
 from desk.market_data import prepare_pools
 from desk.security import (
     SecurityDataError,
@@ -103,6 +102,12 @@ def scan_pool_security(
             item["rejection_reasons"].append(
                 "lp_burn_or_lock_not_verified"
             )
+
+        # Keine Holder-RPC-Anfragen für bereits abgelehnte Tokens.
+        if item["rejection_reasons"]:
+            item["status"] = "rejected"
+            item["holder_check_status"] = "skipped_security_rejection"
+            continue
 
         holder_checks_attempted += 1
         item["holder_check_status"] = "checking"
