@@ -70,8 +70,9 @@ def fetch_pools_by_age(timeout=20, max_pages=10):
         params = {
             "order_by": "created_at",
             "sort": "desc",
-            "created_after": "-72h",
-            "created_before": "-30h",
+            "created_after": int(time.time()) - 72 * 3600,
+            "created_before": int(time.time()) - 30 * 3600,
+
             "liquidity_usd_min": 40000,
             "limit": 100,
             "detailed": "true",
