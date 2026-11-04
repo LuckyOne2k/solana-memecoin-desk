@@ -26,8 +26,12 @@ jobs:
 
       - name: Automatische Tests ausführen
         run: python -m pytest -v
+      
       - name: Live-Verbindung zu GeckoTerminal prüfen
+        env:
+          DEXPAPRIKA_API_KEY: ${{ secrets.DEXPAPRIKA_API_KEY }}
         run: python -m desk.market_data
+
       - name: Programm starten
         run: python -m desk
 
