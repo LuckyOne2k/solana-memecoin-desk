@@ -284,3 +284,28 @@ def test_rpc_call_retries_timeout_three_times():
 
     assert mock_post.call_count == 3
     assert [call.args[0] for call in mock_sleep.call_args_list] == [1, 2]
+
+def test_rpc_call_retries_minimum_context_slot_error():
+    error_response = (
+        b'{"error":{"code":-32016,'
+        b'"message":"Minimum context slot has not been reached"}}'
+    )
+
+    responses = [
+        make_rpc_response(200, error_response),
+        make_rpc_response(200, error_response),
+        make_rpc_response(200),
+    ]
+
+    with patch(
+        "desk.solana_rpc.requests.post",
+        side_effect=responses,
+    ) as mock_post, patch(
+        "desk.solana_rpc.time.sleep",
+    ) as mock_sleep:
+
+        result = _rpc_call("getHealth", [])
+
+    assert result == {"ok": True}
+    assert mock_post.call_count == 3
+    assert [call.args[0] for call in mock_sleep.call_args_list] == [1, 2]
