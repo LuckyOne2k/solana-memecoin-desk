@@ -1,7 +1,7 @@
+
 import pytest
 
 from desk.solana_rpc import (
-    SolanaRpcError,
     analyze_largest_accounts,
 )
 
@@ -116,7 +116,7 @@ def test_wrong_mint_is_counted_as_invalid_row():
 
     assert result["invalid_account_rows"] == 1
     assert result["distinct_owners_observed"] == 0
-    assert result["owner_mapping_complete"] is False
+    assert result["sample_owner_mapping_complete"] is False
 
 
 def test_missing_owner_is_not_counted_as_valid_mapping():
@@ -136,7 +136,7 @@ def test_missing_owner_is_not_counted_as_valid_mapping():
     )
 
     assert result["invalid_account_rows"] == 1
-    assert result["owner_mapping_complete"] is False
+    assert result["sample_owner_mapping_complete"] is False
 
 
 def test_top10_share_is_never_marked_fully_verified():
