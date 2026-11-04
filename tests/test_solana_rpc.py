@@ -1,8 +1,11 @@
 
 import pytest
+from unittest.mock import patch
 
 from desk.solana_rpc import (
+    SolanaRpcError,
     analyze_largest_accounts,
+    fetch_holder_snapshot,
 )
 
 
@@ -178,3 +181,39 @@ def test_invalid_total_supply_is_rejected(supply):
             [],
             supply,
         )
+
+
+def test_fetch_holder_snapshot_wraps_invalid_supply_as_rpc_error():
+    largest_result = {
+        "context": {"slot": 123},
+        "value": [
+            make_largest_account(500, "ACCOUNT1"),
+        ],
+    }
+
+    parsed_result = {
+        "value": [
+            make_parsed_account("WALLET_A"),
+        ],
+    }
+
+    supply_result = {
+        "value": {
+            "amount": "invalid",
+            "decimals": 6,
+        },
+    }
+
+    with patch(
+        "desk.solana_rpc._rpc_call",
+        side_effect=[
+            largest_result,
+            parsed_result,
+            supply_result,
+        ],
+    ):
+        with pytest.raises(
+            SolanaRpcError,
+            match="Unable to analyze holder snapshot",
+        ):
+            fetch_holder_snapshot(MINT)
