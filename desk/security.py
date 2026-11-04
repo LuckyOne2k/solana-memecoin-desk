@@ -1,221 +1,195 @@
-import time
-from datetime import datetime, timezone
 
-import requests
-
-
-RUGCHECK_URL = "https://api.rugcheck.xyz/v1"
-REQUEST_INTERVAL_SECONDS = 1.1
-
-_last_request_at = 0.0
-
-
-class SecurityDataError(Exception):
-    pass
+from desk.market_data import prepare_pools
+from desk.security import (
+    SecurityDataError,
+    check_token_security,
+)
+from desk.solana_rpc import (
+    SolanaRpcError,
+    fetch_holder_snapshot,
+)
 
 
-def _wait_for_rate_limit():
-    global _last_request_at
+MAX_SECURITY_CHECKS_PER_RUN = 10
 
-    elapsed = time.monotonic() - _last_request_at
-    remaining = REQUEST_INTERVAL_SECONDS - elapsed
-
-    if remaining > 0:
-        time.sleep(remaining)
-
-    _last_request_at = time.monotonic()
+MAX_TOP10_SHARE_PCT = 25.0
+MAX_CREATOR_SHARE_PCT = 3.0
 
 
-def _get_json(url, timeout=25):
-    _wait_for_rate_limit()
+def scan_pool_security(
+    pools,
+    max_checks=MAX_SECURITY_CHECKS_PER_RUN,
+):
+    if not isinstance(max_checks, int) or isinstance(max_checks, bool):
+        raise ValueError("max_checks must be an integer")
 
-    try:
-        response = requests.get(
-            url,
-            headers={"Accept": "application/json"},
-            timeout=timeout,
-        )
-        response.raise_for_status()
-        data = response.json()
+    if max_checks < 0:
+        raise ValueError("max_checks cannot be negative")
 
-    except requests.RequestException as error:
-        raise SecurityDataError(
-            f"RugCheck request failed: {error}"
-        ) from error
+    prepared = prepare_pools(pools)
 
-    except ValueError as error:
-        raise SecurityDataError(
-            "RugCheck returned invalid JSON"
-        ) from error
+    checks_attempted = 0
+    checks_succeeded = 0
+    checks_failed = 0
 
-    if not isinstance(data, dict):
-        raise SecurityDataError(
-            "RugCheck returned an unexpected response"
-        )
+    holder_checks_attempted = 0
+    holder_checks_succeeded = 0
+    holder_checks_failed = 0
 
-    return data
+    for item in prepared:
+        item["security_check_status"] = "not_checked"
+        item["holder_check_status"] = "not_checked"
 
-
-def fetch_rugcheck_report(mint):
-    if not isinstance(mint, str) or not mint.strip():
-        raise ValueError("A token mint address is required")
-
-    url = f"{RUGCHECK_URL}/tokens/{mint}/report"
-    report = _get_json(url)
-
-    if report.get("mint") != mint:
-        raise SecurityDataError(
-            "RugCheck report does not match the requested mint"
-        )
-
-    return report
-
-
-def fetch_rugcheck_summary(mint):
-    if not isinstance(mint, str) or not mint.strip():
-        raise ValueError("A token mint address is required")
-
-    url = f"{RUGCHECK_URL}/tokens/{mint}/report/summary"
-    return _get_json(url)
-
-
-def _number(value):
-    if value is None or isinstance(value, bool):
-        return None
-
-    try:
-        number = float(value)
-    except (TypeError, ValueError):
-        return None
-
-    if number < 0:
-        return None
-
-    return number
-
-
-def analyze_rugcheck_report(report, summary):
-    if not isinstance(report, dict):
-        raise ValueError("Report must be a dictionary")
-
-    if not isinstance(summary, dict):
-        raise ValueError("Summary must be a dictionary")
-
-    token = report.get("token")
-    if not isinstance(token, dict):
-        token = {}
-
-    holders = report.get("topHolders")
-    if not isinstance(holders, list):
-        holders = []
-
-    creator = report.get("creator")
-
-    owner_balances = {}
-    creator_share = None
-    invalid_holder_rows = 0
-
-    for holder in holders:
-        if not isinstance(holder, dict):
-            invalid_holder_rows += 1
+        if item["status"] == "rejected":
+            item["security_check_status"] = "skipped_pool_rejected"
+            item["holder_check_status"] = "skipped_pool_rejected"
             continue
 
-        owner = holder.get("owner")
-        pct = _number(holder.get("pct"))
+        mint = item.get("token_address")
 
-        if not isinstance(owner, str) or not owner.strip():
-            invalid_holder_rows += 1
+        if not mint:
+            item["security_check_status"] = "skipped_missing_mint"
+            item["holder_check_status"] = "skipped_missing_mint"
             continue
 
-        if pct is None:
-            invalid_holder_rows += 1
+        if checks_attempted >= max_checks:
+            item["security_check_status"] = "skipped_run_limit"
+            item["holder_check_status"] = "skipped_run_limit"
             continue
 
-        owner_balances[owner] = (
-            owner_balances.get(owner, 0.0) + pct
-        )
+        checks_attempted += 1
 
-        if creator and owner == creator:
-            creator_share = (
-                (creator_share or 0.0) + pct
+        try:
+            security = check_token_security(mint)
+
+        except SecurityDataError as error:
+            checks_failed += 1
+            item["security_check_status"] = "error"
+            item["security_error"] = str(error)
+            continue
+
+        if not isinstance(security, dict) or security.get("mint") != mint:
+            checks_failed += 1
+            item["security_check_status"] = "error"
+            item["security_error"] = (
+                "Security report does not match the requested token"
+            )
+            continue
+
+        checks_succeeded += 1
+        item["security_check_status"] = "completed"
+        item["security"] = security
+
+        mint_revoked = security.get("mint_authority_revoked")
+        lp_locked = security.get("lp_burned_or_locked")
+
+        item["mint_authority_revoked"] = mint_revoked
+        item["lp_burned_or_locked"] = lp_locked
+
+        if mint_revoked is True:
+            if "mint_authority_revoked" in item["missing_checks"]:
+                item["missing_checks"].remove("mint_authority_revoked")
+
+        elif mint_revoked is False:
+            item["rejection_reasons"].append(
+                "mint_authority_not_confirmed_revoked"
             )
 
-    owner_attribution_complete = (
-        len(holders) > 0
-        and invalid_holder_rows == 0
-    )
+        if lp_locked is True:
+            if "lp_burned_or_locked" in item["missing_checks"]:
+                item["missing_checks"].remove("lp_burned_or_locked")
 
-    largest_holder_pct = None
+        elif lp_locked is False:
+            item["rejection_reasons"].append(
+                "lp_burn_or_lock_not_verified"
+            )
 
-    if owner_balances and owner_attribution_complete:
-        largest_holder_pct = max(owner_balances.values())
+        # Keine Holder-RPC-Anfragen für bereits abgelehnte Tokens.
+        if item["rejection_reasons"]:
+            item["status"] = "rejected"
+            item["holder_check_status"] = "skipped_security_rejection"
+            continue
 
-    top10_sample_pct = None
+        holder_checks_attempted += 1
+        item["holder_check_status"] = "checking"
 
-    if (
-        owner_attribution_complete
-        and len(owner_balances) >= 10
-    ):
-        top10_sample_pct = sum(
-            sorted(
-                owner_balances.values(),
-                reverse=True
-            )[:10]
-        )
+        try:
+            holder_snapshot = fetch_holder_snapshot(
+                mint,
+                creator_address=security.get("creator_address"),
+            )
 
-    mint_revoked = (
-        token.get("mintAuthority") is None
-        if "mintAuthority" in token
-        else None
-    )
+        except SolanaRpcError as error:
+            holder_checks_failed += 1
+            item["holder_check_status"] = "error"
+            item["holder_error"] = str(error)
 
-    freeze_revoked = (
-        token.get("freezeAuthority") is None
-        if "freezeAuthority" in token
-        else None
-    )
+        else:
+            if (
+                not isinstance(holder_snapshot, dict)
+                or holder_snapshot.get("mint") != mint
+            ):
+                holder_checks_failed += 1
+                item["holder_check_status"] = "error"
+                item["holder_error"] = (
+                    "Holder snapshot does not match the requested token"
+                )
 
-    lp_locked_pct = _number(
-        summary.get("lpLockedPct")
-    )
+            else:
+                holder_checks_succeeded += 1
+                item["holder_check_status"] = "completed"
+                item["holder_snapshot"] = holder_snapshot
 
-    lp_burned_or_locked = (
-        lp_locked_pct >= 99.99
-        if lp_locked_pct is not None
-        else None
-    )
+                top10_lower_bound = holder_snapshot.get(
+                    "top10_observed_owner_share_lower_bound_pct"
+                )
+
+                creator_lower_bound = holder_snapshot.get(
+                    "creator_share_lower_bound_pct"
+                )
+
+                item["top10_observed_share_lower_bound_pct"] = (
+                    top10_lower_bound
+                )
+
+                item["creator_observed_share_lower_bound_pct"] = (
+                    creator_lower_bound
+                )
+
+                if (
+                    isinstance(top10_lower_bound, (int, float))
+                    and not isinstance(top10_lower_bound, bool)
+                    and top10_lower_bound > MAX_TOP10_SHARE_PCT
+                ):
+                    item["rejection_reasons"].append(
+                        "observed_top10_holder_share_above_limit"
+                    )
+
+                if (
+                    isinstance(creator_lower_bound, (int, float))
+                    and not isinstance(creator_lower_bound, bool)
+                    and creator_lower_bound > MAX_CREATOR_SHARE_PCT
+                ):
+                    item["rejection_reasons"].append(
+                        "observed_creator_share_above_limit"
+                    )
+
+        if item["rejection_reasons"]:
+            item["status"] = "rejected"
+
+        elif item["missing_checks"]:
+            item["status"] = "incomplete"
+
+        else:
+            item["status"] = "ready_for_full_risk_screen"
 
     return {
-        "mint": report.get("mint"),
-        "creator_address": creator,
-        "mint_authority_revoked": mint_revoked,
-        "freeze_authority_revoked": freeze_revoked,
-        "lp_locked_pct": lp_locked_pct,
-        "lp_burned_or_locked": lp_burned_or_locked,
-        "largest_reported_holder_pct": largest_holder_pct,
-        "creator_share_sampled_pct": creator_share,
-        "top10_share_sampled_pct": top10_sample_pct,
-        "top_holder_accounts_returned": len(holders),
-        "distinct_reported_owners": len(owner_balances),
-        "invalid_holder_rows": invalid_holder_rows,
-        "owner_attribution_complete": owner_attribution_complete,
-        "top10_share_fully_verified": False,
-        "rugcheck_score": report.get("score"),
-        "rugcheck_score_normalised": report.get(
-            "score_normalised"
-        ),
-        "rugcheck_risks": report.get("risks", []),
-        "checked_at": datetime.now(
-            timezone.utc
-        ).isoformat(),
+        "pools": prepared,
+        "checks_attempted": checks_attempted,
+        "checks_succeeded": checks_succeeded,
+        "checks_failed": checks_failed,
+        "holder_checks_attempted": holder_checks_attempted,
+        "holder_checks_succeeded": holder_checks_succeeded,
+        "holder_checks_failed": holder_checks_failed,
+        "max_checks_per_run": max_checks,
     }
-
-
-def check_token_security(mint):
-    report = fetch_rugcheck_report(mint)
-    summary = fetch_rugcheck_summary(mint)
-
-    return analyze_rugcheck_report(
-        report,
-        summary
-    )
