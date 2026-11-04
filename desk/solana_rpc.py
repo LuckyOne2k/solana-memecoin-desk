@@ -307,13 +307,19 @@ def fetch_holder_snapshot(
             "Token supply is missing"
         )
 
-    snapshot = analyze_largest_accounts(
-        mint=mint,
-        largest_accounts=largest_accounts,
-        parsed_accounts=parsed_accounts,
-        total_supply=supply_data.get("amount"),
-        creator_address=creator_address,
-    )
+    try:
+        snapshot = analyze_largest_accounts(
+            mint=mint,
+            largest_accounts=largest_accounts,
+            parsed_accounts=parsed_accounts,
+            total_supply=supply_data.get("amount"),
+            creator_address=creator_address,
+        )
+
+    except ValueError as error:
+        raise SolanaRpcError(
+            f"Unable to analyze holder snapshot: {error}"
+        ) from error
 
     snapshot["rpc_slot"] = slot
     snapshot["supply_decimals"] = supply_data.get("decimals")
