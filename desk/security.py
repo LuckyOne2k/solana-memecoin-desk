@@ -1,4 +1,3 @@
-
 import time
 from datetime import datetime, timezone
 
@@ -85,9 +84,14 @@ def _number(value):
         return None
 
     try:
-        return float(value)
+        number = float(value)
     except (TypeError, ValueError):
         return None
+
+    if number < 0:
+        return None
+
+    return number
 
 
 def analyze_rugcheck_report(report, summary):
@@ -109,16 +113,22 @@ def analyze_rugcheck_report(report, summary):
 
     owner_balances = {}
     creator_share = None
-    largest_holder_pct = None
+    invalid_holder_rows = 0
 
     for holder in holders:
         if not isinstance(holder, dict):
+            invalid_holder_rows += 1
             continue
 
-        owner = holder.get("owner") or holder.get("address")
+        owner = holder.get("owner")
         pct = _number(holder.get("pct"))
 
-        if not owner or pct is None or pct < 0:
+        if not isinstance(owner, str) or not owner.strip():
+            invalid_holder_rows += 1
+            continue
+
+        if pct is None:
+            invalid_holder_rows += 1
             continue
 
         owner_balances[owner] = (
@@ -130,12 +140,22 @@ def analyze_rugcheck_report(report, summary):
                 (creator_share or 0.0) + pct
             )
 
-    if owner_balances:
+    owner_attribution_complete = (
+        len(holders) > 0
+        and invalid_holder_rows == 0
+    )
+
+    largest_holder_pct = None
+
+    if owner_balances and owner_attribution_complete:
         largest_holder_pct = max(owner_balances.values())
 
     top10_sample_pct = None
 
-    if len(owner_balances) >= 10:
+    if (
+        owner_attribution_complete
+        and len(owner_balances) >= 10
+    ):
         top10_sample_pct = sum(
             sorted(
                 owner_balances.values(),
@@ -143,17 +163,14 @@ def analyze_rugcheck_report(report, summary):
             )[:10]
         )
 
-    mint_authority = token.get("mintAuthority")
-    freeze_authority = token.get("freezeAuthority")
-
     mint_revoked = (
-        mint_authority is None
+        token.get("mintAuthority") is None
         if "mintAuthority" in token
         else None
     )
 
     freeze_revoked = (
-        freeze_authority is None
+        token.get("freezeAuthority") is None
         if "freezeAuthority" in token
         else None
     )
@@ -180,6 +197,8 @@ def analyze_rugcheck_report(report, summary):
         "top10_share_sampled_pct": top10_sample_pct,
         "top_holder_accounts_returned": len(holders),
         "distinct_reported_owners": len(owner_balances),
+        "invalid_holder_rows": invalid_holder_rows,
+        "owner_attribution_complete": owner_attribution_complete,
         "top10_share_fully_verified": False,
         "rugcheck_score": report.get("score"),
         "rugcheck_score_normalised": report.get(
