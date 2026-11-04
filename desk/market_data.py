@@ -15,6 +15,9 @@ QUOTE_TOKEN_IDS = {
     "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB".lower(),
 }
 
+GECKOTERMINAL_BATCH_SIZE = 30
+GECKOTERMINAL_BATCH_DELAY_SECONDS = 6
+
 
 class MarketDataError(Exception):
     pass
@@ -47,8 +50,13 @@ def fetch_new_pools(page=1, timeout=15):
             "Invalid GeckoTerminal JSON response"
         ) from error
 
-    if not isinstance(payload, dict) or not isinstance(payload.get("data"), list):
-        raise MarketDataError("Invalid GeckoTerminal response structure")
+    if (
+        not isinstance(payload, dict)
+        or not isinstance(payload.get("data"), list)
+    ):
+        raise MarketDataError(
+            "Invalid GeckoTerminal response structure"
+        )
 
     return payload
 
@@ -72,7 +80,6 @@ def fetch_pools_by_age(timeout=20, max_pages=10):
             "sort": "desc",
             "created_after": int(time.time()) - 72 * 3600,
             "created_before": int(time.time()) - 30 * 3600,
-
             "liquidity_usd_min": 40000,
             "limit": 100,
             "detailed": "true",
@@ -191,7 +198,9 @@ def _parse_timestamp(value):
         return None
 
     try:
-        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        parsed = datetime.fromisoformat(
+            value.replace("Z", "+00:00")
+        )
     except ValueError:
         return None
 
@@ -205,7 +214,10 @@ def _resolve_token(tokens):
     if not isinstance(tokens, list) or len(tokens) != 2:
         return None
 
-    valid = [token for token in tokens if isinstance(token, dict)]
+    valid = [
+        token for token in tokens
+        if isinstance(token, dict)
+    ]
 
     if len(valid) != 2:
         return None
@@ -218,7 +230,95 @@ def _resolve_token(tokens):
     if len(quote_tokens) != 1:
         return None
 
-    return next(token for token in valid if token is not quote_tokens[0])
+    return next(
+        token for token in valid
+        if token is not quote_tokens[0]
+    )
+
+
+def fetch_token_market_caps(token_addresses, timeout=15):
+    addresses = list(dict.fromkeys(
+        address.strip()
+        for address in token_addresses
+        if isinstance(address, str) and address.strip()
+    ))
+
+    market_caps = {}
+
+    for start in range(
+        0,
+        len(addresses),
+        GECKOTERMINAL_BATCH_SIZE,
+    ):
+        batch = addresses[
+            start:start + GECKOTERMINAL_BATCH_SIZE
+        ]
+
+        requested_addresses = {
+            address.lower() for address in batch
+        }
+
+        try:
+            response = requests.get(
+                f"{BASE_URL}/networks/solana/tokens/multi/"
+                f"{','.join(batch)}",
+                headers={
+                    "Accept": "application/json;version=20230203"
+                },
+                timeout=timeout,
+            )
+            response.raise_for_status()
+            payload = response.json()
+
+        except requests.RequestException as error:
+            raise MarketDataError(
+                f"GeckoTerminal token request failed: {error}"
+            ) from error
+
+        except ValueError as error:
+            raise MarketDataError(
+                "Invalid GeckoTerminal token JSON response"
+            ) from error
+
+        if not isinstance(payload, dict):
+            raise MarketDataError(
+                "Invalid GeckoTerminal token response"
+            )
+
+        data = payload.get("data")
+
+        if not isinstance(data, list):
+            raise MarketDataError(
+                "GeckoTerminal returned no valid token list"
+            )
+
+        for token_data in data:
+            if not isinstance(token_data, dict):
+                continue
+
+            attributes = token_data.get("attributes")
+
+            if not isinstance(attributes, dict):
+                continue
+
+            address = attributes.get("address")
+
+            if not isinstance(address, str):
+                continue
+
+            normalized_address = address.lower()
+
+            if normalized_address not in requested_addresses:
+                continue
+
+            market_caps[normalized_address] = _as_number(
+                attributes.get("market_cap_usd")
+            )
+
+        if start + GECKOTERMINAL_BATCH_SIZE < len(addresses):
+            time.sleep(GECKOTERMINAL_BATCH_DELAY_SECONDS)
+
+    return market_caps
 
 
 def prepare_pool(
@@ -227,6 +327,8 @@ def prepare_pool(
     min_age_hours=30,
     max_age_hours=72,
     min_liquidity_usd=40000,
+    market_caps=None,
+    market_data_error=None,
 ):
     if not isinstance(pool, dict):
         raise ValueError("Pool must be a dictionary")
@@ -246,9 +348,14 @@ def prepare_pool(
     if created_at is None:
         reasons.append("created_at_missing_or_invalid")
     else:
-        age_hours = (now - created_at).total_seconds() / 3600
+        age_hours = (
+            now - created_at
+        ).total_seconds() / 3600
 
-        if age_hours < min_age_hours or age_hours > max_age_hours:
+        if (
+            age_hours < min_age_hours
+            or age_hours > max_age_hours
+        ):
             reasons.append("pair_age_out_of_range")
 
     liquidity = _as_number(pool.get("liquidity_usd"))
@@ -271,8 +378,17 @@ def prepare_pool(
     if token is None:
         missing.append("unambiguous_base_token")
 
-    fdv = _as_number(token.get("fdv")) if token else None
+    token_address = token.get("id") if token else None
+
+    fdv = (
+        _as_number(token.get("fdv"))
+        if token else None
+    )
+
     market_cap = None
+
+    if isinstance(token_address, str) and isinstance(market_caps, dict):
+        market_cap = market_caps.get(token_address.lower())
 
     if market_cap is None:
         missing.append("market_cap_usd")
@@ -290,27 +406,80 @@ def prepare_pool(
         else "ready_for_full_risk_screen"
     )
 
-    return {
+    result = {
         "pool_address": pool.get("id"),
         "dex_name": pool.get("dex_name"),
-        "created_at": created_at.isoformat() if created_at else None,
-        "pair_age_hours": round(age_hours, 2) if age_hours is not None else None,
-        "token_address": token.get("id") if token else None,
+        "created_at": (
+            created_at.isoformat()
+            if created_at else None
+        ),
+        "pair_age_hours": (
+            round(age_hours, 2)
+            if age_hours is not None else None
+        ),
+        "token_address": token_address,
         "token_name": token.get("name") if token else None,
         "token_symbol": token.get("symbol") if token else None,
         "liquidity_usd": liquidity,
         "volume_usd_24h": volume,
         "transactions_24h": transactions,
         "fdv_usd": fdv,
-        "market_cap_usd": None,
+        "market_cap_usd": market_cap,
+        "market_cap_source": (
+            "geckoterminal"
+            if market_cap is not None else None
+        ),
         "status": status,
         "rejection_reasons": reasons,
         "missing_checks": missing,
     }
 
+    if market_data_error:
+        result["market_data_error"] = market_data_error
+
+    return result
+
 
 def prepare_pools(pools, **kwargs):
-    return [prepare_pool(pool, **kwargs) for pool in pools]
+    pools = list(pools)
+
+    token_addresses = []
+
+    for pool in pools:
+        if not isinstance(pool, dict):
+            continue
+
+        token = _resolve_token(pool.get("tokens"))
+
+        if token is None:
+            continue
+
+        address = token.get("id")
+
+        if isinstance(address, str) and address.strip():
+            token_addresses.append(address)
+
+    market_caps = {}
+    market_data_error = None
+
+    if token_addresses:
+        try:
+            market_caps = fetch_token_market_caps(
+                token_addresses
+            )
+
+        except MarketDataError as error:
+            market_data_error = str(error)
+
+    return [
+        prepare_pool(
+            pool,
+            market_caps=market_caps,
+            market_data_error=market_data_error,
+            **kwargs,
+        )
+        for pool in pools
+    ]
 
 
 if __name__ == "__main__":
@@ -327,10 +496,23 @@ if __name__ == "__main__":
     pools = paprika["results"]
     prepared = prepare_pools(pools)
 
-    rejected = sum(p["status"] == "rejected" for p in prepared)
-    incomplete = sum(p["status"] == "incomplete" for p in prepared)
+    rejected = sum(
+        p["status"] == "rejected"
+        for p in prepared
+    )
+
+    incomplete = sum(
+        p["status"] == "incomplete"
+        for p in prepared
+    )
+
     ready = sum(
         p["status"] == "ready_for_full_risk_screen"
+        for p in prepared
+    )
+
+    market_cap_found = sum(
+        p["market_cap_usd"] is not None
         for p in prepared
     )
 
@@ -349,15 +531,32 @@ if __name__ == "__main__":
     print("Pools insgesamt:", len(pools))
     print("Doppelte Pools entfernt:", paprika["duplicates_removed"])
     print("Weitere Seiten vorhanden:", paprika["has_next_page"])
+    print("Marktkapitalisierungen gefunden:", market_cap_found)
     print("Vorprüfung abgelehnt:", rejected)
     print("Unvollständig / weitere Daten nötig:", incomplete)
     print("Bereit für vollständige Risikoprüfung:", ready)
+
+    errors = [
+        p.get("market_data_error")
+        for p in prepared
+        if p.get("market_data_error")
+    ]
+
+    if errors:
+        print("WARNUNG: GeckoTerminal-Marktdaten konnten nicht vollständig geladen werden.")
+        print("Fehler:", errors[0])
 
     if prepared:
         print("\nBEISPIELE DER AUFBEREITETEN DATEN:")
 
         for item in prepared[:3]:
-            print(json.dumps(item, indent=2, ensure_ascii=False))
+            print(
+                json.dumps(
+                    item,
+                    indent=2,
+                    ensure_ascii=False,
+                )
+            )
 
     print("\nHinweis: FDV ist nicht Marktkapitalisierung.")
     print("Live-Trading: Deaktiviert")
