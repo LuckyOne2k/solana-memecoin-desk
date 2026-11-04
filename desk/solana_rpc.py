@@ -1,5 +1,6 @@
 
 import os
+import time
 
 import requests
 
@@ -24,25 +25,59 @@ def _rpc_call(method, params, rpc_url=None, timeout=20):
         "params": params,
     }
 
-    try:
-        response = requests.post(
-            url,
-            json=payload,
-            headers={"Accept": "application/json"},
-            timeout=timeout,
-        )
-        response.raise_for_status()
-        data = response.json()
+    max_attempts = 3
+    retryable_status_codes = {429, 500, 502, 503, 504}
 
-    except requests.RequestException as error:
-        raise SolanaRpcError(
-            f"Solana RPC request failed: {error}"
-        ) from error
+    for attempt in range(max_attempts):
+        try:
+            response = requests.post(
+                url,
+                json=payload,
+                headers={"Accept": "application/json"},
+                timeout=timeout,
+            )
 
-    except ValueError as error:
-        raise SolanaRpcError(
-            "Solana RPC returned invalid JSON"
-        ) from error
+            if (
+                response.status_code in retryable_status_codes
+                and attempt < max_attempts - 1
+            ):
+                time.sleep(2 ** attempt)
+                continue
+
+            response.raise_for_status()
+            data = response.json()
+            break
+
+        except requests.RequestException as error:
+            status_code = (
+                error.response.status_code
+                if error.response is not None
+                else None
+            )
+
+            retryable = (
+                status_code in retryable_status_codes
+                or isinstance(
+                    error,
+                    (
+                        requests.Timeout,
+                        requests.ConnectionError,
+                    ),
+                )
+            )
+
+            if retryable and attempt < max_attempts - 1:
+                time.sleep(2 ** attempt)
+                continue
+
+            raise SolanaRpcError(
+                f"Solana RPC request failed: {error}"
+            ) from error
+
+        except ValueError as error:
+            raise SolanaRpcError(
+                "Solana RPC returned invalid JSON"
+            ) from error
 
     if not isinstance(data, dict):
         raise SolanaRpcError(
@@ -60,7 +95,6 @@ def _rpc_call(method, params, rpc_url=None, timeout=20):
         )
 
     return data["result"]
-
 
 def _valid_amount(value):
     if not isinstance(value, str):
