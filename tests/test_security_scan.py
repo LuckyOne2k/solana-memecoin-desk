@@ -359,3 +359,43 @@ def test_invalid_run_limit_is_rejected():
 
     with pytest.raises(ValueError):
         scan_pool_security([], max_checks=True)
+
+@pytest.mark.parametrize(
+    "security_kwargs, expected_reason",
+    [
+        (
+            {"mint_revoked": False},
+            "mint_authority_not_confirmed_revoked",
+        ),
+        (
+            {"lp_locked": False},
+            "lp_burn_or_lock_not_verified",
+        ),
+    ],
+)
+def test_security_rejection_skips_holder_rpc(
+    security_kwargs,
+    expected_reason,
+):
+    pool = make_pool()
+
+    with patch(
+        "desk.security_scan.prepare_pools",
+        return_value=[pool],
+    ), patch(
+        "desk.security_scan.check_token_security",
+        return_value=make_security(**security_kwargs),
+    ), patch(
+        "desk.security_scan.fetch_holder_snapshot",
+    ) as mocked_holder:
+        result = scan_pool_security([{}])
+
+    item = result["pools"][0]
+
+    assert item["status"] == "rejected"
+    assert expected_reason in item["rejection_reasons"]
+    assert item["holder_check_status"] == "skipped_security_rejection"
+
+    assert result["holder_checks_attempted"] == 0
+    mocked_holder.assert_not_called()
+    
