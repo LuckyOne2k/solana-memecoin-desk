@@ -1,9 +1,11 @@
 
 import pytest
+import requests
 from unittest.mock import patch
 
 from desk.solana_rpc import (
     SolanaRpcError,
+    _rpc_call,
     analyze_largest_accounts,
     fetch_holder_snapshot,
 )
@@ -217,3 +219,68 @@ def test_fetch_holder_snapshot_wraps_invalid_supply_as_rpc_error():
             match="Unable to analyze holder snapshot",
         ):
             fetch_holder_snapshot(MINT)
+
+def make_rpc_response(status_code, content=b'{"result":{"ok":true}}'):
+    response = requests.Response()
+    response.status_code = status_code
+    response._content = content
+    return response
+
+
+def test_rpc_call_retries_http_429_then_succeeds():
+    responses = [
+        make_rpc_response(429),
+        make_rpc_response(429),
+        make_rpc_response(200),
+    ]
+
+    with patch(
+        "desk.solana_rpc.requests.post",
+        side_effect=responses,
+    ) as mock_post, patch(
+        "desk.solana_rpc.time.sleep",
+    ) as mock_sleep:
+
+        result = _rpc_call("getHealth", [])
+
+    assert result == {"ok": True}
+    assert mock_post.call_count == 3
+    assert [call.args[0] for call in mock_sleep.call_args_list] == [1, 2]
+
+
+def test_rpc_call_does_not_retry_http_400():
+    response = make_rpc_response(400)
+
+    with patch(
+        "desk.solana_rpc.requests.post",
+        return_value=response,
+    ) as mock_post, patch(
+        "desk.solana_rpc.time.sleep",
+    ) as mock_sleep:
+
+        with pytest.raises(
+            SolanaRpcError,
+            match="Solana RPC request failed",
+        ):
+            _rpc_call("getHealth", [])
+
+    assert mock_post.call_count == 1
+    mock_sleep.assert_not_called()
+
+
+def test_rpc_call_retries_timeout_three_times():
+    with patch(
+        "desk.solana_rpc.requests.post",
+        side_effect=requests.Timeout("Connection timed out"),
+    ) as mock_post, patch(
+        "desk.solana_rpc.time.sleep",
+    ) as mock_sleep:
+
+        with pytest.raises(
+            SolanaRpcError,
+            match="Solana RPC request failed",
+        ):
+            _rpc_call("getHealth", [])
+
+    assert mock_post.call_count == 3
+    assert [call.args[0] for call in mock_sleep.call_args_list] == [1, 2]
