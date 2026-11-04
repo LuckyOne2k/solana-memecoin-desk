@@ -5,7 +5,6 @@ import requests
 
 
 DEFAULT_RPC_URL = "https://api.mainnet.solana.com"
-TOKEN_PROGRAM_ID = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
 
 
 class SolanaRpcError(Exception):
@@ -181,7 +180,7 @@ def analyze_largest_accounts(
         "largest_accounts_returned": len(largest_accounts),
         "distinct_owners_observed": len(owner_balances),
         "invalid_account_rows": invalid_rows,
-        "owner_mapping_complete": (
+        "sample_owner_mapping_complete": (
             len(largest_accounts) > 0
             and invalid_rows == 0
             and len(parsed_accounts) == len(largest_accounts)
@@ -229,6 +228,11 @@ def fetch_holder_snapshot(
             "No largest token accounts returned"
         )
 
+    if len(largest_accounts) > 20:
+        raise SolanaRpcError(
+            "Unexpected number of largest token accounts"
+        )
+
     addresses = []
 
     for account in largest_accounts:
@@ -246,7 +250,8 @@ def fetch_holder_snapshot(
 
         addresses.append(address)
 
-    slot = largest_result.get("context", {}).get("slot")
+    context = largest_result.get("context")
+    slot = context.get("slot") if isinstance(context, dict) else None
 
     config = {
         "encoding": "jsonParsed",
