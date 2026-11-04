@@ -47,3 +47,38 @@ def test_invalid_candidate_is_rejected():
     result = screen_candidate(candidate, CONFIG)
     assert result.accepted is False
     assert len(result.reasons) >= 5
+
+def test_unknown_holder_values_are_rejected():
+    candidate = Candidate(
+        pair_age_hours=48,
+        market_cap_usd=1000000,
+        mint_authority_revoked=True,
+        lp_burned_or_locked=True,
+        liquidity_usd=100000,
+        top10_share_pct=None,
+        dev_share_pct=None,
+    )
+
+    result = screen_candidate(candidate, CONFIG)
+
+    assert result.accepted is False
+    assert "top10_concentration_unknown" in result.reasons
+    assert "developer_share_unknown" in result.reasons
+
+
+def test_known_holder_values_within_limits_are_accepted():
+    candidate = Candidate(
+        pair_age_hours=48,
+        market_cap_usd=1000000,
+        mint_authority_revoked=True,
+        lp_burned_or_locked=True,
+        liquidity_usd=100000,
+        top10_share_pct=20,
+        dev_share_pct=1,
+    )
+
+    result = screen_candidate(candidate, CONFIG)
+
+    assert result.accepted is True
+    assert result.reasons == []
+    
