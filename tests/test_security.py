@@ -172,3 +172,34 @@ def test_invalid_analysis_input_is_rejected():
 
     with pytest.raises(ValueError):
         analyze_rugcheck_report({}, [])
+
+def test_missing_owner_makes_holder_analysis_incomplete():
+    report = {
+        "mint": "TOKEN123",
+        "topHolders": [
+            {"owner": "WALLET_A", "pct": 10},
+            {"address": "TOKEN_ACCOUNT_B", "pct": 5},
+        ],
+    }
+
+    result = analyze_rugcheck_report(report, {})
+
+    assert result["owner_attribution_complete"] is False
+    assert result["largest_reported_holder_pct"] is None
+    assert result["top10_share_sampled_pct"] is None
+
+
+def test_invalid_holder_percentage_makes_analysis_incomplete():
+    report = {
+        "mint": "TOKEN123",
+        "topHolders": [
+            {"owner": "WALLET_A", "pct": 10},
+            {"owner": "WALLET_B", "pct": None},
+        ],
+    }
+
+    result = analyze_rugcheck_report(report, {})
+
+    assert result["owner_attribution_complete"] is False
+    assert result["invalid_holder_rows"] == 1
+    assert result["largest_reported_holder_pct"] is None
