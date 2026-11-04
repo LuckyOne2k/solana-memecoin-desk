@@ -45,7 +45,23 @@ def _rpc_call(method, params, rpc_url=None, timeout=20):
                 continue
 
             response.raise_for_status()
-            data = response.json()
+                        data = response.json()
+
+            # Retry when the RPC node has not reached the requested slot yet.
+            rpc_error = data.get("error") if isinstance(data, dict) else None
+            rpc_error_code = (
+                rpc_error.get("code")
+                if isinstance(rpc_error, dict)
+                else None
+            )
+
+            if (
+                rpc_error_code == -32016
+                and attempt < max_attempts - 1
+            ):
+                time.sleep(2 ** attempt)
+                continue
+
             break
 
         except requests.RequestException as error:
