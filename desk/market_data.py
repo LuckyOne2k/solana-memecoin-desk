@@ -223,12 +223,32 @@ def _resolve_token(tokens):
     )
 
 
-def fetch_token_market_caps(token_addresses, timeout=15):
+def fetch_token_market_caps(token_addresses, timeout=15, diagnostics=None):
+    """
+    Lädt Marktkapitalisierungen von GeckoTerminal.
+
+    diagnostics ist optional und wird nur zur Ursachenanalyse befüllt.
+    Der Rückgabewert bleibt aus Kompatibilitätsgründen unverändert.
+    """
     addresses = list(dict.fromkeys(
         address.strip()
         for address in token_addresses
         if isinstance(address, str) and address.strip()
     ))
+
+    stats = {
+        "requested_unique_tokens": len(addresses),
+        "batches_requested": 0,
+        "token_objects_returned": 0,
+        "requested_tokens_returned": 0,
+        "tokens_with_market_cap": 0,
+        "tokens_with_null_market_cap": 0,
+        "tokens_with_missing_market_cap_field": 0,
+        "tokens_with_invalid_market_cap": 0,
+        "requested_tokens_not_returned": 0,
+        "unrequested_token_objects_ignored": 0,
+        "api_error": None,
+    }
 
     market_caps = {}
 
@@ -237,6 +257,8 @@ def fetch_token_market_caps(token_addresses, timeout=15):
         requested_addresses = {
             address.lower() for address in batch
         }
+
+        stats["batches_requested"] += 1
 
         try:
             response = requests.get(
@@ -248,16 +270,38 @@ def fetch_token_market_caps(token_addresses, timeout=15):
             payload = response.json()
 
         except requests.RequestException as error:
+            stats["api_error"] = str(error)
+
+            if diagnostics is not None:
+                diagnostics.clear()
+                diagnostics.update(stats)
+
             raise MarketDataError(
                 f"GeckoTerminal token request failed: {error}"
             ) from error
 
         except ValueError as error:
+            stats["api_error"] = (
+                "Invalid GeckoTerminal token JSON response"
+            )
+
+            if diagnostics is not None:
+                diagnostics.clear()
+                diagnostics.update(stats)
+
             raise MarketDataError(
                 "Invalid GeckoTerminal token JSON response"
             ) from error
 
         if not isinstance(payload, dict):
+            stats["api_error"] = (
+                "Invalid GeckoTerminal token response"
+            )
+
+            if diagnostics is not None:
+                diagnostics.clear()
+                diagnostics.update(stats)
+
             raise MarketDataError(
                 "Invalid GeckoTerminal token response"
             )
@@ -265,9 +309,20 @@ def fetch_token_market_caps(token_addresses, timeout=15):
         data = payload.get("data")
 
         if not isinstance(data, list):
+            stats["api_error"] = (
+                "GeckoTerminal returned no valid token list"
+            )
+
+            if diagnostics is not None:
+                diagnostics.clear()
+                diagnostics.update(stats)
+
             raise MarketDataError(
                 "GeckoTerminal returned no valid token list"
             )
+
+        stats["token_objects_returned"] += len(data)
+        returned_in_batch = set()
 
         for token_data in data:
             if not isinstance(token_data, dict):
@@ -280,20 +335,50 @@ def fetch_token_market_caps(token_addresses, timeout=15):
 
             address = attributes.get("address")
 
-            if not isinstance(address, str):
+            if not isinstance(address, str) or not address.strip():
                 continue
 
-            normalized_address = address.lower()
+            normalized_address = address.strip().lower()
 
             if normalized_address not in requested_addresses:
+                stats["unrequested_token_objects_ignored"] += 1
                 continue
 
-            market_caps[normalized_address] = _as_number(
-                attributes.get("market_cap_usd")
-            )
+            returned_in_batch.add(normalized_address)
+            stats["requested_tokens_returned"] += 1
+
+            if "market_cap_usd" not in attributes:
+                stats["tokens_with_missing_market_cap_field"] += 1
+                market_caps[normalized_address] = None
+                continue
+
+            raw_market_cap = attributes.get("market_cap_usd")
+
+            if raw_market_cap is None:
+                stats["tokens_with_null_market_cap"] += 1
+                market_caps[normalized_address] = None
+                continue
+
+            parsed_market_cap = _as_number(raw_market_cap)
+
+            if parsed_market_cap is None:
+                stats["tokens_with_invalid_market_cap"] += 1
+                market_caps[normalized_address] = None
+                continue
+
+            stats["tokens_with_market_cap"] += 1
+            market_caps[normalized_address] = parsed_market_cap
+
+        stats["requested_tokens_not_returned"] += len(
+            requested_addresses - returned_in_batch
+        )
 
         if start + GECKOTERMINAL_BATCH_SIZE < len(addresses):
             time.sleep(GECKOTERMINAL_BATCH_DELAY_SECONDS)
+
+    if diagnostics is not None:
+        diagnostics.clear()
+        diagnostics.update(stats)
 
     return market_caps
 
@@ -365,8 +450,6 @@ def prepare_pool(
     if market_cap is None:
         missing.append("market_cap_usd")
 
-    # Sicherheitsprüfungen:
-    # Unbekannte Werte gelten niemals als bestanden.
     security = security_data if isinstance(security_data, dict) else {}
 
     mint_revoked = security.get("mint_authority_revoked")
@@ -406,8 +489,6 @@ def prepare_pool(
     else:
         missing.append("lp_burned_or_locked")
 
-    # RugCheck-Holder-Daten sind Stichproben.
-    # Sie gelten nicht als vollständig verifizierte Top-10.
     if not top10_verified or top10_pct is None:
         missing.append("top10_share_pct")
 
@@ -473,9 +554,6 @@ def prepare_pools(
             "max_security_checks must be at least 0"
         )
 
-    # Token-Adressen sammeln und einheitlich normalisieren.
-    # Groß-/Kleinschreibung und Leerzeichen dürfen keine
-    # doppelten Sicherheitsprüfungen verursachen.
     unique_tokens = {}
 
     for pool in pools:
@@ -499,17 +577,33 @@ def prepare_pools(
 
     token_addresses = list(unique_tokens.values())
 
-    # Marktkapitalisierungen abrufen.
     market_caps = {}
     market_data_error = None
 
+    market_cap_diagnostics = {
+        "requested_unique_tokens": len(token_addresses),
+        "batches_requested": 0,
+        "token_objects_returned": 0,
+        "requested_tokens_returned": 0,
+        "tokens_with_market_cap": 0,
+        "tokens_with_null_market_cap": 0,
+        "tokens_with_missing_market_cap_field": 0,
+        "tokens_with_invalid_market_cap": 0,
+        "requested_tokens_not_returned": len(token_addresses),
+        "unrequested_token_objects_ignored": 0,
+        "api_error": None,
+    }
+
     if token_addresses:
         try:
-            market_caps = fetch_token_market_caps(token_addresses)
+            market_caps = fetch_token_market_caps(
+                token_addresses,
+                diagnostics=market_cap_diagnostics,
+            )
         except MarketDataError as error:
             market_data_error = str(error)
+            market_cap_diagnostics["api_error"] = str(error)
 
-    # Sicherheitsprüfungen vorbereiten.
     security_by_mint = {}
     security_errors = {}
     security_status_by_mint = {}
@@ -535,13 +629,11 @@ def prepare_pools(
                 security_errors[normalized] = str(error)
                 security_status_by_mint[normalized] = "error"
 
-        # Token außerhalb des Prüflimits kennzeichnen.
         for normalized in normalized_addresses[max_security_checks:]:
             security_status_by_mint[normalized] = (
                 "skipped_run_limit"
             )
 
-    # Ergebnisse für jeden Pool erstellen.
     prepared = []
 
     for pool in pools:
@@ -581,6 +673,7 @@ def prepare_pools(
         )
 
         result["security_check_status"] = security_status
+        result["market_cap_diagnostics"] = market_cap_diagnostics
 
         prepared.append(result)
 
@@ -632,77 +725,4 @@ if __name__ == "__main__":
     print("Verbindung erfolgreich.")
     print("API-Key mitgesendet:", paprika["api_key_used"])
     print("Pagination vollständig:", paprika["pagination_complete"])
-    print("Liquiditätsfilter:", paprika["liquidity_filter_usd"], "USD")
-
-    if paprika["max_pages_reached"]:
-        print(
-            "WARNUNG: Seitenlimit erreicht. "
-            "Weitere Pools wurden noch nicht geladen."
-        )
-
-    print("Abgerufene Seiten:", paprika["pages_fetched"])
-    print("Pools insgesamt:", len(pools))
-    print("Doppelte Pools entfernt:", paprika["duplicates_removed"])
-    print("Weitere Seiten vorhanden:", paprika["has_next_page"])
-    print("Marktkapitalisierungen gefunden:", market_cap_found)
-
-    security_completed = sum(
-        p.get("security_check_status") == "completed"
-        for p in prepared
-    )
-
-    security_errors = sum(
-        p.get("security_check_status") == "error"
-        for p in prepared
-    )
-
-    security_skipped = sum(
-        p.get("security_check_status") in (
-            "skipped_run_limit",
-            "skipped_missing_mint",
-        )
-        for p in prepared
-    )
-
-    security_disabled = sum(
-        p.get("security_check_status") == "not_enabled"
-        for p in prepared
-    )
-
-    print("RugCheck-Prüfungen abgeschlossen:", security_completed)
-    print("RugCheck-Fehler:", security_errors)
-    print("RugCheck übersprungen:", security_skipped)
-    print("RugCheck nicht aktiviert:", security_disabled)
-
-    print("Vorprüfung abgelehnt:", rejected)
-    print("Unvollständig / weitere Daten nötig:", incomplete)
-    print("Bereit für vollständige Risikoprüfung:", ready)
-
-    errors = [
-        p.get("market_data_error")
-        for p in prepared
-        if p.get("market_data_error")
-    ]
-
-    if errors:
-        print(
-            "WARNUNG: GeckoTerminal-Marktdaten "
-            "konnten nicht vollständig geladen werden."
-        )
-        print("Fehler:", errors[0])
-
-    if prepared:
-        print("\nBEISPIELE DER AUFBEREITETEN DATEN:")
-
-        for item in prepared[:3]:
-            print(
-                json.dumps(
-                    item,
-                    indent=2,
-                    ensure_ascii=False,
-                )
-            )
-
-    print("\nHinweis: FDV ist nicht Marktkapitalisierung.")
-    print("Live-Trading: Deaktiviert")
-    print("Paper-Trading: Nicht aktiviert")
+ 
