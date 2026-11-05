@@ -64,6 +64,7 @@ def scan_pool_security(
                 "security_error",
                 "holder_error",
                 "mint_authority_revoked",
+                "freeze_authority_revoked",
                 "lp_burned_or_locked",
                 "top10_observed_share_lower_bound_pct",
                 "creator_observed_share_lower_bound_pct",
@@ -109,8 +110,12 @@ def scan_pool_security(
 
         checks_attempted += 1
 
-        original_rejections = set(item.get("rejection_reasons", []))
-        original_missing = set(item.get("missing_checks", []))
+        original_rejections = set(
+            item.get("rejection_reasons", [])
+        )
+        original_missing = set(
+            item.get("missing_checks", [])
+        )
 
         try:
             security = check_token_security(mint)
@@ -130,7 +135,10 @@ def scan_pool_security(
             }
             continue
 
-        if not isinstance(security, dict) or security.get("mint") != mint:
+        if (
+            not isinstance(security, dict)
+            or security.get("mint") != mint
+        ):
             checks_failed += 1
             item["security_check_status"] = "error"
             item["security_error"] = (
@@ -152,22 +160,41 @@ def scan_pool_security(
         item["security"] = security
 
         mint_revoked = security.get("mint_authority_revoked")
+        freeze_revoked = security.get("freeze_authority_revoked")
         lp_locked = security.get("lp_burned_or_locked")
 
         item["mint_authority_revoked"] = mint_revoked
+        item["freeze_authority_revoked"] = freeze_revoked
         item["lp_burned_or_locked"] = lp_locked
 
+        # Mint Authority bewerten.
         if mint_revoked is True:
             if "mint_authority_revoked" in item["missing_checks"]:
-                item["missing_checks"].remove("mint_authority_revoked")
+                item["missing_checks"].remove(
+                    "mint_authority_revoked"
+                )
         elif mint_revoked is False:
             item["rejection_reasons"].append(
                 "mint_authority_not_confirmed_revoked"
             )
 
+        # Freeze Authority bewerten.
+        if freeze_revoked is True:
+            if "freeze_authority_revoked" in item["missing_checks"]:
+                item["missing_checks"].remove(
+                    "freeze_authority_revoked"
+                )
+        elif freeze_revoked is False:
+            item["rejection_reasons"].append(
+                "freeze_authority_not_revoked"
+            )
+
+        # Liquidity-Pool-Sicherung bewerten.
         if lp_locked is True:
             if "lp_burned_or_locked" in item["missing_checks"]:
-                item["missing_checks"].remove("lp_burned_or_locked")
+                item["missing_checks"].remove(
+                    "lp_burned_or_locked"
+                )
         elif lp_locked is False:
             item["rejection_reasons"].append(
                 "lp_burn_or_lock_not_verified"
@@ -228,6 +255,8 @@ def scan_pool_security(
                         creator_lower_bound
                     )
 
+                    # Eine Stichprobe kann eine Überschreitung beweisen,
+                    # aber keine vollständige Verteilung bestätigen.
                     if (
                         isinstance(top10_lower_bound, (int, float))
                         and not isinstance(top10_lower_bound, bool)
@@ -276,6 +305,7 @@ def scan_pool_security(
             "removed_missing_checks": removed_missing,
             "status": item["status"],
             "mint_authority_revoked": mint_revoked,
+            "freeze_authority_revoked": freeze_revoked,
             "lp_burned_or_locked": lp_locked,
             "top10_observed_share_lower_bound_pct": item.get(
                 "top10_observed_share_lower_bound_pct"
