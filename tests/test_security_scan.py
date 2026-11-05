@@ -428,4 +428,11 @@ def test_duplicate_token_mints_are_not_checked_twice():
     assert result["holder_checks_attempted"] == 2
 
     assert mocked_security.call_count == 2
+        assert [
+        call.args[0] for call in mocked_security.call_args_list
+    ] == ["TOKEN_A", "TOKEN_B"]
+
+    assert [
+        call.args[0] for call in mocked_holder.call_args_list
+    ] == ["TOKEN_A", "TOKEN_B"]
     assert mocked_holder.call_count == 2
