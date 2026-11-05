@@ -36,7 +36,6 @@ def scan_pool_security(
     holder_checks_succeeded = 0
     holder_checks_failed = 0
 
-    # Ergebnisse je Token-Adresse zwischenspeichern.
     checked_tokens = {}
 
     for item in prepared:
@@ -59,21 +58,25 @@ def scan_pool_security(
         if mint in checked_tokens:
             cached = checked_tokens[mint]
 
-            for key, value in cached.items():
-                if key in ("security", "holder_snapshot"):
-                    item[key] = value
-                elif key in (
-                    "security_error",
-                    "holder_error",
-                    "mint_authority_revoked",
-                    "lp_burned_or_locked",
-                    "top10_observed_share_lower_bound_pct",
-                    "creator_observed_share_lower_bound_pct",
-                ):
-                    item[key] = value
+            for key in (
+                "security",
+                "holder_snapshot",
+                "security_error",
+                "holder_error",
+                "mint_authority_revoked",
+                "lp_burned_or_locked",
+                "top10_observed_share_lower_bound_pct",
+                "creator_observed_share_lower_bound_pct",
+            ):
+                if key in cached:
+                    item[key] = cached[key]
 
-            item["security_check_status"] = cached["security_check_status"]
-            item["holder_check_status"] = cached["holder_check_status"]
+            item["security_check_status"] = (
+                cached["security_check_status"]
+            )
+            item["holder_check_status"] = (
+                cached["holder_check_status"]
+            )
 
             item["rejection_reasons"] = list(
                 dict.fromkeys(
@@ -177,9 +180,10 @@ def scan_pool_security(
         if item["rejection_reasons"]:
             item["status"] = "rejected"
             holder_status = "skipped_security_rejection"
+
         else:
             holder_checks_attempted += 1
-            item["holder_check_status"] = "checking"
+            holder_status = "checking"
 
             try:
                 holder_snapshot = fetch_holder_snapshot(
@@ -242,6 +246,8 @@ def scan_pool_security(
                             "observed_creator_share_above_limit"
                         )
 
+        item["holder_check_status"] = holder_status
+
         if item["rejection_reasons"]:
             item["status"] = "rejected"
         elif item["missing_checks"]:
@@ -254,6 +260,7 @@ def scan_pool_security(
             for reason in item["rejection_reasons"]
             if reason not in original_rejections
         ]
+
         removed_missing = [
             check
             for check in original_missing
@@ -278,9 +285,6 @@ def scan_pool_security(
             ),
             "holder_error": holder_error,
         }
-
-        if holder_error:
-            checked_tokens[mint]["holder_error"] = holder_error
 
     return {
         "pools": prepared,
