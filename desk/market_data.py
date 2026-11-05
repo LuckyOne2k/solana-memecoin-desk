@@ -1,4 +1,3 @@
-
 import json
 import os
 import time
@@ -725,4 +724,143 @@ if __name__ == "__main__":
     print("Verbindung erfolgreich.")
     print("API-Key mitgesendet:", paprika["api_key_used"])
     print("Pagination vollständig:", paprika["pagination_complete"])
- 
+  paprika["pagination_complete"])
+    print("Liquiditätsfilter:", paprika["liquidity_filter_usd"], "USD")
+
+    if paprika["max_pages_reached"]:
+        print(
+            "WARNUNG: Seitenlimit erreicht. "
+            "Weitere Pools wurden noch nicht geladen."
+        )
+
+    print("Abgerufene Seiten:", paprika["pages_fetched"])
+    print("Pools insgesamt:", len(pools))
+    print("Doppelte Pools entfernt:", paprika["duplicates_removed"])
+    print("Weitere Seiten vorhanden:", paprika["has_next_page"])
+    print("Marktkapitalisierungen gefunden:", market_cap_found)
+
+    print("\nMARKTKAPITALITÄTS-DIAGNOSE:")
+
+    if prepared:
+        diagnostics = prepared[0]["market_cap_diagnostics"]
+    else:
+        diagnostics = {
+            "requested_unique_tokens": 0,
+            "batches_requested": 0,
+            "token_objects_returned": 0,
+            "requested_tokens_returned": 0,
+            "tokens_with_market_cap": 0,
+            "tokens_with_null_market_cap": 0,
+            "tokens_with_missing_market_cap_field": 0,
+            "tokens_with_invalid_market_cap": 0,
+            "requested_tokens_not_returned": 0,
+            "unrequested_token_objects_ignored": 0,
+            "api_error": None,
+        }
+
+    print(
+        "Eindeutige Token angefragt:",
+        diagnostics["requested_unique_tokens"],
+    )
+    print(
+        "API-Abfragen:",
+        diagnostics["batches_requested"],
+    )
+    print(
+        "Token-Objekte von API erhalten:",
+        diagnostics["token_objects_returned"],
+    )
+    print(
+        "Angefragte Token zurückgegeben:",
+        diagnostics["requested_tokens_returned"],
+    )
+    print(
+        "Mit Marktkapitalisierung:",
+        diagnostics["tokens_with_market_cap"],
+    )
+    print(
+        "Marktkapitalisierung ausdrücklich null:",
+        diagnostics["tokens_with_null_market_cap"],
+    )
+    print(
+        "Feld market_cap_usd fehlt:",
+        diagnostics["tokens_with_missing_market_cap_field"],
+    )
+    print(
+        "Ungültige Marktkapitalisierung:",
+        diagnostics["tokens_with_invalid_market_cap"],
+    )
+    print(
+        "Angefragte Token nicht zurückgegeben:",
+        diagnostics["requested_tokens_not_returned"],
+    )
+    print(
+        "Nicht angefragte Token ignoriert:",
+        diagnostics["unrequested_token_objects_ignored"],
+    )
+
+    if diagnostics["api_error"]:
+        print("API-Fehler:", diagnostics["api_error"])
+
+    security_completed = sum(
+        p.get("security_check_status") == "completed"
+        for p in prepared
+    )
+
+    security_errors = sum(
+        p.get("security_check_status") == "error"
+        for p in prepared
+    )
+
+    security_skipped = sum(
+        p.get("security_check_status") in (
+            "skipped_run_limit",
+            "skipped_missing_mint",
+        )
+        for p in prepared
+    )
+
+    security_disabled = sum(
+        p.get("security_check_status") == "not_enabled"
+        for p in prepared
+    )
+
+    print("\nSICHERHEITSPRÜFUNGEN:")
+    print("RugCheck-Prüfungen abgeschlossen:", security_completed)
+    print("RugCheck-Fehler:", security_errors)
+    print("RugCheck übersprungen:", security_skipped)
+    print("RugCheck nicht aktiviert:", security_disabled)
+
+    print("\nERGEBNIS DER VORPRÜFUNG:")
+    print("Vorprüfung abgelehnt:", rejected)
+    print("Unvollständig / weitere Daten nötig:", incomplete)
+    print("Bereit für vollständige Risikoprüfung:", ready)
+
+    errors = [
+        p.get("market_data_error")
+        for p in prepared
+        if p.get("market_data_error")
+    ]
+
+    if errors:
+        print(
+            "\nWARNUNG: GeckoTerminal-Marktdaten "
+            "konnten nicht vollständig geladen werden."
+        )
+        print("Fehler:", errors[0])
+
+    if prepared:
+        print("\nBEISPIELE DER AUFBEREITETEN DATEN:")
+
+        for item in prepared[:3]:
+            print(
+                json.dumps(
+                    item,
+                    indent=2,
+                    ensure_ascii=False,
+                )
+            )
+
+    print("\nHinweis: FDV ist nicht Marktkapitalisierung.")
+    print("Live-Trading: Deaktiviert")
+    print("Paper-Trading: Nicht aktiviert")
