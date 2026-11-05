@@ -250,3 +250,106 @@ def test_prepare_pools_handles_geckoterminal_errors_safely():
     assert "market_cap_usd" in results[0]["missing_checks"]
     assert "market_data_error" in results[0]
     assert results[0]["status"] == "incomplete"
+
+# --------------------------------------------------
+# RugCheck-Integration
+# --------------------------------------------------
+
+def make_security_data(**overrides):
+    security = {
+        "mint_authority_revoked": True,
+        "freeze_authority_revoked": True,
+        "lp_burned_or_locked": True,
+        "lp_locked_pct": 100,
+        "creator_share_sampled_pct": 5,
+        "top10_share_sampled_pct": 30,
+        "owner_attribution_complete": True,
+        "top10_share_fully_verified": False,
+    }
+    security.update(overrides)
+    return security
+
+
+def test_prepare_pool_uses_confirmed_rugcheck_data():
+    result = prepare_pool(
+        make_pool(),
+        now=NOW,
+        market_caps={"tokenmintaddress123": 150000},
+        security_data=make_security_data(),
+    )
+
+    assert "mint_authority_revoked" not in result["missing_checks"]
+    assert "freeze_authority_revoked" not in result["missing_checks"]
+    assert "lp_burned_or_locked" not in result["missing_checks"]
+    assert result["security_data"] is not None
+
+
+def test_prepare_pool_rejects_active_authorities():
+    result = prepare_pool(
+        make_pool(),
+        now=NOW,
+        security_data=make_security_data(
+            mint_authority_revoked=False,
+            freeze_authority_revoked=False,
+        ),
+    )
+
+    assert result["status"] == "rejected"
+    assert "mint_authority_active" in result["rejection_reasons"]
+    assert "freeze_authority_active" in result["rejection_reasons"]
+
+
+def test_prepare_pool_keeps_unknown_security_data_incomplete():
+    result = prepare_pool(
+        make_pool(),
+        now=NOW,
+        security_data=make_security_data(
+            mint_authority_revoked=None,
+            freeze_authority_revoked=None,
+            lp_burned_or_locked=None,
+        ),
+    )
+
+    assert result["status"] == "incomplete"
+    assert "mint_authority_revoked" in result["missing_checks"]
+    assert "freeze_authority_revoked" in result["missing_checks"]
+    assert "lp_burned_or_locked" in result["missing_checks"]
+
+
+def test_prepare_pool_does_not_treat_sampled_top10_as_verified():
+    result = prepare_pool(
+        make_pool(),
+        now=NOW,
+        security_data=make_security_data(
+            top10_share_sampled_pct=30,
+            top10_share_fully_verified=False,
+        ),
+    )
+
+    assert "top10_share_pct" in result["missing_checks"]
+
+
+def test_prepare_pools_limits_rugcheck_requests_to_ten():
+    pools = []
+
+    for index in range(12):
+        pool = make_pool()
+        pool["tokens"][1]["id"] = f"TokenMintAddress{index}"
+        pools.append(pool)
+
+    with patch(
+        "desk.market_data.fetch_token_market_caps",
+        return_value={},
+    ), patch(
+        "desk.market_data.check_token_security",
+        return_value=make_security_data(),
+    ) as mocked_security:
+        results = prepare_pools(
+            pools,
+            security_checks_enabled=True,
+            max_security_checks=10,
+            now=NOW,
+        )
+
+    assert len(results) == 12
+    assert mocked_security.call_count == 10
