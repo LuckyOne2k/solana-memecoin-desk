@@ -1,3 +1,4 @@
+
 from desk.market_data import prepare_pools
 from desk.security import (
     SecurityDataError,
@@ -35,6 +36,9 @@ def scan_pool_security(
     holder_checks_succeeded = 0
     holder_checks_failed = 0
 
+    # Ergebnisse je Token-Adresse zwischenspeichern.
+    checked_tokens = {}
+
     for item in prepared:
         item["security_check_status"] = "not_checked"
         item["holder_check_status"] = "not_checked"
@@ -51,12 +55,59 @@ def scan_pool_security(
             item["holder_check_status"] = "skipped_missing_mint"
             continue
 
+        # Bereits geprüfte Token nicht erneut abfragen.
+        if mint in checked_tokens:
+            cached = checked_tokens[mint]
+
+            for key, value in cached.items():
+                if key in ("security", "holder_snapshot"):
+                    item[key] = value
+                elif key in (
+                    "security_error",
+                    "holder_error",
+                    "mint_authority_revoked",
+                    "lp_burned_or_locked",
+                    "top10_observed_share_lower_bound_pct",
+                    "creator_observed_share_lower_bound_pct",
+                ):
+                    item[key] = value
+
+            item["security_check_status"] = cached["security_check_status"]
+            item["holder_check_status"] = cached["holder_check_status"]
+
+            item["rejection_reasons"] = list(
+                dict.fromkeys(
+                    item.get("rejection_reasons", [])
+                    + cached.get("added_rejection_reasons", [])
+                )
+            )
+
+            item["missing_checks"] = [
+                check
+                for check in item.get("missing_checks", [])
+                if check not in cached.get("removed_missing_checks", [])
+            ]
+
+            if cached.get("status") == "rejected":
+                item["status"] = "rejected"
+            elif item["rejection_reasons"]:
+                item["status"] = "rejected"
+            elif item["missing_checks"]:
+                item["status"] = "incomplete"
+            else:
+                item["status"] = "ready_for_full_risk_screen"
+
+            continue
+
         if checks_attempted >= max_checks:
             item["security_check_status"] = "skipped_run_limit"
             item["holder_check_status"] = "skipped_run_limit"
             continue
 
         checks_attempted += 1
+
+        original_rejections = set(item.get("rejection_reasons", []))
+        original_missing = set(item.get("missing_checks", []))
 
         try:
             security = check_token_security(mint)
@@ -65,6 +116,15 @@ def scan_pool_security(
             checks_failed += 1
             item["security_check_status"] = "error"
             item["security_error"] = str(error)
+
+            checked_tokens[mint] = {
+                "security_check_status": "error",
+                "holder_check_status": "not_checked",
+                "security_error": str(error),
+                "added_rejection_reasons": [],
+                "removed_missing_checks": [],
+                "status": item["status"],
+            }
             continue
 
         if not isinstance(security, dict) or security.get("mint") != mint:
@@ -73,6 +133,15 @@ def scan_pool_security(
             item["security_error"] = (
                 "Security report does not match the requested token"
             )
+
+            checked_tokens[mint] = {
+                "security_check_status": "error",
+                "holder_check_status": "not_checked",
+                "security_error": item["security_error"],
+                "added_rejection_reasons": [],
+                "removed_missing_checks": [],
+                "status": item["status"],
+            }
             continue
 
         checks_succeeded += 1
@@ -88,7 +157,6 @@ def scan_pool_security(
         if mint_revoked is True:
             if "mint_authority_revoked" in item["missing_checks"]:
                 item["missing_checks"].remove("mint_authority_revoked")
-
         elif mint_revoked is False:
             item["rejection_reasons"].append(
                 "mint_authority_not_confirmed_revoked"
@@ -97,90 +165,122 @@ def scan_pool_security(
         if lp_locked is True:
             if "lp_burned_or_locked" in item["missing_checks"]:
                 item["missing_checks"].remove("lp_burned_or_locked")
-
         elif lp_locked is False:
             item["rejection_reasons"].append(
                 "lp_burn_or_lock_not_verified"
             )
 
-        # Keine Holder-RPC-Anfragen für bereits abgelehnte Tokens.
+        holder_snapshot = None
+        holder_error = None
+        holder_status = "not_checked"
+
         if item["rejection_reasons"]:
             item["status"] = "rejected"
-            item["holder_check_status"] = "skipped_security_rejection"
-            continue
-
-        holder_checks_attempted += 1
-        item["holder_check_status"] = "checking"
-
-        try:
-            holder_snapshot = fetch_holder_snapshot(
-                mint,
-                creator_address=security.get("creator_address"),
-            )
-
-        except SolanaRpcError as error:
-            holder_checks_failed += 1
-            item["holder_check_status"] = "error"
-            item["holder_error"] = str(error)
-
+            holder_status = "skipped_security_rejection"
         else:
-            if (
-                not isinstance(holder_snapshot, dict)
-                or holder_snapshot.get("mint") != mint
-            ):
-                holder_checks_failed += 1
-                item["holder_check_status"] = "error"
-                item["holder_error"] = (
-                    "Holder snapshot does not match the requested token"
+            holder_checks_attempted += 1
+            item["holder_check_status"] = "checking"
+
+            try:
+                holder_snapshot = fetch_holder_snapshot(
+                    mint,
+                    creator_address=security.get("creator_address"),
                 )
+
+            except SolanaRpcError as error:
+                holder_checks_failed += 1
+                holder_status = "error"
+                holder_error = str(error)
+                item["holder_error"] = holder_error
 
             else:
-                holder_checks_succeeded += 1
-                item["holder_check_status"] = "completed"
-                item["holder_snapshot"] = holder_snapshot
-
-                top10_lower_bound = holder_snapshot.get(
-                    "top10_observed_owner_share_lower_bound_pct"
-                )
-
-                creator_lower_bound = holder_snapshot.get(
-                    "creator_share_lower_bound_pct"
-                )
-
-                item["top10_observed_share_lower_bound_pct"] = (
-                    top10_lower_bound
-                )
-
-                item["creator_observed_share_lower_bound_pct"] = (
-                    creator_lower_bound
-                )
-
                 if (
-                    isinstance(top10_lower_bound, (int, float))
-                    and not isinstance(top10_lower_bound, bool)
-                    and top10_lower_bound > MAX_TOP10_SHARE_PCT
+                    not isinstance(holder_snapshot, dict)
+                    or holder_snapshot.get("mint") != mint
                 ):
-                    item["rejection_reasons"].append(
-                        "observed_top10_holder_share_above_limit"
+                    holder_checks_failed += 1
+                    holder_status = "error"
+                    holder_error = (
+                        "Holder snapshot does not match the requested token"
+                    )
+                    item["holder_error"] = holder_error
+
+                else:
+                    holder_checks_succeeded += 1
+                    holder_status = "completed"
+                    item["holder_snapshot"] = holder_snapshot
+
+                    top10_lower_bound = holder_snapshot.get(
+                        "top10_observed_owner_share_lower_bound_pct"
+                    )
+                    creator_lower_bound = holder_snapshot.get(
+                        "creator_share_lower_bound_pct"
                     )
 
-                if (
-                    isinstance(creator_lower_bound, (int, float))
-                    and not isinstance(creator_lower_bound, bool)
-                    and creator_lower_bound > MAX_CREATOR_SHARE_PCT
-                ):
-                    item["rejection_reasons"].append(
-                        "observed_creator_share_above_limit"
+                    item["top10_observed_share_lower_bound_pct"] = (
+                        top10_lower_bound
                     )
+                    item["creator_observed_share_lower_bound_pct"] = (
+                        creator_lower_bound
+                    )
+
+                    if (
+                        isinstance(top10_lower_bound, (int, float))
+                        and not isinstance(top10_lower_bound, bool)
+                        and top10_lower_bound > MAX_TOP10_SHARE_PCT
+                    ):
+                        item["rejection_reasons"].append(
+                            "observed_top10_holder_share_above_limit"
+                        )
+
+                    if (
+                        isinstance(creator_lower_bound, (int, float))
+                        and not isinstance(creator_lower_bound, bool)
+                        and creator_lower_bound > MAX_CREATOR_SHARE_PCT
+                    ):
+                        item["rejection_reasons"].append(
+                            "observed_creator_share_above_limit"
+                        )
 
         if item["rejection_reasons"]:
             item["status"] = "rejected"
-
         elif item["missing_checks"]:
             item["status"] = "incomplete"
-
         else:
             item["status"] = "ready_for_full_risk_screen"
+
+        added_rejections = [
+            reason
+            for reason in item["rejection_reasons"]
+            if reason not in original_rejections
+        ]
+        removed_missing = [
+            check
+            for check in original_missing
+            if check not in item["missing_checks"]
+        ]
+
+        checked_tokens[mint] = {
+            "security_check_status": item["security_check_status"],
+            "holder_check_status": holder_status,
+            "security": security,
+            "holder_snapshot": holder_snapshot,
+            "added_rejection_reasons": added_rejections,
+            "removed_missing_checks": removed_missing,
+            "status": item["status"],
+            "mint_authority_revoked": mint_revoked,
+            "lp_burned_or_locked": lp_locked,
+            "top10_observed_share_lower_bound_pct": item.get(
+                "top10_observed_share_lower_bound_pct"
+            ),
+            "creator_observed_share_lower_bound_pct": item.get(
+                "creator_observed_share_lower_bound_pct"
+            ),
+            "holder_error": holder_error,
+        }
+
+        if holder_error:
+            checked_tokens[mint]["holder_error"] = holder_error
 
     return {
         "pools": prepared,
