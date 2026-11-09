@@ -5,11 +5,26 @@ import time
 import requests
 
 
-DEFAULT_RPC_URL = "https://api.mainnet.solana.com"
-
-
 class SolanaRpcError(Exception):
     pass
+
+
+def _resolve_rpc_url(rpc_url=None):
+    """RPC-Adresse aus Argument oder SOLANA_RPC_URL.
+
+    Kein stilles Zurückfallen auf die öffentliche RPC: Fehlt die Adresse
+    oder ist sie ungültig, schlägt die Abfrage fehl und die Holder-Prüfung
+    bleibt unvollständig. Der Wert selbst wird nie in Meldungen übernommen.
+    """
+    url = (rpc_url or os.getenv("SOLANA_RPC_URL") or "").strip()
+
+    if not url:
+        raise SolanaRpcError("SOLANA_RPC_URL is not set")
+
+    if not url.startswith("https://"):
+        raise SolanaRpcError("SOLANA_RPC_URL is not an https URL")
+
+    return url
 
 
 def _safe_request_error(error, status_code):
@@ -22,10 +37,7 @@ def _safe_request_error(error, status_code):
 
 
 def _rpc_call(method, params, rpc_url=None, timeout=20):
-    url = rpc_url or os.getenv(
-        "SOLANA_RPC_URL",
-        DEFAULT_RPC_URL,
-    )
+    url = _resolve_rpc_url(rpc_url)
 
     payload = {
         "jsonrpc": "2.0",
