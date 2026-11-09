@@ -46,6 +46,7 @@
 | `desk/holders.py` | Top-10-/Entwickler-Anteil mit Unter-/Obergrenze; Bestätigung nur mit vollständiger Liste |
 | `desk/market_cap.py` | Marktkapitalisierung, Obergrenze, FDV |
 | `desk/security_scan.py` | einzige Prüfkette, Bewertung je Pool |
+| `desk/check_queue.py` | faire Prüfreihenfolge: zuletzt abgelehnte Token nach hinten (nur Reihenfolge, nie Ergebnis) |
 | `desk/rules.py`, `risk.py`, `debate.py` | behalten, noch nicht angeschlossen |
 
 ## Prüfregeln (Kurzfassung, Details im README)
@@ -55,6 +56,7 @@
 - Marktkapitalisierung: Obergrenze (Preis × Gesamtmenge − nachweislich verbrannt) darf nur ablehnen, nie bestehen. Bestehen nur mit gemeldeter Umlaufmenge, zwei übereinstimmenden Preisen und Wert ≤ Obergrenze (ohne Toleranz). FDV getrennt.
 - Holder: Quelle ist die vollständige Holder-Liste (`holders.max_pages` 30, `holders.max_slot_span` 150); nur bei deren Fehlschlag Rückfall auf die Top-20-Stichprobe, die nie bestätigen kann (`sample_cannot_confirm`). Konten je Eigentümer aggregiert; nur Pool- und Burn-Konten herausgerechnet; Börsen/Locker/Unbekannte zählen mit. Untergrenze > 25 % → abgelehnt; Obergrenze ≤ 25 % mit vollständiger Liste (nicht erfasste Menge 0) → bestätigt; sonst unklar. Entwickler-Anteil analog mit 3 %.
 - Token-2022: Pflichtprüfungen `permanent_delegate_absent` und `token_extensions_safe`. Permanent Delegate, unbekannte, nicht lesbare oder nicht ausdrücklich als unbedenklich eingestufte Erweiterungen (unbedenklich nur Metadaten/Gruppe) → unklar, nie bereit; noch keine Ablehnung.
+- Prüfreihenfolge: höchstens 10 Token je Lauf; Token, deren letzte abgeschlossene Sicherheitsprüfung abgelehnt wurde, rücken nach hinten (älteste Ablehnung zuerst). Jeder Token wird frisch geprüft; Protokoll fehlt/beschädigt → bisherige Reihenfolge.
 - Der Config-Schlüssel `market_cap_allow_total_supply_estimate` ist verboten und stoppt das Programm.
 
 ## Infrastruktur
@@ -79,14 +81,15 @@
 
 - 2026-11-09 – Strukturtest `getProgramAccountsV2` (NAOF 2 Seiten, MAGGIE 1 Seite, ca. 3 Credits): Antwortform belegt (`context.slot` int, `value.count` = Konten der Seite, letzte Seite `paginationKey: null`); Ergebnis in `docs/helius_validierung.md`.
 - 2026-11-09 – PR B (Helius, Einbindung): vollständige Liste in `security_scan.py`, Rückfall auf Stichprobe (nie bestätigen), Config `holders`, `value.count`-Gegenprobe, Pflichtprüfungen `permanent_delegate_absent` und `token_extensions_safe` (Positivliste nur Metadaten/Gruppe). Tests: 652 bestanden.
+- 2026-11-09 – Scan #45 (Commit `16ffcf4`): 0 Helius-Abfragen, alle 10 geprüften Token schon an der LP-Sperre abgelehnt; Starvation belegt (8 von 10 Token wie im Scan davor, 41 von 60 Token mehrfach geprüft, weiter unten stehende nie). Fairere Prüfreihenfolge (`desk/check_queue.py`) freigegeben und umgesetzt (PR offen). Tests: 688 bestanden.
 
 ## Offene Probleme
 - Praktisch wird kaum ein Token „bereit“: GeckoTerminal meldet die Umlaufmenge nur für etwa 5 % der Token (keine nachvollziehbare Alternative, Nutzer entscheidet).
 - Holder-Bewertung gilt nur für ihren Zeitpunkt (Beispiel USAR); vor simulierten Käufen später neu prüfen.
 - Wallets derselben Person nicht erkennbar; Bonding-Curve-Token und Pools ohne SOL/USDC/USDT bleiben unvollständig.
-- Nur 10 Token pro Lauf; Scan nur manuell.
+- Nur 10 Token pro Lauf; Scan nur manuell. Prüfreihenfolge rotiert (zuletzt abgelehnte nach hinten); ein beschädigtes Protokoll schaltet die Rotation ab (Rückfall, sichtbar in `check_order_source`).
 - Test-Branch `claude/helius-verbindungstest` (enthält die Testskripte) bleibt vorerst (Commit `5214857`), Löschung nach Abschluss der Integration; Ergebnisse stehen in `docs/helius_validierung.md`.
 - Offene Fragen: Repo öffentlich oder privat? Was ist im 20-€-Budget schon enthalten?
 
 ## Nächster Schritt
-PR B prüfen und mergen (Nutzer). Danach ein manueller Scan über GitHub Actions, Auswertung mit `scan-auswertung`, Credits im Helius-Dashboard prüfen. Danach Entscheidung über Löschung des Test-Branches und über Ablehnungsregeln für Permanent Delegate/riskante Erweiterungen. Prüfregeln (25 % / 3 %) und Umlaufmengenregel unverändert.
+PR „faire Prüfreihenfolge“ prüfen und mergen (Nutzer). Danach ein manueller Scan über GitHub Actions, Auswertung mit `scan-auswertung`, Credits im Helius-Dashboard prüfen. Danach Entscheidung über Löschung des Test-Branches und über Ablehnungsregeln für Permanent Delegate/riskante Erweiterungen. Prüfregeln (25 % / 3 %) und Umlaufmengenregel unverändert.

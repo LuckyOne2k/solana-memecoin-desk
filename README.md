@@ -40,6 +40,17 @@ A pool only reaches `ready_for_full_risk_screen` when every check is
 confirmed. Missing, contradictory or invalid data never passes a check; it
 leaves the pool `incomplete`.
 
+- **Check order (fair rotation, `desk/check_queue.py`):** at most
+  `scanner.max_security_checks_per_run` (10) tokens are checked per run.
+  Tokens whose last *completed* security check in earlier scans
+  (`events.jsonl`) ended `rejected` move to the back of the queue (oldest
+  rejection first); all other tokens go first in DexPaprika order. This only
+  changes *which* tokens get the budget: every selected token is checked
+  fresh, old results are never reused, unselected pools stay `incomplete`,
+  and rejected tokens come back once newer ones were rejected. Missing,
+  damaged or incomplete logs fall back to the plain DexPaprika order. Each
+  pool logs `check_queue_position`, `queue_reason` and
+  `previous_rejection_at`; the summary logs `check_order_source`.
 - **Non-memecoins:** stablecoins and staking/yield tokens are excluded only by
   exact mint address (list verified via GeckoTerminal on 2026-11-09). Tokens
   that merely use such a symbol or name are marked `token_classification`
