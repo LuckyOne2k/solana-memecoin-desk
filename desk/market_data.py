@@ -1,4 +1,3 @@
-import json
 import os
 import time
 from datetime import datetime, timezone
@@ -43,34 +42,6 @@ GECKOTERMINAL_MAX_RETRY_AFTER_SECONDS = 60
 
 class MarketDataError(Exception):
     pass
-
-
-def fetch_new_pools(page=1, timeout=15):
-    if page < 1:
-        raise ValueError("Page must be at least 1")
-
-    try:
-        response = requests.get(
-            f"{BASE_URL}/networks/solana/new_pools",
-            params={"page": page, "include": "base_token,quote_token"},
-            headers={"Accept": "application/json;version=20230203"},
-            timeout=timeout,
-        )
-        response.raise_for_status()
-        payload = response.json()
-    except requests.RequestException as error:
-        raise MarketDataError(
-            f"GeckoTerminal request failed: {error}"
-        ) from error
-    except ValueError as error:
-        raise MarketDataError(
-            "Invalid GeckoTerminal JSON response"
-        ) from error
-
-    if not isinstance(payload, dict) or not isinstance(payload.get("data"), list):
-        raise MarketDataError("Invalid GeckoTerminal response structure")
-
-    return payload
 
 
 def fetch_pools_by_age(
@@ -842,73 +813,3 @@ def prepare_pools(pools, config, now=None):
 
     return prepared
 
-
-def _run_diagnostics():
-    """Manuelle Verbindungsdiagnose ohne Sicherheitsprüfungen.
-
-    Aufruf: python -m desk.market_data
-    Wird nicht mehr im GitHub-Workflow ausgeführt.
-    """
-    from desk.config import load_config
-
-    config = load_config()
-
-    print("SOLANA MEMECOIN DESK - Marktdaten-Diagnose")
-    print("==========================================")
-
-    print("\n1. GeckoTerminal")
-
-    gecko = fetch_new_pools()
-
-    print("Verbindung erfolgreich.")
-    print("Neue Pools:", len(gecko["data"]))
-
-    print("\n2. DexPaprika")
-
-    paprika = fetch_pools_by_age(
-        min_age_hours=config["scanner"]["pair_age_hours_min"],
-        max_age_hours=config["scanner"]["pair_age_hours_max"],
-        min_liquidity_usd=config["risk_filters"]["reject_liquidity_below_usd"],
-    )
-    pools = paprika["results"]
-
-    prepared = prepare_pools(pools, config)
-
-    print("Verbindung erfolgreich.")
-    print("API-Key mitgesendet:", paprika["api_key_used"])
-    print("Pagination vollständig:", paprika["pagination_complete"])
-    print("Abgerufene Seiten:", paprika["pages_fetched"])
-    print("Liquiditätsfilter USD:", paprika["liquidity_filter_usd"])
-    print("Gefundene Pools:", len(pools))
-    print("Entfernte Duplikate:", paprika["duplicates_removed"])
-    print("Maximale Seitenzahl erreicht:", paprika["max_pages_reached"])
-
-    print("\n3. Market-Cap-Diagnose")
-
-    diagnostics = (
-        prepared[0]["market_cap_diagnostics"]
-        if prepared
-        else empty_market_cap_diagnostics()
-    )
-
-    print(json.dumps(diagnostics, indent=2, ensure_ascii=False))
-
-    print("\n4. Vorprüfung (ohne Sicherheitsprüfung)")
-    print("Pools insgesamt:", len(prepared))
-    print(
-        "Abgelehnt:",
-        sum(p["status"] == "rejected" for p in prepared),
-    )
-    print(
-        "Unvollständig:",
-        sum(p["status"] == "incomplete" for p in prepared),
-    )
-
-    print("\nHinweise:")
-    print("- FDV ist nicht gleich Market Cap.")
-    print("- Fehlende Market-Cap-Daten werden nicht durch FDV ersetzt.")
-    print("- Live-Trading: Deaktiviert.")
-
-
-if __name__ == "__main__":
-    _run_diagnostics()
