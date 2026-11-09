@@ -1,0 +1,30 @@
+name: Helius-Verbindungstest (einmalig)
+
+# Nur auf dem Test-Branch, rein lesend, keine Schreibrechte, kein Protokoll.
+on:
+  push:
+    branches:
+      - claude/helius-verbindungstest
+
+permissions:
+  contents: read
+
+jobs:
+  verbindungstest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Repository herunterladen
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Python einrichten
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+
+      - name: Verbindungstest
+        env:
+          SOLANA_RPC_URL: ${{ secrets.SOLANA_RPC_URL }}
+        run: python .github/helius_test/connection_test.py
