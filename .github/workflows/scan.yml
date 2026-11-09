@@ -1,18 +1,33 @@
 name: Solana Memecoin Desk
 
+# Manueller Scan. Das Protokoll wird in den Branch "desk-data"
+# geschrieben, nie mehr auf main.
+
 on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+
+concurrency:
+  group: desk-scan
+  cancel-in-progress: false
+
+env:
+  DATA_BRANCH: desk-data
+  DATA_DIR: desk-data
 
 jobs:
-  scan:
+  test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Repository herunterladen
         uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: Python einrichten
         uses: actions/setup-python@v7
@@ -26,21 +41,84 @@ jobs:
 
       - name: Automatische Tests ausführen
         run: python -m pytest -v
-      
-      - name: Live-Verbindung zu GeckoTerminal prüfen
+
+  scan:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      # Nur für den Push in den Protokoll-Branch.
+      contents: write
+
+    steps:
+      - name: Repository herunterladen
+        uses: actions/checkout@v7
+        with:
+          # Der Scan-Code bekommt keinen Schreibzugriff auf GitHub.
+          # Der Token wird nur im Speicher-Schritt verwendet.
+          persist-credentials: false
+
+      - name: Python einrichten
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+
+      - name: Abhängigkeiten installieren
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Protokoll-Branch vorbereiten
+        id: datadir
         env:
-          DEXPAPRIKA_API_KEY: ${{ secrets.DEXPAPRIKA_API_KEY }}
-        run: python -m desk.market_data
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          auth="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+
+          if git -c http.extraheader="$auth" ls-remote --exit-code --heads origin "$DATA_BRANCH" > /dev/null; then
+            git -c http.extraheader="$auth" fetch --depth=1 origin "$DATA_BRANCH"
+            git worktree add --detach "$DATA_DIR" FETCH_HEAD
+          else
+            # Erster Lauf: neuen Branch anlegen und das bisherige
+            # Protokoll von main übernehmen (main bleibt unverändert).
+            git worktree add --orphan -b "$DATA_BRANCH" "$DATA_DIR"
+            if [ -f data/events.jsonl ]; then
+              cp data/events.jsonl "$DATA_DIR/events.jsonl"
+            fi
+          fi
 
       - name: Programm starten
         env:
           SOLANA_RPC_URL: ${{ secrets.SOLANA_RPC_URL }}
+          DEXPAPRIKA_API_KEY: ${{ secrets.DEXPAPRIKA_API_KEY }}
+          DESK_LOG_FILE: ${{ github.workspace }}/desk-data/events.jsonl
         run: python -m desk
 
       - name: Protokoll speichern
+        # Auch nach einem Fehler im Scan speichern, damit der Fehler
+        # im Protokoll nachvollziehbar bleibt.
+        if: ${{ !cancelled() && steps.datadir.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        working-directory: desk-data
         run: |
+          set -euo pipefail
           git config user.name "github-actions[bot]"
-          git config user.email "41898282+users.noreply.github.com"
-          git add data/events.jsonl
-          git diff --cached --quiet || git commit -m "Update desk event log"
-          git push
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if [ ! -f events.jsonl ]; then
+            echo "Kein Protokoll vorhanden, nichts zu speichern."
+            exit 0
+          fi
+
+          git add events.jsonl
+
+          if git diff --cached --quiet; then
+            echo "Keine neuen Protokolleinträge."
+            exit 0
+          fi
+
+          git commit -m "Update desk event log"
+
+          auth="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          git -c http.extraheader="$auth" push origin "HEAD:refs/heads/$DATA_BRANCH"

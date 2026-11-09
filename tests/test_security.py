@@ -5,9 +5,22 @@ import pytest
 from desk.security import (
     SecurityDataError,
     analyze_rugcheck_report,
+    check_token_security,
     fetch_rugcheck_report,
     fetch_rugcheck_summary,
 )
+from desk.config import load_config
+
+
+LP_LOCKED_MIN_PCT = load_config()["risk_filters"]["lp_locked_min_pct"]
+
+
+def analyze(report, summary):
+    return analyze_rugcheck_report(
+        report,
+        summary,
+        lp_locked_min_pct=LP_LOCKED_MIN_PCT,
+    )
 
 
 def test_mint_authority_explicitly_revoked():
@@ -19,7 +32,7 @@ def test_mint_authority_explicitly_revoked():
         },
     }
 
-    result = analyze_rugcheck_report(report, {})
+    result = analyze(report, {})
 
     assert result["mint_authority_revoked"] is True
     assert result["freeze_authority_revoked"] is True
@@ -34,7 +47,7 @@ def test_active_authority_is_not_revoked():
         },
     }
 
-    result = analyze_rugcheck_report(report, {})
+    result = analyze(report, {})
 
     assert result["mint_authority_revoked"] is False
     assert result["freeze_authority_revoked"] is False
@@ -46,7 +59,7 @@ def test_missing_authority_data_stays_unknown():
         "token": {},
     }
 
-    result = analyze_rugcheck_report(report, {})
+    result = analyze(report, {})
 
     assert result["mint_authority_revoked"] is None
     assert result["freeze_authority_revoked"] is None
@@ -55,17 +68,17 @@ def test_missing_authority_data_stays_unknown():
 def test_lp_lock_threshold():
     report = {"mint": "TOKEN123"}
 
-    locked = analyze_rugcheck_report(
+    locked = analyze(
         report,
         {"lpLockedPct": 100},
     )
 
-    not_locked = analyze_rugcheck_report(
+    not_locked = analyze(
         report,
         {"lpLockedPct": 95},
     )
 
-    unknown = analyze_rugcheck_report(
+    unknown = analyze(
         report,
         {},
     )
@@ -86,7 +99,7 @@ def test_same_owner_balances_are_aggregated():
         ],
     }
 
-    result = analyze_rugcheck_report(report, {})
+    result = analyze(report, {})
 
     assert result["creator_share_sampled_pct"] == 7
     assert result["largest_reported_holder_pct"] == 7
@@ -103,7 +116,7 @@ def test_creator_missing_from_sample_stays_unknown():
         ],
     }
 
-    result = analyze_rugcheck_report(report, {})
+    result = analyze(report, {})
 
     assert result["creator_share_sampled_pct"] is None
 
@@ -119,7 +132,7 @@ def test_top10_sample_is_never_fully_verified():
         "topHolders": holders,
     }
 
-    result = analyze_rugcheck_report(report, {})
+    result = analyze(report, {})
 
     assert result["top10_share_sampled_pct"] == 20
     assert result["top10_share_fully_verified"] is False
@@ -168,10 +181,10 @@ def test_invalid_mint_is_rejected():
 
 def test_invalid_analysis_input_is_rejected():
     with pytest.raises(ValueError):
-        analyze_rugcheck_report([], {})
+        analyze([], {})
 
     with pytest.raises(ValueError):
-        analyze_rugcheck_report({}, [])
+        analyze({}, [])
 
 def test_missing_owner_makes_holder_analysis_incomplete():
     report = {
@@ -182,7 +195,7 @@ def test_missing_owner_makes_holder_analysis_incomplete():
         ],
     }
 
-    result = analyze_rugcheck_report(report, {})
+    result = analyze(report, {})
 
     assert result["owner_attribution_complete"] is False
     assert result["largest_reported_holder_pct"] is None
@@ -198,8 +211,54 @@ def test_invalid_holder_percentage_makes_analysis_incomplete():
         ],
     }
 
-    result = analyze_rugcheck_report(report, {})
+    result = analyze(report, {})
 
     assert result["owner_attribution_complete"] is False
     assert result["invalid_holder_rows"] == 1
     assert result["largest_reported_holder_pct"] is None
+
+
+def test_lp_lock_threshold_comes_from_parameter():
+    report = {"mint": "TOKEN123"}
+
+    strict = analyze_rugcheck_report(
+        report,
+        {"lpLockedPct": 99.5},
+        lp_locked_min_pct=99.99,
+    )
+
+    relaxed = analyze_rugcheck_report(
+        report,
+        {"lpLockedPct": 99.5},
+        lp_locked_min_pct=99.0,
+    )
+
+    assert strict["lp_burned_or_locked"] is False
+    assert relaxed["lp_burned_or_locked"] is True
+
+
+@pytest.mark.parametrize("threshold", [None, "99", True])
+def test_invalid_lp_lock_threshold_is_rejected(threshold):
+    with pytest.raises(ValueError):
+        analyze_rugcheck_report(
+            {"mint": "TOKEN123"},
+            {},
+            lp_locked_min_pct=threshold,
+        )
+
+
+def test_check_token_security_passes_threshold():
+    with patch(
+        "desk.security.fetch_rugcheck_report",
+        return_value={"mint": "TOKEN123"},
+    ), patch(
+        "desk.security.fetch_rugcheck_summary",
+        return_value={"lpLockedPct": 99.5},
+    ):
+        result = check_token_security(
+            "TOKEN123",
+            lp_locked_min_pct=99.0,
+        )
+
+    assert result["mint"] == "TOKEN123"
+    assert result["lp_burned_or_locked"] is True

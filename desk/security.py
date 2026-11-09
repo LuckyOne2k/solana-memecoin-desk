@@ -94,7 +94,13 @@ def _number(value):
     return number
 
 
-def analyze_rugcheck_report(report, summary):
+def analyze_rugcheck_report(report, summary, *, lp_locked_min_pct):
+    if (
+        isinstance(lp_locked_min_pct, bool)
+        or not isinstance(lp_locked_min_pct, (int, float))
+    ):
+        raise ValueError("lp_locked_min_pct must be a number")
+
     if not isinstance(report, dict):
         raise ValueError("Report must be a dictionary")
 
@@ -180,7 +186,7 @@ def analyze_rugcheck_report(report, summary):
     )
 
     lp_burned_or_locked = (
-        lp_locked_pct >= 99.99
+        lp_locked_pct >= lp_locked_min_pct
         if lp_locked_pct is not None
         else None
     )
@@ -211,11 +217,12 @@ def analyze_rugcheck_report(report, summary):
     }
 
 
-def check_token_security(mint):
+def check_token_security(mint, *, lp_locked_min_pct):
     report = fetch_rugcheck_report(mint)
     summary = fetch_rugcheck_summary(mint)
 
     return analyze_rugcheck_report(
         report,
-        summary
+        summary,
+        lp_locked_min_pct=lp_locked_min_pct,
     )

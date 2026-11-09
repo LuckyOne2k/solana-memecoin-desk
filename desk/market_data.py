@@ -1,12 +1,9 @@
-
 import json
 import os
 import time
 from datetime import datetime, timezone
 
 import requests
-
-from desk.security import SecurityDataError, check_token_security
 
 BASE_URL = "https://api.geckoterminal.com/api/v2"
 DEXPAPRIKA_URL = "https://api.dexpaprika.com"
@@ -53,7 +50,19 @@ def fetch_new_pools(page=1, timeout=15):
     return payload
 
 
-def fetch_pools_by_age(timeout=20, max_pages=10):
+def fetch_pools_by_age(
+    *,
+    min_age_hours,
+    max_age_hours,
+    min_liquidity_usd,
+    timeout=20,
+    max_pages=10,
+):
+    """Lädt Solana-Pools im Altersfenster von DexPaprika.
+
+    Die Grenzwerte kommen aus config.yaml (scanner/risk_filters) und
+    werden vom Aufrufer übergeben.
+    """
     api_key = os.getenv("DEXPAPRIKA_API_KEY")
     cursor = None
     all_pools = []
@@ -66,13 +75,22 @@ def fetch_pools_by_age(timeout=20, max_pages=10):
     if max_pages < 1:
         raise ValueError("max_pages must be at least 1")
 
+    if min_age_hours > max_age_hours:
+        raise ValueError("min_age_hours must not exceed max_age_hours")
+
+    # Zeitfenster einmal festlegen, damit alle Seiten dasselbe Fenster
+    # abfragen.
+    now_ts = int(time.time())
+    created_after = now_ts - int(max_age_hours * 3600)
+    created_before = now_ts - int(min_age_hours * 3600)
+
     for page in range(max_pages):
         params = {
             "order_by": "created_at",
             "sort": "desc",
-            "created_after": int(time.time()) - 72 * 3600,
-            "created_before": int(time.time()) - 30 * 3600,
-            "liquidity_usd_min": 40000,
+            "created_after": created_after,
+            "created_before": created_before,
+            "liquidity_usd_min": min_liquidity_usd,
             "limit": 100,
             "detailed": "true",
         }
@@ -166,7 +184,7 @@ def fetch_pools_by_age(timeout=20, max_pages=10):
         "api_key_used": bool(api_key),
         "pagination_complete": not has_next_page,
         "max_pages_reached": has_next_page and pages_fetched >= max_pages,
-        "liquidity_filter_usd": 40000,
+        "liquidity_filter_usd": min_liquidity_usd,
     }
 
 
@@ -383,19 +401,31 @@ def fetch_token_market_caps(token_addresses, timeout=15, diagnostics=None):
     return market_caps
 
 
+# Diese Prüfungen erledigt ausschließlich desk/security_scan.py.
+# Hier werden sie nur als "noch offen" markiert.
+SECURITY_CHECKS = (
+    "mint_authority_revoked",
+    "freeze_authority_revoked",
+    "lp_burned_or_locked",
+    "top10_share_pct",
+    "dev_share_pct",
+)
+
+
 def prepare_pool(
     pool,
+    config,
     now=None,
-    min_age_hours=30,
-    max_age_hours=72,
-    min_liquidity_usd=40000,
     market_caps=None,
     market_data_error=None,
-    security_data=None,
-    security_error=None,
 ):
+    """Marktdaten-Vorprüfung eines Pools (ohne Sicherheitsprüfung)."""
     if not isinstance(pool, dict):
         raise ValueError("Pool must be a dictionary")
+
+    min_age_hours = config["scanner"]["pair_age_hours_min"]
+    max_age_hours = config["scanner"]["pair_age_hours_max"]
+    min_liquidity_usd = config["risk_filters"]["reject_liquidity_below_usd"]
 
     now = now or datetime.now(timezone.utc)
 
@@ -450,53 +480,7 @@ def prepare_pool(
     if market_cap is None:
         missing.append("market_cap_usd")
 
-    security = security_data if isinstance(security_data, dict) else {}
-
-    mint_revoked = security.get("mint_authority_revoked")
-    freeze_revoked = security.get("freeze_authority_revoked")
-    lp_secured = security.get("lp_burned_or_locked")
-
-    top10_verified = (
-        security.get("top10_share_fully_verified") is True
-    )
-
-    top10_pct = _as_number(
-        security.get("top10_share_sampled_pct")
-    )
-
-    dev_pct = _as_number(
-        security.get("creator_share_sampled_pct")
-    )
-
-    if mint_revoked is True:
-        pass
-    elif mint_revoked is False:
-        reasons.append("mint_authority_active")
-    else:
-        missing.append("mint_authority_revoked")
-
-    if freeze_revoked is True:
-        pass
-    elif freeze_revoked is False:
-        reasons.append("freeze_authority_active")
-    else:
-        missing.append("freeze_authority_revoked")
-
-    if lp_secured is True:
-        pass
-    elif lp_secured is False:
-        reasons.append("lp_not_burned_or_locked")
-    else:
-        missing.append("lp_burned_or_locked")
-
-    if not top10_verified or top10_pct is None:
-        missing.append("top10_share_pct")
-
-    if (
-        dev_pct is None
-        or security.get("owner_attribution_complete") is not True
-    ):
-        missing.append("dev_share_pct")
+    missing.extend(SECURITY_CHECKS)
 
     status = (
         "rejected" if reasons
@@ -529,11 +513,7 @@ def prepare_pool(
         "status": status,
         "rejection_reasons": reasons,
         "missing_checks": missing,
-        "security_data": security if security else None,
     }
-
-    if security_error:
-        result["security_data_error"] = security_error
 
     if market_data_error:
         result["market_data_error"] = market_data_error
@@ -541,18 +521,29 @@ def prepare_pool(
     return result
 
 
-def prepare_pools(
-    pools,
-    security_checks_enabled=False,
-    max_security_checks=10,
-    **kwargs,
-):
-    pools = list(pools)
+def empty_market_cap_diagnostics(requested_unique_tokens=0):
+    return {
+        "requested_unique_tokens": requested_unique_tokens,
+        "batches_requested": 0,
+        "token_objects_returned": 0,
+        "requested_tokens_returned": 0,
+        "tokens_with_market_cap": 0,
+        "tokens_with_null_market_cap": 0,
+        "tokens_with_missing_market_cap_field": 0,
+        "tokens_with_invalid_market_cap": 0,
+        "requested_tokens_not_returned": requested_unique_tokens,
+        "unrequested_token_objects_ignored": 0,
+        "api_error": None,
+    }
 
-    if max_security_checks < 0:
-        raise ValueError(
-            "max_security_checks must be at least 0"
-        )
+
+def prepare_pools(pools, config, now=None):
+    """Marktdaten-Vorprüfung für alle Pools.
+
+    Lädt einmal die Marktkapitalisierungen und prüft jeden Pool mit
+    prepare_pool. Sicherheitsprüfungen finden hier nicht statt.
+    """
+    pools = list(pools)
 
     unique_tokens = {}
 
@@ -580,19 +571,9 @@ def prepare_pools(
     market_caps = {}
     market_data_error = None
 
-    market_cap_diagnostics = {
-        "requested_unique_tokens": len(token_addresses),
-        "batches_requested": 0,
-        "token_objects_returned": 0,
-        "requested_tokens_returned": 0,
-        "tokens_with_market_cap": 0,
-        "tokens_with_null_market_cap": 0,
-        "tokens_with_missing_market_cap_field": 0,
-        "tokens_with_invalid_market_cap": 0,
-        "requested_tokens_not_returned": len(token_addresses),
-        "unrequested_token_objects_ignored": 0,
-        "api_error": None,
-    }
+    market_cap_diagnostics = empty_market_cap_diagnostics(
+        len(token_addresses)
+    )
 
     if token_addresses:
         try:
@@ -604,75 +585,17 @@ def prepare_pools(
             market_data_error = str(error)
             market_cap_diagnostics["api_error"] = str(error)
 
-    security_by_mint = {}
-    security_errors = {}
-    security_status_by_mint = {}
-
-    if security_checks_enabled:
-        normalized_addresses = list(unique_tokens.keys())
-
-        addresses_to_check = normalized_addresses[
-            :max_security_checks
-        ]
-
-        for normalized in addresses_to_check:
-            address = unique_tokens[normalized]
-
-            try:
-                security_by_mint[normalized] = (
-                    check_token_security(address)
-                )
-
-                security_status_by_mint[normalized] = "completed"
-
-            except (SecurityDataError, ValueError) as error:
-                security_errors[normalized] = str(error)
-                security_status_by_mint[normalized] = "error"
-
-        for normalized in normalized_addresses[max_security_checks:]:
-            security_status_by_mint[normalized] = (
-                "skipped_run_limit"
-            )
-
     prepared = []
 
     for pool in pools:
-        token = (
-            _resolve_token(pool.get("tokens"))
-            if isinstance(pool, dict)
-            else None
-        )
-
-        address = token.get("id") if token else None
-
-        normalized = (
-            address.strip().lower()
-            if isinstance(address, str) and address.strip()
-            else None
-        )
-
-        if not security_checks_enabled:
-            security_status = "not_enabled"
-
-        elif not normalized:
-            security_status = "skipped_missing_mint"
-
-        else:
-            security_status = security_status_by_mint.get(
-                normalized,
-                "skipped_run_limit",
-            )
-
         result = prepare_pool(
             pool,
+            config,
+            now=now,
             market_caps=market_caps,
             market_data_error=market_data_error,
-            security_data=security_by_mint.get(normalized),
-            security_error=security_errors.get(normalized),
-            **kwargs,
         )
 
-        result["security_check_status"] = security_status
         result["market_cap_diagnostics"] = market_cap_diagnostics
 
         prepared.append(result)
@@ -680,9 +603,18 @@ def prepare_pools(
     return prepared
 
 
-if __name__ == "__main__":
-    print("SOLANA MEMECOIN DESK")
-    print("===================")
+def _run_diagnostics():
+    """Manuelle Verbindungsdiagnose ohne Sicherheitsprüfungen.
+
+    Aufruf: python -m desk.market_data
+    Wird nicht mehr im GitHub-Workflow ausgeführt.
+    """
+    from desk.config import load_config
+
+    config = load_config()
+
+    print("SOLANA MEMECOIN DESK - Marktdaten-Diagnose")
+    print("==========================================")
 
     print("\n1. GeckoTerminal")
 
@@ -693,49 +625,14 @@ if __name__ == "__main__":
 
     print("\n2. DexPaprika")
 
-    paprika = fetch_pools_by_age()
+    paprika = fetch_pools_by_age(
+        min_age_hours=config["scanner"]["pair_age_hours_min"],
+        max_age_hours=config["scanner"]["pair_age_hours_max"],
+        min_liquidity_usd=config["risk_filters"]["reject_liquidity_below_usd"],
+    )
     pools = paprika["results"]
 
-    prepared = prepare_pools(
-        pools,
-        security_checks_enabled=True,
-        max_security_checks=10,
-    )
-
-    rejected = sum(
-        p["status"] == "rejected"
-        for p in prepared
-    )
-
-    incomplete = sum(
-        p["status"] == "incomplete"
-        for p in prepared
-    )
-
-    ready = sum(
-        p["status"] == "ready_for_full_risk_screen"
-        for p in prepared
-    )
-
-    market_cap_found = sum(
-        p["market_cap_usd"] is not None
-        for p in prepared
-    )
-
-    security_completed = sum(
-        p["security_check_status"] == "completed"
-        for p in prepared
-    )
-
-    security_errors = sum(
-        p["security_check_status"] == "error"
-        for p in prepared
-    )
-
-    security_skipped = sum(
-        p["security_check_status"] == "skipped_run_limit"
-        for p in prepared
-    )
+    prepared = prepare_pools(pools, config)
 
     print("Verbindung erfolgreich.")
     print("API-Key mitgesendet:", paprika["api_key_used"])
@@ -744,7 +641,6 @@ if __name__ == "__main__":
     print("Liquiditätsfilter USD:", paprika["liquidity_filter_usd"])
     print("Gefundene Pools:", len(pools))
     print("Entfernte Duplikate:", paprika["duplicates_removed"])
-    print("Weitere Seite vorhanden:", paprika["has_next_page"])
     print("Maximale Seitenzahl erreicht:", paprika["max_pages_reached"])
 
     print("\n3. Market-Cap-Diagnose")
@@ -752,96 +648,27 @@ if __name__ == "__main__":
     diagnostics = (
         prepared[0]["market_cap_diagnostics"]
         if prepared
-        else {
-            "requested_unique_tokens": 0,
-            "batches_requested": 0,
-            "token_objects_returned": 0,
-            "requested_tokens_returned": 0,
-            "tokens_with_market_cap": 0,
-            "tokens_with_null_market_cap": 0,
-            "tokens_with_missing_market_cap_field": 0,
-            "tokens_with_invalid_market_cap": 0,
-            "requested_tokens_not_returned": 0,
-            "unrequested_token_objects_ignored": 0,
-            "api_error": None,
-        }
+        else empty_market_cap_diagnostics()
     )
 
-    print(
-        "Eindeutige Token angefragt:",
-        diagnostics["requested_unique_tokens"],
-    )
-    print(
-        "API-Batches angefragt:",
-        diagnostics["batches_requested"],
-    )
-    print(
-        "Token-Objekte von GeckoTerminal:",
-        diagnostics["token_objects_returned"],
-    )
-    print(
-        "Angefragte Token zurückgegeben:",
-        diagnostics["requested_tokens_returned"],
-    )
-    print(
-        "Token mit Market Cap:",
-        diagnostics["tokens_with_market_cap"],
-    )
-    print(
-        "Token mit Market Cap = null:",
-        diagnostics["tokens_with_null_market_cap"],
-    )
-    print(
-        "Token ohne Market-Cap-Feld:",
-        diagnostics["tokens_with_missing_market_cap_field"],
-    )
-    print(
-        "Token mit ungültiger Market Cap:",
-        diagnostics["tokens_with_invalid_market_cap"],
-    )
-    print(
-        "Nicht zurückgegebene angefragte Token:",
-        diagnostics["requested_tokens_not_returned"],
-    )
-    print(
-        "Ignorierte nicht angefragte Token-Objekte:",
-        diagnostics["unrequested_token_objects_ignored"],
-    )
-    print("API-Fehler:", diagnostics["api_error"])
+    print(json.dumps(diagnostics, indent=2, ensure_ascii=False))
 
-    print("\n4. Sicherheitsprüfungen")
-
-    print("Abgeschlossene Sicherheitsprüfungen:", security_completed)
-    print("Fehlgeschlagene Sicherheitsprüfungen:", security_errors)
-    print("Wegen Laufgrenze übersprungene Prüfungen:", security_skipped)
-
-    print("\n5. Gesamtergebnis")
-
+    print("\n4. Vorprüfung (ohne Sicherheitsprüfung)")
     print("Pools insgesamt:", len(prepared))
-    print("Abgelehnt:", rejected)
-    print("Unvollständig:", incomplete)
-    print("Bereit für vollständige Risikoprüfung:", ready)
-    print("Pools mit Market Cap:", market_cap_found)
-
-    market_data_errors = sum(
-        bool(p.get("market_data_error"))
-        for p in prepared
+    print(
+        "Abgelehnt:",
+        sum(p["status"] == "rejected" for p in prepared),
     )
-
-    if market_data_errors:
-        print(
-            "Warnung: Market-Data-Fehler bei Pools:",
-            market_data_errors,
-        )
-
-    print("\n6. Beispiele")
-
-    for item in prepared[:3]:
-        print(json.dumps(item, indent=2, ensure_ascii=False))
+    print(
+        "Unvollständig:",
+        sum(p["status"] == "incomplete" for p in prepared),
+    )
 
     print("\nHinweise:")
     print("- FDV ist nicht gleich Market Cap.")
     print("- Fehlende Market-Cap-Daten werden nicht durch FDV ersetzt.")
     print("- Live-Trading: Deaktiviert.")
-    print("- Paper-Trading: Nicht aktiviert.")
-    
+
+
+if __name__ == "__main__":
+    _run_diagnostics()

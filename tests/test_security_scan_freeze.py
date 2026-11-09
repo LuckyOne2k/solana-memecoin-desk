@@ -1,6 +1,10 @@
 from unittest.mock import patch
 
+from desk.config import load_config
 from desk.security_scan import scan_pool_security
+
+
+CONFIG = load_config()
 
 
 def make_pool():
@@ -49,7 +53,7 @@ def test_confirmed_revoked_freeze_authority_removes_missing_check():
         "desk.security_scan.fetch_holder_snapshot",
         return_value=make_holder_snapshot(),
     ):
-        result = scan_pool_security([{}])
+        result = scan_pool_security([{}], CONFIG)
 
     item = result["pools"][0]
 
@@ -68,7 +72,7 @@ def test_active_freeze_authority_rejects_pool():
     ), patch(
         "desk.security_scan.fetch_holder_snapshot",
     ) as mocked_holder:
-        result = scan_pool_security([{}])
+        result = scan_pool_security([{}], CONFIG)
 
     item = result["pools"][0]
 
@@ -91,7 +95,7 @@ def test_unknown_freeze_authority_stays_incomplete():
         "desk.security_scan.fetch_holder_snapshot",
         return_value=make_holder_snapshot(),
     ):
-        result = scan_pool_security([{}])
+        result = scan_pool_security([{}], CONFIG)
 
     item = result["pools"][0]
 
@@ -113,7 +117,7 @@ def test_duplicate_token_reuses_freeze_authority_result():
         "desk.security_scan.fetch_holder_snapshot",
         return_value=make_holder_snapshot(),
     ):
-        result = scan_pool_security([{}, {}])
+        result = scan_pool_security([{}, {}], CONFIG)
 
     assert mocked_security.call_count == 1
 

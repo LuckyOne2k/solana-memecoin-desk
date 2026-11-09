@@ -1,21 +1,41 @@
 
+from desk.config import ConfigError, load_config
 from desk.logging_utils import log_event
 from desk.market_data import (
     MarketDataError,
+    empty_market_cap_diagnostics,
     fetch_pools_by_age,
 )
 from desk.security_scan import scan_pool_security
 
 
-MAX_SECURITY_CHECKS_PER_RUN = 10
-
-
 def main():
     print("SOLANA MEMECOIN DESK")
     print("===================")
+
+    try:
+        config = load_config()
+
+    except ConfigError as error:
+        log_event(
+            "config_error",
+            {
+                "error": str(error),
+                "live_trading": False,
+            },
+        )
+
+        print("Fehler in der Konfiguration:")
+        print(error)
+        return 2
+
+    scanner = config["scanner"]
+    risk_filters = config["risk_filters"]
+    max_checks = scanner["max_security_checks_per_run"]
+
     print("Modus: PAPER-RESEARCH")
     print("Live-Trading: Deaktiviert")
-    print("Sicherheitprüfungen pro Lauf:", MAX_SECURITY_CHECKS_PER_RUN)
+    print("Sicherheitsprüfungen pro Lauf:", max_checks)
 
     log_event(
         "system_start",
@@ -31,7 +51,11 @@ def main():
     print("\n1. Marktdaten abrufen")
 
     try:
-        market_data = fetch_pools_by_age()
+        market_data = fetch_pools_by_age(
+            min_age_hours=scanner["pair_age_hours_min"],
+            max_age_hours=scanner["pair_age_hours_max"],
+            min_liquidity_usd=risk_filters["reject_liquidity_below_usd"],
+        )
 
     except MarketDataError as error:
         log_event(
@@ -57,7 +81,8 @@ def main():
 
     result = scan_pool_security(
         pools,
-        max_checks=MAX_SECURITY_CHECKS_PER_RUN,
+        config,
+        max_checks=max_checks,
     )
 
     scanned_pools = result["pools"]
@@ -128,6 +153,11 @@ def main():
         "holder_checks_succeeded": result["holder_checks_succeeded"],
         "holder_checks_failed": result["holder_checks_failed"],
         "pagination_complete": market_data["pagination_complete"],
+        "market_cap_diagnostics": (
+            scanned_pools[0].get("market_cap_diagnostics")
+            if scanned_pools
+            else empty_market_cap_diagnostics()
+        ),
         "live_trading": False,
         "ai_agents_connected": False,
         "paper_trading_enabled": False,

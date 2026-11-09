@@ -1,9 +1,15 @@
+import copy
+from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
 import pytest
 
 from desk.security import SecurityDataError
+from desk.config import load_config
 from desk.security_scan import scan_pool_security
+
+
+CONFIG = load_config()
 from desk.solana_rpc import SolanaRpcError
 
 
@@ -72,7 +78,7 @@ def test_successful_security_and_holder_checks_update_pool():
         "desk.security_scan.fetch_holder_snapshot",
         return_value=make_holder_snapshot(),
     ) as mocked_holder:
-        result = scan_pool_security([{}])
+        result = scan_pool_security([{}], CONFIG)
 
     item = result["pools"][0]
 
@@ -98,7 +104,10 @@ def test_successful_security_and_holder_checks_update_pool():
 
     assert item["status"] == "incomplete"
 
-    mocked_security.assert_called_once_with("TOKEN123")
+    mocked_security.assert_called_once_with(
+        "TOKEN123",
+        lp_locked_min_pct=CONFIG["risk_filters"]["lp_locked_min_pct"],
+    )
     mocked_holder.assert_called_once_with(
         "TOKEN123",
         creator_address="CREATOR",
@@ -119,7 +128,7 @@ def test_rejected_pool_is_skipped():
     ) as mocked_security, patch(
         "desk.security_scan.fetch_holder_snapshot",
     ) as mocked_holder:
-        result = scan_pool_security([{}])
+        result = scan_pool_security([{}], CONFIG)
 
     assert result["checks_attempted"] == 0
     assert result["holder_checks_attempted"] == 0
@@ -143,7 +152,7 @@ def test_pool_without_mint_is_skipped():
     ) as mocked_security, patch(
         "desk.security_scan.fetch_holder_snapshot",
     ) as mocked_holder:
-        result = scan_pool_security([{}])
+        result = scan_pool_security([{}], CONFIG)
 
     assert result["checks_attempted"] == 0
     assert result["holder_checks_attempted"] == 0
@@ -168,7 +177,7 @@ def test_security_api_error_is_recorded():
     ), patch(
         "desk.security_scan.fetch_holder_snapshot",
     ) as mocked_holder:
-        result = scan_pool_security([{}])
+        result = scan_pool_security([{}], CONFIG)
 
     item = result["pools"][0]
 
@@ -194,7 +203,7 @@ def test_wrong_token_report_is_rejected():
     ), patch(
         "desk.security_scan.fetch_holder_snapshot",
     ) as mocked_holder:
-        result = scan_pool_security([{}])
+        result = scan_pool_security([{}], CONFIG)
 
     item = result["pools"][0]
 
@@ -218,7 +227,7 @@ def test_holder_rpc_error_is_recorded_without_passing_check():
         "desk.security_scan.fetch_holder_snapshot",
         side_effect=SolanaRpcError("RPC unavailable"),
     ):
-        result = scan_pool_security([{}])
+        result = scan_pool_security([{}], CONFIG)
 
     item = result["pools"][0]
 
@@ -247,7 +256,7 @@ def test_holder_snapshot_with_wrong_mint_is_rejected():
         "desk.security_scan.fetch_holder_snapshot",
         return_value=make_holder_snapshot(mint="WRONG_TOKEN"),
     ):
-        result = scan_pool_security([{}])
+        result = scan_pool_security([{}], CONFIG)
 
     item = result["pools"][0]
 
@@ -270,7 +279,7 @@ def test_top10_lower_bound_above_limit_rejects_pool():
         "desk.security_scan.fetch_holder_snapshot",
         return_value=make_holder_snapshot(top10_share=26.0),
     ):
-        result = scan_pool_security([{}])
+        result = scan_pool_security([{}], CONFIG)
 
     item = result["pools"][0]
 
@@ -293,7 +302,7 @@ def test_creator_lower_bound_above_limit_rejects_pool():
         "desk.security_scan.fetch_holder_snapshot",
         return_value=make_holder_snapshot(creator_share=3.5),
     ):
-        result = scan_pool_security([{}])
+        result = scan_pool_security([{}], CONFIG)
 
     item = result["pools"][0]
 
@@ -309,7 +318,7 @@ def test_run_limit_is_respected_for_both_checks():
         for i in range(12)
     ]
 
-    def fake_security(mint):
+    def fake_security(mint, **kwargs):
         return make_security(mint=mint)
 
     def fake_holder(mint, creator_address=None):
@@ -325,7 +334,7 @@ def test_run_limit_is_respected_for_both_checks():
         "desk.security_scan.fetch_holder_snapshot",
         side_effect=fake_holder,
     ) as mocked_holder:
-        result = scan_pool_security([{}], max_checks=10)
+        result = scan_pool_security([{}], CONFIG, max_checks=10)
 
     assert result["checks_attempted"] == 10
     assert result["checks_succeeded"] == 10
@@ -351,13 +360,13 @@ def test_run_limit_is_respected_for_both_checks():
 
 def test_invalid_run_limit_is_rejected():
     with pytest.raises(ValueError):
-        scan_pool_security([], max_checks=-1)
+        scan_pool_security([], CONFIG, max_checks=-1)
 
     with pytest.raises(ValueError):
-        scan_pool_security([], max_checks=1.5)
+        scan_pool_security([], CONFIG, max_checks=1.5)
 
     with pytest.raises(ValueError):
-        scan_pool_security([], max_checks=True)
+        scan_pool_security([], CONFIG, max_checks=True)
 
 
 @pytest.mark.parametrize(
@@ -388,7 +397,7 @@ def test_security_rejection_skips_holder_rpc(
     ), patch(
         "desk.security_scan.fetch_holder_snapshot",
     ) as mocked_holder:
-        result = scan_pool_security([{}])
+        result = scan_pool_security([{}], CONFIG)
 
     item = result["pools"][0]
 
@@ -407,7 +416,7 @@ def test_duplicate_token_mints_are_not_checked_twice():
         make_pool(mint="TOKEN_B"),
     ]
 
-    def fake_security(mint):
+    def fake_security(mint, **kwargs):
         return make_security(mint=mint)
 
     def fake_holder(mint, creator_address=None):
@@ -423,7 +432,7 @@ def test_duplicate_token_mints_are_not_checked_twice():
         "desk.security_scan.fetch_holder_snapshot",
         side_effect=fake_holder,
     ) as mocked_holder:
-        result = scan_pool_security([{}], max_checks=2)
+        result = scan_pool_security([{}], CONFIG, max_checks=2)
 
     assert result["checks_attempted"] == 2
     assert result["holder_checks_attempted"] == 2
@@ -437,3 +446,157 @@ def test_duplicate_token_mints_are_not_checked_twice():
     assert [
         call.args[0] for call in mocked_holder.call_args_list
     ] == ["TOKEN_A", "TOKEN_B"]
+
+
+def test_default_run_limit_comes_from_config():
+    pools = [
+        make_pool(mint=f"TOKEN{i}")
+        for i in range(15)
+    ]
+
+    def fake_security(mint, **kwargs):
+        return make_security(mint=mint)
+
+    def fake_holder(mint, creator_address=None):
+        return make_holder_snapshot(mint=mint)
+
+    with patch(
+        "desk.security_scan.prepare_pools",
+        return_value=pools,
+    ), patch(
+        "desk.security_scan.check_token_security",
+        side_effect=fake_security,
+    ), patch(
+        "desk.security_scan.fetch_holder_snapshot",
+        side_effect=fake_holder,
+    ):
+        result = scan_pool_security([{}], CONFIG)
+
+    expected = CONFIG["scanner"]["max_security_checks_per_run"]
+
+    assert result["max_checks_per_run"] == expected
+    assert result["checks_attempted"] == expected
+
+
+def test_holder_limits_come_from_config():
+    config = copy.deepcopy(CONFIG)
+    config["risk_filters"]["reject_top10_share_above_pct"] = 50
+
+    with patch(
+        "desk.security_scan.prepare_pools",
+        return_value=[make_pool()],
+    ), patch(
+        "desk.security_scan.check_token_security",
+        return_value=make_security(),
+    ), patch(
+        "desk.security_scan.fetch_holder_snapshot",
+        return_value=make_holder_snapshot(top10_share=26.0),
+    ):
+        result = scan_pool_security([{}], config)
+
+    item = result["pools"][0]
+
+    assert "observed_top10_holder_share_above_limit" not in (
+        item["rejection_reasons"]
+    )
+
+
+def test_require_flags_from_config_are_respected():
+    config = copy.deepcopy(CONFIG)
+    config["risk_filters"]["require_mint_authority_revoked"] = False
+    config["risk_filters"]["require_lp_burned_or_locked"] = False
+
+    with patch(
+        "desk.security_scan.prepare_pools",
+        return_value=[make_pool()],
+    ), patch(
+        "desk.security_scan.check_token_security",
+        return_value=make_security(mint_revoked=False, lp_locked=False),
+    ), patch(
+        "desk.security_scan.fetch_holder_snapshot",
+        return_value=make_holder_snapshot(),
+    ):
+        result = scan_pool_security([{}], config)
+
+    item = result["pools"][0]
+
+    assert item["rejection_reasons"] == []
+    assert item["holder_check_status"] == "completed"
+
+
+def test_definite_negative_answer_is_not_listed_as_missing():
+    with patch(
+        "desk.security_scan.prepare_pools",
+        return_value=[make_pool()],
+    ), patch(
+        "desk.security_scan.check_token_security",
+        return_value=make_security(lp_locked=False),
+    ), patch(
+        "desk.security_scan.fetch_holder_snapshot",
+    ):
+        result = scan_pool_security([{}], CONFIG)
+
+    item = result["pools"][0]
+
+    assert "lp_burn_or_lock_not_verified" in item["rejection_reasons"]
+    assert "lp_burned_or_locked" not in item["missing_checks"]
+
+
+def test_duplicate_token_with_security_error_is_not_retried():
+    pools = [make_pool(), make_pool()]
+
+    with patch(
+        "desk.security_scan.prepare_pools",
+        return_value=pools,
+    ), patch(
+        "desk.security_scan.check_token_security",
+        side_effect=SecurityDataError("API unavailable"),
+    ) as mocked_security:
+        result = scan_pool_security([{}, {}], CONFIG)
+
+    assert mocked_security.call_count == 1
+
+    for item in result["pools"]:
+        assert item["security_check_status"] == "error"
+        assert item["security_error"] == "API unavailable"
+        assert item["status"] == "incomplete"
+
+
+def test_full_chain_with_real_market_data_preparation():
+    """Vorprüfung und Sicherheitsprüfung laufen als eine Kette."""
+    pool = {
+        "id": "pool-address",
+        "created_at": (
+            datetime.now(timezone.utc) - timedelta(hours=48)
+        ).isoformat(),
+        "liquidity_usd": 50000,
+        "volume_usd_24h": 12000,
+        "transactions_24h": 80,
+        "tokens": [
+            {"id": "So11111111111111111111111111111111111111112"},
+            {"id": "TOKEN123", "name": "Example", "symbol": "EX"},
+        ],
+    }
+
+    with patch(
+        "desk.market_data.fetch_token_market_caps",
+        return_value={"token123": 500000.0},
+    ), patch(
+        "desk.security_scan.check_token_security",
+        return_value={
+            **make_security(),
+            "freeze_authority_revoked": True,
+        },
+    ) as mocked_security, patch(
+        "desk.security_scan.fetch_holder_snapshot",
+        return_value=make_holder_snapshot(),
+    ):
+        result = scan_pool_security([pool], CONFIG)
+
+    item = result["pools"][0]
+
+    mocked_security.assert_called_once()
+    assert item["security_check_status"] == "completed"
+    assert item["holder_check_status"] == "completed"
+    assert item["missing_checks"] == ["top10_share_pct", "dev_share_pct"]
+    assert item["status"] == "incomplete"
