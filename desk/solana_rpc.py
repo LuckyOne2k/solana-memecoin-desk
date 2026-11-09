@@ -710,7 +710,8 @@ def _decode_account(item, program):
 
 def _page_parts(result):
     """Erwartete Form (withContext): {context: {slot}, value: {accounts,
-    paginationKey}}. Jede andere Form -> Fehler, kein Ersatzweg."""
+    count?, paginationKey}}. Belegt per Strukturtest (NAOF, MAGGIE).
+    Jede andere Form -> Fehler, kein Ersatzweg."""
     slot = _context_slot(result)
 
     if slot is None:
@@ -725,6 +726,13 @@ def _page_parts(result):
 
     if not isinstance(accounts, list):
         raise HolderListError("page_response_invalid")
+
+    # Gegenprobe: Helius liefert "count" = Zahl der Konten dieser Seite.
+    if "count" in value:
+        count = value["count"]
+
+        if not _is_int(count) or count != len(accounts):
+            raise HolderListError("page_count_mismatch")
 
     key = value.get("paginationKey")
 

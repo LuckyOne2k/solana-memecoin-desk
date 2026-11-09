@@ -44,6 +44,10 @@ EXPECTED_THRESHOLDS = {
         "bear_objections_required": 3,
         "unresolved_objection_veto": True,
     },
+    "holders": {
+        "max_pages": 30,
+        "max_slot_span": 150,
+    },
 }
 
 
@@ -203,3 +207,29 @@ def test_removed_estimate_switch_is_rejected(value):
 
     with pytest.raises(ConfigError):
         validate_config(config)
+
+
+def test_missing_holders_section_is_rejected():
+    config = load_config()
+    del config["holders"]
+
+    with pytest.raises(ConfigError, match="holders"):
+        validate_config(config)
+
+
+@pytest.mark.parametrize("key", ["max_pages", "max_slot_span"])
+@pytest.mark.parametrize("value", [0, -1, -150, True, False, 1.5, 30.0, "30", None, [30]])
+def test_invalid_holder_limits_are_rejected(key, value):
+    config = load_config()
+    config["holders"][key] = value
+
+    with pytest.raises(ConfigError, match=f"holders.{key}"):
+        validate_config(config)
+
+
+def test_holder_limits_accept_positive_integers():
+    config = load_config()
+    config["holders"]["max_pages"] = 1
+    config["holders"]["max_slot_span"] = 1
+
+    validate_config(config)

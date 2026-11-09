@@ -6,7 +6,14 @@ Ablauf pro Pool:
    Ausschluss von Stablecoins und Staking-Token
 2. RugCheck: Mint-/Freeze-Authority, LP-Sperre, Pool-Kennzeichnungen
 3. Liquidität: DexPaprika gegen RugCheck
-4. Solana-RPC: Holder-Stichprobe (nur ohne vorherige Ablehnung)
+4. Solana-RPC (nur ohne vorherige Ablehnung):
+   a) Mint-Info: Token-Programm und Token-2022-Erweiterungen
+      (Pflichtprüfungen permanent_delegate_absent und
+      token_extensions_safe; nie Ablehnung, nur offen)
+   b) vollständige Holder-Liste (fetch_full_holder_list)
+   c) nur wenn b) fehlschlägt: Rückfall auf die Top-20-Stichprobe.
+      Die Stichprobe kann nur ablehnen oder "unklar" liefern, nie
+      bestätigen.
 5. Holder-Verteilung (desk.holders) und Marktkapitalisierung
    (desk.market_cap)
 
@@ -23,8 +30,39 @@ from desk.security import (
     check_token_security,
 )
 from desk.solana_rpc import (
+    ABSENT,
+    PRESENT,
+    HolderListError,
     SolanaRpcError,
+    fetch_full_holder_list,
     fetch_holder_snapshot,
+    fetch_mint_info,
+)
+
+
+FULL_LIST_SCOPE = "full_token_account_list"
+SAMPLE_SCOPE = "largest_20_token_accounts_sample"
+
+# Pflichtprüfungen aus der Mint-Info. Werden nur geklärt, nie abgelehnt
+# (eine Ablehnungsregel für Permanent Delegate folgt gesondert).
+TOKEN_CHECKS = ("permanent_delegate_absent", "token_extensions_safe")
+
+# Token-2022-Erweiterungen, die ausdrücklich als unbedenklich eingestuft
+# sind: reine Metadaten- und Gruppenangaben ohne Einfluss auf Bestände,
+# Überweisungen oder Rechte. Jede andere Erweiterung (auch bekannte wie
+# transferFeeConfig, transferHook, pausableConfig, defaultAccountState,
+# nonTransferable, confidentialTransferMint, interestBearingConfig,
+# scaledUiAmountConfig, mintCloseAuthority, permanentDelegate) und jede
+# unbekannte oder nicht lesbare Erweiterung -> Prüfung bleibt offen.
+SAFE_TOKEN_2022_EXTENSIONS = frozenset(
+    {
+        "metadataPointer",
+        "tokenMetadata",
+        "groupPointer",
+        "tokenGroup",
+        "groupMemberPointer",
+        "tokenGroupMember",
+    }
 )
 
 
@@ -114,38 +152,172 @@ def _fetch_security(mint, risk_filters, counters):
     return {"security": security}
 
 
-def _fetch_holders(mint, security, counters):
-    """Holder-Stichprobe von der Blockchain, genau einmal je Token."""
-    counters["holder_checks_attempted"] += 1
+def _fetch_mint(mint, counters):
+    """Mint-Info (Token-Programm, Erweiterungen), genau einmal je Token."""
+    counters["mint_info_checks_attempted"] += 1
 
     try:
-        snapshot = fetch_holder_snapshot(
+        info = fetch_mint_info(mint)
+
+    except HolderListError as error:
+        counters["mint_info_checks_failed"] += 1
+        return {"mint_info_error": error.reason}
+
+    except SolanaRpcError:
+        counters["mint_info_checks_failed"] += 1
+        return {"mint_info_error": "rpc_error"}
+
+    if not isinstance(info, dict) or info.get("mint") != mint:
+        counters["mint_info_checks_failed"] += 1
+        return {"mint_info_error": "mint_info_mismatch"}
+
+    return {"mint_info": info}
+
+
+def _valid_full_list(snapshot, mint, mint_info):
+    return (
+        isinstance(snapshot, dict)
+        and snapshot.get("mint") == mint
+        and snapshot.get("data_scope") == FULL_LIST_SCOPE
+        and snapshot.get("token_program") == mint_info.get("token_program")
+        and isinstance(snapshot.get("accounts"), list)
+    )
+
+
+def _fetch_full_list(mint, data, holder_config, counters):
+    """Vollständige Holder-Liste -> (Snapshot, None) oder (None, Grund)."""
+    if "mint_info" not in data:
+        return None, "mint_info_unavailable"
+
+    counters["full_holder_list_attempted"] += 1
+
+    try:
+        snapshot = fetch_full_holder_list(
+            mint,
+            data["mint_info"],
+            max_pages=holder_config["max_pages"],
+            max_slot_span=holder_config["max_slot_span"],
+        )
+
+    except HolderListError as error:
+        counters["full_holder_list_failed"] += 1
+        return None, error.reason
+
+    except SolanaRpcError:
+        counters["full_holder_list_failed"] += 1
+        return None, "rpc_error"
+
+    if not _valid_full_list(snapshot, mint, data["mint_info"]):
+        counters["full_holder_list_failed"] += 1
+        return None, "full_list_response_invalid"
+
+    counters["full_holder_list_succeeded"] += 1
+    return snapshot, None
+
+
+def _fetch_holders(mint, security, data, holder_config, counters):
+    """Holder-Daten, genau einmal je Token: vollständige Liste, nur bei
+    deren Fehlschlag die Top-20-Stichprobe."""
+    counters["holder_checks_attempted"] += 1
+
+    snapshot, full_error = _fetch_full_list(
+        mint, data, holder_config, counters
+    )
+
+    if snapshot is not None:
+        counters["holder_checks_succeeded"] += 1
+        return {"holder_snapshot": snapshot, "holder_source": "full_holder_list"}
+
+    counters["holder_fallbacks"] += 1
+    fallback = {
+        "holder_source": "sample_fallback",
+        "full_holder_list_error": full_error,
+    }
+
+    try:
+        sample = fetch_holder_snapshot(
             mint,
             creator_address=security.get("creator_address"),
         )
 
     except SolanaRpcError as error:
         counters["holder_checks_failed"] += 1
-        return {"holder_error": str(error)}
+        return {**fallback, "holder_error": str(error)}
 
     if (
-        not isinstance(snapshot, dict)
-        or snapshot.get("mint") != mint
+        not isinstance(sample, dict)
+        or sample.get("mint") != mint
     ):
         counters["holder_checks_failed"] += 1
         return {
+            **fallback,
             "holder_error": (
                 "Holder snapshot does not match the requested token"
-            )
+            ),
         }
 
     counters["holder_checks_succeeded"] += 1
-    return {"holder_snapshot": snapshot}
+
+    # Der Rückfall ist immer eine Stichprobe, egal was die Antwort
+    # behauptet: Sie kann in desk.holders nie bestätigen.
+    sample = {**sample, "data_scope": SAMPLE_SCOPE}
+    return {**fallback, "holder_snapshot": sample}
+
+
+def _evaluate_mint_info(item, data):
+    """Token-Programm und Erweiterungen: klärt TOKEN_CHECKS oder lässt
+    sie offen. Nie Ablehnung, nie bloßes Protokollieren bei Risiko."""
+    if "mint_info_error" in data:
+        item["mint_info_status"] = "error"
+        item["mint_info_error"] = data["mint_info_error"]
+        item["token_check_reasons"] = ["mint_info_unavailable"]
+        return
+
+    info = data["mint_info"]
+    names = info.get("token2022_extensions")
+    delegate_status = info.get("permanent_delegate_status")
+    reasons = []
+
+    item["mint_info_status"] = "completed"
+    item["token_program"] = info.get("token_program")
+    item["token2022_extensions"] = names
+    item["unknown_token_extensions"] = info.get("unknown_extensions")
+    item["permanent_delegate_status"] = delegate_status
+    item["permanent_delegate"] = info.get("permanent_delegate")
+
+    if delegate_status == ABSENT:
+        _resolve(item, "permanent_delegate_absent")
+    elif delegate_status == PRESENT:
+        reasons.append("permanent_delegate_present")
+    else:
+        reasons.append("permanent_delegate_unknown")
+
+    if info.get("extensions_readable") is not True or not isinstance(names, list):
+        reasons.append("token_extensions_unreadable")
+    else:
+        unsafe = sorted(
+            {name for name in names if name not in SAFE_TOKEN_2022_EXTENSIONS}
+        )
+
+        if unsafe:
+            reasons.append("token_extension_not_classified_safe")
+            item["unsafe_token_extensions"] = unsafe
+        else:
+            _resolve(item, "token_extensions_safe")
+
+    item["token_check_reasons"] = reasons
 
 
 def _evaluate_item(item, data, config, counters):
     risk_filters = config["risk_filters"]
     mint = item["token_address"]
+
+    # Neue Pflichtprüfungen sind immer offen, bis die Mint-Info sie klärt.
+    for check in TOKEN_CHECKS:
+        if check not in item["missing_checks"]:
+            item["missing_checks"].append(check)
+
+    item["mint_info_status"] = "not_checked"
 
     if "security_error" in data:
         item["security_check_status"] = "error"
@@ -192,10 +364,23 @@ def _evaluate_item(item, data, config, counters):
 
     if item["rejection_reasons"]:
         item["holder_check_status"] = "skipped_security_rejection"
+        item["mint_info_status"] = "skipped_security_rejection"
         return
 
+    if "mint_info" not in data and "mint_info_error" not in data:
+        data.update(_fetch_mint(mint, counters))
+
+    _evaluate_mint_info(item, data)
+
     if "holder_snapshot" not in data and "holder_error" not in data:
-        data.update(_fetch_holders(mint, security, counters))
+        data.update(
+            _fetch_holders(mint, security, data, config["holders"], counters)
+        )
+
+    item["holder_source"] = data.get("holder_source")
+
+    if data.get("full_holder_list_error") is not None:
+        item["full_holder_list_error"] = data["full_holder_list_error"]
 
     if "holder_error" in data:
         item["holder_check_status"] = "error"
@@ -282,6 +467,12 @@ def scan_pool_security(pools, config, max_checks=None):
         "holder_checks_attempted": 0,
         "holder_checks_succeeded": 0,
         "holder_checks_failed": 0,
+        "mint_info_checks_attempted": 0,
+        "mint_info_checks_failed": 0,
+        "full_holder_list_attempted": 0,
+        "full_holder_list_succeeded": 0,
+        "full_holder_list_failed": 0,
+        "holder_fallbacks": 0,
     }
 
     data_by_mint = {}

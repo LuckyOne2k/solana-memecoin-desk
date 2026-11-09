@@ -121,3 +121,54 @@ def make_snapshot(
         "top10_share_fully_verified": False,
         "data_scope": "largest_20_token_accounts_sample",
     }
+
+
+TOKEN_PROGRAM = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+TOKEN_2022_PROGRAM = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+
+
+def make_full_list(mint="TOKEN123", token_program=TOKEN_PROGRAM, **kwargs):
+    """Wie make_snapshot, aber als vollständige Holder-Liste
+    (Rückgabeform von fetch_full_holder_list)."""
+    snapshot = make_snapshot(mint=mint, **kwargs)
+    snapshot.pop("largest_accounts_returned", None)
+    snapshot.pop("min_sampled_amount_raw", None)
+    snapshot.pop("top10_share_fully_verified", None)
+    snapshot.update(
+        {
+            "data_scope": "full_token_account_list",
+            "token_program": token_program,
+            "sample_owner_mapping_complete": True,
+            "pages": 1,
+            "accounts_total": len(snapshot["accounts"]),
+            "accounts_nonzero": len(snapshot["accounts"]),
+            "slot_supply_before": 1000,
+            "page_slots": [1000],
+            "slot_supply_after": 1001,
+            "slot_span": 1,
+        }
+    )
+    return snapshot
+
+
+def make_mint_info(
+    mint="TOKEN123",
+    token_program=TOKEN_PROGRAM,
+    extensions=None,
+    delegate_status="absent",
+    delegate=None,
+    readable=True,
+):
+    """Rückgabeform von fetch_mint_info."""
+    names = list(extensions or []) if readable else None
+    return {
+        "mint": mint,
+        "token_program": token_program,
+        "decimals": DECIMALS,
+        "mint_info_slot": 999,
+        "token2022_extensions": names,
+        "unknown_extensions": [] if readable else None,
+        "extensions_readable": readable,
+        "permanent_delegate_status": delegate_status,
+        "permanent_delegate": delegate,
+    }

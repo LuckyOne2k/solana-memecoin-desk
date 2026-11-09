@@ -41,9 +41,9 @@
 | `desk/market_data.py` | DexPaprika-Pools, GeckoTerminal-Preis/FDV/gemeldete Marktkapitalisierung, Vorprüfung |
 | `desk/token_classification.py` | Stablecoins/Staking-Token per geprüfter Mint-Adresse ausschließen |
 | `desk/security.py` | RugCheck: Authorities, LP-Sperre, Pool-/AMM-/Locker-Kennzeichnungen |
-| `desk/solana_rpc.py` | 20 größte Token-Konten + Gesamtmenge; neu (PR A, noch nicht eingebunden): `fetch_mint_info`, `fetch_full_holder_list` |
+| `desk/solana_rpc.py` | `fetch_mint_info` (Token-Programm, Token-2022-Erweiterungen), `fetch_full_holder_list` (alle Konten, Helius), Rückfall: 20 größte Token-Konten + Gesamtmenge |
 | `desk/data_quality.py` | Liquiditäts- und Preisvergleich zwischen Quellen |
-| `desk/holders.py` | Top-10-/Entwickler-Anteil mit Unter-/Obergrenze |
+| `desk/holders.py` | Top-10-/Entwickler-Anteil mit Unter-/Obergrenze; Bestätigung nur mit vollständiger Liste |
 | `desk/market_cap.py` | Marktkapitalisierung, Obergrenze, FDV |
 | `desk/security_scan.py` | einzige Prüfkette, Bewertung je Pool |
 | `desk/rules.py`, `risk.py`, `debate.py` | behalten, noch nicht angeschlossen |
@@ -53,7 +53,8 @@
 - Liquidität: DexPaprika gegen RugCheck je Pool; mehr als `data_quality.max_liquidity_deviation_pct` (15) Abweichung → unklar, sonst zählt der kleinere Wert.
 - Preis: GeckoTerminal gegen RugCheck; mehr als `data_quality.max_price_deviation_pct` (10) → unklar. Bei Übereinstimmung zählt der höhere Preis.
 - Marktkapitalisierung: Obergrenze (Preis × Gesamtmenge − nachweislich verbrannt) darf nur ablehnen, nie bestehen. Bestehen nur mit gemeldeter Umlaufmenge, zwei übereinstimmenden Preisen und Wert ≤ Obergrenze (ohne Toleranz). FDV getrennt.
-- Holder: Konten je Eigentümer aggregiert; nur Pool- und Burn-Konten herausgerechnet; Börsen/Locker/Unbekannte zählen mit. Untergrenze > 25 % → abgelehnt; Obergrenze (inkl. gesamter nicht erfasster Menge) ≤ 25 % → bestätigt; sonst unklar. Entwickler-Anteil analog mit 3 %.
+- Holder: Quelle ist die vollständige Holder-Liste (`holders.max_pages` 30, `holders.max_slot_span` 150); nur bei deren Fehlschlag Rückfall auf die Top-20-Stichprobe, die nie bestätigen kann (`sample_cannot_confirm`). Konten je Eigentümer aggregiert; nur Pool- und Burn-Konten herausgerechnet; Börsen/Locker/Unbekannte zählen mit. Untergrenze > 25 % → abgelehnt; Obergrenze ≤ 25 % mit vollständiger Liste (nicht erfasste Menge 0) → bestätigt; sonst unklar. Entwickler-Anteil analog mit 3 %.
+- Token-2022: Pflichtprüfungen `permanent_delegate_absent` und `token_extensions_safe`. Permanent Delegate, unbekannte, nicht lesbare oder nicht ausdrücklich als unbedenklich eingestufte Erweiterungen (unbedenklich nur Metadaten/Gruppe) → unklar, nie bereit; noch keine Ablehnung.
 - Der Config-Schlüssel `market_cap_allow_total_supply_estimate` ist verboten und stoppt das Programm.
 
 ## Infrastruktur
@@ -76,8 +77,11 @@
 - 2026-11-09 – Plan-Entscheidungen: `holders.max_pages: 30` und `holders.max_slot_span: 150` freigegeben; Rückfall auf Top-20-Stichprobe erlaubt, Stichprobe darf aber nur ablehnen oder „unclear“ liefern, nie bestätigen; > 30 Seiten, Slot-Spanne überschritten, fehlende/widersprüchliche Slots → „unclear“; kein Teilergebnis gilt als vollständige Liste. Permanent Delegate (Token-2022) → „unclear“, Adresse + Erweiterung protokollieren, nie bereit; endgültige Ablehnungsregel später gesondert. Summenprüfung ist keine atomare Momentaufnahme (gegenläufige Überweisungen können sich ausgleichen).
 - 2026-11-09 – PR A (Helius, Abruf): `fetch_mint_info` und `fetch_full_holder_list` in `desk/solana_rpc.py`, Fehler als `HolderListError` mit festem Grund, nie Teilergebnis; noch nicht in `security_scan.py` eingebunden. Tests: 427 bestanden (90 neu). Antwortform von `getProgramAccountsV2` mit `withContext` nicht belegt; Parser akzeptiert nur `{context.slot, value.accounts, value.paginationKey}`.
 
+- 2026-11-09 – Strukturtest `getProgramAccountsV2` (NAOF 2 Seiten, MAGGIE 1 Seite, ca. 3 Credits): Antwortform belegt (`context.slot` int, `value.count` = Konten der Seite, letzte Seite `paginationKey: null`); Ergebnis in `docs/helius_validierung.md`.
+- 2026-11-09 – PR B (Helius, Einbindung): vollständige Liste in `security_scan.py`, Rückfall auf Stichprobe (nie bestätigen), Config `holders`, `value.count`-Gegenprobe, Pflichtprüfungen `permanent_delegate_absent` und `token_extensions_safe` (Positivliste nur Metadaten/Gruppe). Tests: 652 bestanden.
+
 ## Offene Probleme
-- Praktisch wird kein Token „bereit“: Die 20 größten Konten erfassen oft unter 50 % der Menge (Abhilfe: vollständige Holder-Liste über Helius, noch nicht eingebaut), GeckoTerminal meldet die Umlaufmenge nur für etwa 5 % der Token (keine nachvollziehbare Alternative, Nutzer entscheidet).
+- Praktisch wird kaum ein Token „bereit“: GeckoTerminal meldet die Umlaufmenge nur für etwa 5 % der Token (keine nachvollziehbare Alternative, Nutzer entscheidet).
 - Holder-Bewertung gilt nur für ihren Zeitpunkt (Beispiel USAR); vor simulierten Käufen später neu prüfen.
 - Wallets derselben Person nicht erkennbar; Bonding-Curve-Token und Pools ohne SOL/USDC/USDT bleiben unvollständig.
 - Nur 10 Token pro Lauf; Scan nur manuell.
@@ -85,4 +89,4 @@
 - Offene Fragen: Repo öffentlich oder privat? Was ist im 20-€-Budget schon enthalten?
 
 ## Nächster Schritt
-PR A prüfen und mergen (Nutzer). Vor PR B: Antwortform von `getProgramAccountsV2` mit `withContext` einmal rein lesend prüfen (Test-Branch, Freigabe nötig). Danach PR B nach `docs/helius_integration_plan.md` (Einbindung, Config `holders`, Rückfall, Permanent-Delegate-Prüfung, Stichprobe darf nicht bestätigen). Prüfregeln (25 % / 3 %) und Umlaufmengenregel unverändert.
+PR B prüfen und mergen (Nutzer). Danach ein manueller Scan über GitHub Actions, Auswertung mit `scan-auswertung`, Credits im Helius-Dashboard prüfen. Danach Entscheidung über Löschung des Test-Branches und über Ablehnungsregeln für Permanent Delegate/riskante Erweiterungen. Prüfregeln (25 % / 3 %) und Umlaufmengenregel unverändert.

@@ -29,7 +29,8 @@ values stop the program; `mode` must be `paper`.
 | Check chain (`desk/security_scan.py`) | active, single check chain |
 | Token classification (`desk/token_classification.py`) | active: stablecoins and staking tokens excluded by verified mint address |
 | Liquidity cross-check (`desk/data_quality.py`) | active: DexPaprika vs. RugCheck for the same pool |
-| Holder distribution (`desk/holders.py`) | active: owner aggregation, pool/burn exclusion, confirmation rules |
+| Holder distribution (`desk/holders.py`) | active: full holder list via Helius (`fetch_full_holder_list`), top-20 sample only as fallback (can never confirm) |
+| Token-2022 extensions | active: permanent delegate and any extension not classified safe keep the pool `incomplete` |
 | Market cap (`desk/market_cap.py`) | active: passes only with reported circulating supply; upper bound can only reject; FDV separate |
 | `desk/rules.py`, `desk/risk.py`, `desk/debate.py` | kept, not wired yet |
 | Paper trading, strategy, AI agents, app | not implemented |
@@ -47,8 +48,17 @@ leaves the pool `incomplete`.
   liquidity for the same pool. Deviation above
   `data_quality.max_liquidity_deviation_pct` → unclear. If both agree, the
   lower value must reach `reject_liquidity_below_usd`.
-- **Holders:** the largest token accounts (up to 20, Solana RPC) are a
-  *sample*, never reported as the full owner distribution. Accounts are
+- **Holders:** primary source is the complete list of all token accounts
+  (`fetch_full_holder_list`, Helius `getProgramAccountsV2`, limits in
+  `config.yaml` → `holders.max_pages` = 30, `holders.max_slot_span` = 150).
+  It is accepted only if pagination, slots, supply before/after, page
+  `count`, duplicates and the exact sum against the mint supply all check
+  out; otherwise a fixed reason is logged (`full_holder_list_error`) and the
+  scan falls back to the largest token accounts (up to 20). That fallback is
+  a *sample*, never reported as the full owner distribution, and can only
+  reject or stay unclear – it never confirms (`sample_cannot_confirm`).
+  The sum check is not an atomic snapshot: opposite transfers of equal size
+  between pages can cancel out. Accounts are
   mapped to their owners and aggregated per owner. Excluded are only pool
   accounts (RugCheck pool vaults, market addresses, accounts labelled AMM,
   the DexPaprika pool address) and provable burn owners (incinerator,
@@ -60,9 +70,14 @@ leaves the pool `incomplete`.
   - top-10 lower bound = 10 largest counted owners in the sample,
   - top-10 upper bound = lower bound + entire unseen amount (worst case: all
     unseen tokens belong to top-10 owners, e.g. via further accounts).
-  Lower bound above 25 % → rejected. Upper bound at most 25 % with complete
-  owner mapping and complete RugCheck labels → confirmed. Otherwise the check
-  stays `incomplete`.
+  Lower bound above 25 % → rejected. Upper bound at most 25 % with the full
+  holder list (unseen amount 0), complete owner mapping and complete RugCheck
+  labels → confirmed. Otherwise the check stays `incomplete`.
+- **Token-2022:** `permanent_delegate_absent` and `token_extensions_safe` are
+  mandatory checks. A permanent delegate (address logged), an unknown or
+  unreadable extension, or any extension not explicitly classified safe
+  (only metadata/group extensions are) keeps the pool `incomplete`. No
+  rejection rule yet (separate decision).
 - **Developer share:** creator from RugCheck. Lower bound = creator holdings in
   the sample, upper bound = lower bound + unseen amount. Same decision rule
   with the 3 % limit.

@@ -598,3 +598,82 @@ def test_mint_info_output_feeds_full_list():
     fake = FakeRpc([supply(5, 100), supply(5, 100)], [page(100, [account_item("a", 1, 5)])])
     result = run(fake, info=info)
     assert result["token_program"] == TOKEN_PROGRAM_ID
+
+
+# --- value.count (Gegenprobe, PR B) ----------------------------------
+
+def page_with_count(slot, items, count, key=None):
+    result = page(slot, items, key)
+    result["value"]["count"] = count
+    return result
+
+
+def test_count_matching_accounts_is_accepted():
+    items = [account_item("a1", 1, 60), account_item("a2", 2, 40)]
+    fake = FakeRpc(
+        [supply(100, 100), supply(100, 101)],
+        [page_with_count(100, items, 2)],
+    )
+
+    result = run(fake)
+
+    assert result["accounts_total"] == 2
+
+
+def test_count_with_empty_accounts_counts_all_rows():
+    # count zählt alle gelieferten Konten, auch leere.
+    items = [account_item("a1", 1, 100), account_item("a2", 2, 0)]
+    fake = FakeRpc(
+        [supply(100, 100), supply(100, 101)],
+        [page_with_count(100, items, 2)],
+    )
+
+    assert run(fake)["accounts_nonzero"] == 1
+
+
+@pytest.mark.parametrize("count", [1, 3, 0, -2, "2", 2.0, None, True])
+def test_count_mismatch_is_rejected(count):
+    items = [account_item("a1", 1, 60), account_item("a2", 2, 40)]
+    fake = FakeRpc(
+        [supply(100, 100), supply(100, 101)],
+        [page_with_count(100, items, count)],
+    )
+
+    assert reason(fake) == "page_count_mismatch"
+
+
+def test_count_mismatch_on_second_page_is_rejected():
+    first = page_with_count(100, [account_item("a1", 1, 60)], 1, key="next")
+    second = page_with_count(100, [account_item("a2", 2, 40)], 5)
+    fake = FakeRpc([supply(100, 100), supply(100, 101)], [first, second])
+
+    assert reason(fake) == "page_count_mismatch"
+
+
+def test_missing_count_is_still_accepted():
+    # Feld fehlt -> keine Gegenprobe möglich, übrige Prüfungen gelten.
+    fake = FakeRpc(
+        [supply(100, 100), supply(100, 101)],
+        [page(100, [account_item("a1", 1, 100)])],
+    )
+
+    assert run(fake)["accounts_total"] == 1
+
+
+def test_real_response_shape_from_structure_test_is_accepted():
+    # Form laut Strukturtest (NAOF/MAGGIE): context.apiVersion,
+    # value.count, paginationKey null auf der letzten Seite.
+    items = [
+        account_item("a1", 1, 70, program=TOKEN_PROGRAM_ID),
+        account_item("a2", 2, 30, program=TOKEN_PROGRAM_ID),
+    ]
+    last = {
+        "context": {"apiVersion": "2.3.0", "slot": 100},
+        "value": {"accounts": items, "count": 2, "paginationKey": None},
+    }
+    fake = FakeRpc([supply(100, 100), supply(100, 101)], [last])
+
+    result = run(fake, info=mint_info(program=TOKEN_PROGRAM_ID))
+
+    assert result["pages"] == 1
+    assert result["accounts_nonzero"] == 2

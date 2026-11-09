@@ -1,9 +1,12 @@
 """Holder-Verteilung: Zuordnung, Aggregation und belegbare Grenzen.
 
-Datengrundlage: die bis zu 20 größten Token-Konten von der Blockchain
-(desk/solana_rpc.py), ergänzt um Kennzeichnungen aus RugCheck
-(desk/security.py). Das ist eine STICHPROBE, keine vollständige
-Eigentümerverteilung, und wird nie als solche ausgegeben.
+Datengrundlage (desk/solana_rpc.py), ergänzt um Kennzeichnungen aus
+RugCheck (desk/security.py):
+- bevorzugt die vollständige Liste aller Token-Konten
+  (fetch_full_holder_list, data_scope "full_token_account_list"),
+- sonst die bis zu 20 größten Token-Konten (fetch_holder_snapshot).
+  Das ist eine STICHPROBE, keine vollständige Eigentümerverteilung,
+  und wird nie als solche ausgegeben.
 
 Zuordnung:
 - Token-Konten werden ihrem Eigentümer (owner) zugeordnet und je
@@ -33,9 +36,12 @@ Grenzen statt Annahmen:
 
 Entscheidung:
 - Untergrenze über dem Limit -> abgelehnt (bewiesen).
-- Obergrenze höchstens am Limit, vollständige Zuordnung und
-  vollständige RugCheck-Kennzeichnung -> bestätigt (bewiesen, ohne
-  Annahme über nicht erfasste Konten).
+- Obergrenze höchstens am Limit, vollständige Holder-Liste
+  (data_scope "full_token_account_list", nicht erfasste Menge 0),
+  vollständige Zuordnung und vollständige RugCheck-Kennzeichnung
+  -> bestätigt.
+- Eine Stichprobe kann nie bestätigen, auch nicht bei voller Abdeckung
+  (Grund "sample_cannot_confirm"); sie kann nur ablehnen.
 - Sonst -> unklar; die Prüfung bleibt unvollständig.
 
 Verbleibende Vertrauensannahme: Konten, die als Pool oder Burn erkannt
@@ -64,6 +70,10 @@ UNKNOWN = "unknown"
 CONFIRMED = "confirmed"
 REJECTED = "rejected"
 UNCLEAR = "unclear"
+
+# Einziger data_scope, der eine Bestätigung erlaubt.
+FULL_LIST_SCOPE = "full_token_account_list"
+SAMPLE_SCOPE = "largest_token_accounts_sample"
 
 
 def _pct(amount, base):
@@ -145,8 +155,13 @@ def evaluate_holders(*, snapshot, security, pool_address, risk_filters):
     accounts = snapshot.get("accounts") if isinstance(snapshot, dict) else None
     supply = snapshot.get("supply_amount_raw") if isinstance(snapshot, dict) else None
 
+    full_list = (
+        isinstance(snapshot, dict)
+        and snapshot.get("data_scope") == FULL_LIST_SCOPE
+    )
+
     result = {
-        "data_scope": "largest_token_accounts_sample",
+        "data_scope": FULL_LIST_SCOPE if full_list else SAMPLE_SCOPE,
         "is_complete_distribution": False,
         "top10_status": UNCLEAR,
         "dev_status": UNCLEAR,
@@ -265,7 +280,20 @@ def evaluate_holders(*, snapshot, security, pool_address, risk_filters):
         }
     )
 
-    can_confirm = mapping_complete and labels_complete
+    # Bestätigen nur mit vollständiger, lückenloser Holder-Liste.
+    can_confirm = (
+        mapping_complete
+        and labels_complete
+        and full_list
+        and unseen == 0
+    )
+
+    if full_list and unseen != 0:
+        result["unconfirmed_reasons"].append("full_list_incomplete")
+
+    def _blocked_by_scope():
+        if not full_list and "sample_cannot_confirm" not in result["unconfirmed_reasons"]:
+            result["unconfirmed_reasons"].append("sample_cannot_confirm")
 
     # Top-10
     if top10_lower > top10_limit:
@@ -275,6 +303,8 @@ def evaluate_holders(*, snapshot, security, pool_address, risk_filters):
         result["top10_status"] = CONFIRMED
     elif top10_upper > top10_limit:
         result["unconfirmed_reasons"].append("top10_upper_bound_above_limit")
+    else:
+        _blocked_by_scope()
 
     # Entwickler-Anteil
     if not creator:
@@ -298,5 +328,7 @@ def evaluate_holders(*, snapshot, security, pool_address, risk_filters):
         result["dev_status"] = CONFIRMED
     elif dev_upper > dev_limit:
         result["unconfirmed_reasons"].append("dev_upper_bound_above_limit")
+    else:
+        _blocked_by_scope()
 
     return result

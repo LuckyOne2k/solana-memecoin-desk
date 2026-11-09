@@ -8,7 +8,14 @@ from desk.config import load_config
 from desk.security import SecurityDataError
 from desk.security_scan import scan_pool_security
 from desk.solana_rpc import SolanaRpcError
-from factories import POOL_ADDRESS, make_labels, make_security, make_snapshot
+from factories import (
+    POOL_ADDRESS,
+    make_full_list,
+    make_labels,
+    make_mint_info,
+    make_security,
+    make_snapshot,
+)
 
 
 CONFIG = load_config()
@@ -63,7 +70,11 @@ def run(
     security_error=None,
     holder_error=None,
     config=CONFIG,
+    full_list=None,
 ):
+    """full_list=True: Mint-Info und vollständige Liste gelingen
+    (Snapshot = snapshot oder Standard als vollständige Liste). Sonst
+    schlägt die vollständige Liste fehl (conftest) -> Rückfall."""
     security_kwargs = (
         {"side_effect": security_error}
         if security_error
@@ -75,6 +86,36 @@ def run(
         else {"return_value": snapshot if snapshot is not None else make_snapshot(mint=MINT)}
     )
 
+    extra = []
+
+    if full_list:
+        extra = [
+            patch(
+                "desk.security_scan.fetch_mint_info",
+                return_value=make_mint_info(mint=MINT),
+            ),
+            patch(
+                "desk.security_scan.fetch_full_holder_list",
+                return_value=(
+                    {**snapshot, "data_scope": "full_token_account_list",
+                     "token_program": make_mint_info()["token_program"]}
+                    if snapshot is not None
+                    else make_full_list(mint=MINT)
+                ),
+            ),
+        ]
+
+    for item in extra:
+        item.start()
+
+    try:
+        return _run(pool, market_data, security_kwargs, holder_kwargs, config)
+    finally:
+        for item in extra:
+            item.stop()
+
+
+def _run(pool, market_data, security_kwargs, holder_kwargs, config):
     with patch(
         "desk.market_data.fetch_token_market_data",
         return_value=market_data if market_data is not None else good_market_data(),
@@ -97,7 +138,7 @@ def run(
 def test_fully_confirmed_token_is_ready():
     # Gemeldete Marktkapitalisierung, zwei übereinstimmende Preise,
     # vollständig erfasste Holder-Verteilung.
-    item = run(market_data=good_market_data(market_cap=450000.0))
+    item = run(market_data=good_market_data(market_cap=450000.0), full_list=True)
 
     assert item["rejection_reasons"] == []
     assert item["missing_checks"] == []
@@ -106,6 +147,7 @@ def test_fully_confirmed_token_is_ready():
     assert item["liquidity_check"]["status"] == "confirmed"
     assert item["holder_evaluation"]["top10_status"] == "confirmed"
     assert item["holder_evaluation"]["dev_status"] == "confirmed"
+    assert item["holder_source"] == "full_holder_list"
 
     market_cap = item["market_cap_evaluation"]
     assert market_cap["status"] == "confirmed"
@@ -116,7 +158,7 @@ def test_fully_confirmed_token_is_ready():
 
 def test_upper_bound_alone_never_makes_token_ready():
     # Alles bestätigt, aber keine gemeldete Umlaufmenge
-    item = run()
+    item = run(full_list=True)
 
     market_cap = item["market_cap_evaluation"]
 
@@ -330,3 +372,49 @@ def test_invalid_numbers_from_apis_are_treated_as_missing():
     )
 
     assert "liquidity_missing_or_invalid" in item["rejection_reasons"]
+
+
+# --------------------------------------------------
+# Rückfall auf die Stichprobe (PR B)
+# --------------------------------------------------
+
+def test_fallback_sample_never_makes_token_ready():
+    # Alles andere wäre bestätigt; die vollständige Liste fehlt aber.
+    item = run(market_data=good_market_data(market_cap=450000.0))
+
+    assert item["holder_source"] == "sample_fallback"
+    assert item["full_holder_list_error"] == "mint_info_unavailable"
+    assert item["holder_evaluation"]["top10_status"] == "unclear"
+    assert item["holder_evaluation"]["dev_status"] == "unclear"
+    assert "sample_cannot_confirm" in item["holder_evaluation"]["unconfirmed_reasons"]
+    assert "top10_share_pct" in item["missing_checks"]
+    assert "dev_share_pct" in item["missing_checks"]
+    assert item["status"] == "incomplete"
+
+
+def test_fallback_sample_can_still_reject():
+    snapshot = make_snapshot(
+        mint=MINT,
+        holders=[(f"H{i}", 3.0) for i in range(10)],
+        pool_pct=50.0,
+        returned=20,
+    )
+
+    item = run(snapshot=snapshot)
+
+    assert item["holder_source"] == "sample_fallback"
+    assert "top10_holder_share_above_limit" in item["rejection_reasons"]
+    assert item["status"] == "rejected"
+
+
+def test_full_list_rejection_rejects_pool():
+    snapshot = make_snapshot(
+        mint=MINT,
+        holders=[(f"H{i}", 1.0) for i in range(10)] + [("CREATOR", 4.0)],
+    )
+
+    item = run(snapshot=snapshot, full_list=True)
+
+    assert item["holder_source"] == "full_holder_list"
+    assert "creator_share_above_limit" in item["rejection_reasons"]
+    assert item["status"] == "rejected"

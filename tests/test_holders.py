@@ -10,6 +10,7 @@ from factories import (
     POOL_ADDRESS,
     SUPPLY_RAW,
     amount,
+    make_full_list,
     make_labels,
     make_security,
     make_snapshot,
@@ -37,8 +38,10 @@ def evaluate(snapshot=None, security=None, pool_address=POOL_ADDRESS):
 # --------------------------------------------------
 
 def test_complete_distribution_is_confirmed():
-    # Pool + 10 Holder erfassen 100 % der Menge
-    result = evaluate()
+    # Vollständige Holder-Liste: Pool + 10 Holder = 100 % der Menge
+    result = evaluate(make_full_list())
+
+    assert result["data_scope"] == "full_token_account_list"
 
     assert result["unseen_amount_raw"] == 0
     assert result["is_complete_distribution"] is True
@@ -47,8 +50,22 @@ def test_complete_distribution_is_confirmed():
     assert result["top10_status"] == "confirmed"
 
 
+def test_sample_with_full_coverage_is_never_confirmed():
+    # Gleiche Daten, aber als Top-20-Stichprobe: nie bestätigt.
+    # (Vorher: test_complete_distribution_is_confirmed mit Stichprobe.)
+    result = evaluate()
+
+    assert result["data_scope"] == "largest_token_accounts_sample"
+    assert result["unseen_amount_raw"] == 0
+    assert result["top10_share_upper_bound_pct"] == pytest.approx(10)
+    assert result["top10_status"] == "unclear"
+    assert result["dev_status"] == "unclear"
+    assert result["unconfirmed_reasons"].count("sample_cannot_confirm") == 1
+    assert result["rejection_reasons"] == []
+
+
 def test_upper_bound_exactly_at_limit_is_confirmed():
-    snapshot = make_snapshot(holders=[(f"H{i}", 2.5) for i in range(10)])
+    snapshot = make_full_list(holders=[(f"H{i}", 2.5) for i in range(10)])
 
     result = evaluate(snapshot)
 
@@ -84,14 +101,16 @@ def test_unseen_supply_prevents_confirmation():
     assert "top10_upper_bound_above_limit" in result["unconfirmed_reasons"]
 
 
-def test_small_unseen_supply_still_allows_proof():
-    # Pool 88 %, 10 x 1 %, 2 % nicht erfasst -> Obergrenze 12 %
+def test_small_unseen_supply_in_sample_cannot_confirm():
+    # Pool 88 %, 10 x 1 %, 2 % nicht erfasst -> Obergrenze 12 %.
+    # Früher bestätigt; jetzt kann eine Stichprobe nie bestätigen.
     snapshot = make_snapshot(pool_pct=88.0, returned=20)
 
     result = evaluate(snapshot)
 
     assert result["top10_share_upper_bound_pct"] == pytest.approx(12)
-    assert result["top10_status"] == "confirmed"
+    assert result["top10_status"] == "unclear"
+    assert "sample_cannot_confirm" in result["unconfirmed_reasons"]
 
 
 def test_twenty_accounts_alone_are_not_treated_as_complete():
@@ -288,7 +307,7 @@ def test_broken_snapshot_is_unclear(snapshot):
 # --------------------------------------------------
 
 def test_creator_in_complete_distribution_is_confirmed():
-    snapshot = make_snapshot(holders=[(f"H{i}", 1.0) for i in range(10)] + [("CREATOR", 2.0)])
+    snapshot = make_full_list(holders=[(f"H{i}", 1.0) for i in range(10)] + [("CREATOR", 2.0)])
 
     result = evaluate(snapshot)
 
@@ -306,7 +325,7 @@ def test_creator_above_limit_rejects():
 
 
 def test_creator_absent_from_complete_distribution_is_zero():
-    result = evaluate()
+    result = evaluate(make_full_list())
 
     assert result["creator_found_in_sample"] is False
     assert result["dev_share_upper_bound_pct"] == 0
@@ -322,11 +341,13 @@ def test_creator_absent_from_sample_with_unseen_supply_is_unclear():
     assert "dev_upper_bound_above_limit" in result["unconfirmed_reasons"]
 
 
-def test_creator_with_small_unseen_supply_is_confirmed():
+def test_creator_with_small_unseen_supply_in_sample_cannot_confirm():
+    # Früher bestätigt; eine Stichprobe kann nie bestätigen.
     result = evaluate(make_snapshot(pool_pct=88.0, returned=20))
 
     assert result["dev_share_upper_bound_pct"] == pytest.approx(2)
-    assert result["dev_status"] == "confirmed"
+    assert result["dev_status"] == "unclear"
+    assert "sample_cannot_confirm" in result["unconfirmed_reasons"]
 
 
 def test_unknown_creator_is_unclear():
@@ -409,3 +430,143 @@ def test_real_bonding_curve_without_markets_is_not_confirmed():
 
     assert result["top10_status"] == "unclear"
     assert "pool_labels_incomplete" in result["unconfirmed_reasons"]
+
+
+# --------------------------------------------------
+# Vollständige Liste gegen Stichprobe (PR B)
+# --------------------------------------------------
+
+def test_full_list_rejects_top10_above_limit():
+    result = evaluate(make_full_list(holders=[(f"H{i}", 2.6) for i in range(10)]))
+
+    assert result["top10_status"] == "rejected"
+    assert "top10_holder_share_above_limit" in result["rejection_reasons"]
+
+
+def test_full_list_rejects_creator_above_limit():
+    snapshot = make_full_list(
+        holders=[(f"H{i}", 1.0) for i in range(10)] + [("CREATOR", 3.1)]
+    )
+
+    result = evaluate(snapshot)
+
+    assert result["dev_status"] == "rejected"
+    assert "creator_share_above_limit" in result["rejection_reasons"]
+
+
+def test_full_list_creator_exactly_at_limit_is_confirmed():
+    snapshot = make_full_list(
+        holders=[(f"H{i}", 1.0) for i in range(10)] + [("CREATOR", 3.0)]
+    )
+
+    result = evaluate(snapshot)
+
+    assert result["dev_share_upper_bound_pct"] == pytest.approx(3)
+    assert result["dev_status"] == "confirmed"
+
+
+def test_full_list_aggregates_multiple_accounts_per_owner():
+    # Ein Eigentümer mit 30 Konten zu je 1 % -> 30 % -> abgelehnt
+    snapshot = make_full_list(holders=[("WHALE", 1.0)] * 30)
+
+    result = evaluate(snapshot)
+
+    assert result["top_holders_in_sample"][0]["accounts_in_sample"] == 30
+    assert result["top10_share_lower_bound_pct"] == pytest.approx(30)
+    assert result["top10_status"] == "rejected"
+
+
+def test_full_list_with_unseen_amount_is_not_confirmed():
+    # Darf nach fetch_full_holder_list nicht vorkommen (Summenprüfung);
+    # falls doch: unklar, nie bestätigt.
+    snapshot = make_full_list(pool_pct=88.0)
+
+    result = evaluate(snapshot)
+
+    assert result["unseen_amount_raw"] > 0
+    assert result["top10_status"] == "unclear"
+    assert result["dev_status"] == "unclear"
+    assert "full_list_incomplete" in result["unconfirmed_reasons"]
+
+
+def test_full_list_without_complete_labels_is_not_confirmed():
+    result = evaluate(
+        make_full_list(),
+        security=make_security(labels=make_labels(complete=False)),
+    )
+
+    assert result["top10_status"] == "unclear"
+    assert result["dev_status"] == "unclear"
+
+
+def test_full_list_with_incomplete_mapping_is_not_confirmed():
+    snapshot = make_full_list()
+    snapshot["sample_owner_mapping_complete"] = False
+
+    result = evaluate(snapshot)
+
+    assert result["top10_status"] == "unclear"
+    assert result["dev_status"] == "unclear"
+
+
+@pytest.mark.parametrize(
+    "scope",
+    [
+        None,
+        "largest_20_token_accounts_sample",
+        "largest_token_accounts_sample",
+        "FULL_TOKEN_ACCOUNT_LIST",
+        "full_token_account_list ",
+        "",
+        True,
+    ],
+)
+def test_only_exact_full_scope_allows_confirmation(scope):
+    snapshot = make_full_list()
+
+    if scope is None:
+        snapshot.pop("data_scope")
+    else:
+        snapshot["data_scope"] = scope
+
+    result = evaluate(snapshot)
+
+    assert result["data_scope"] == "largest_token_accounts_sample"
+    assert result["top10_status"] != "confirmed"
+    assert result["dev_status"] != "confirmed"
+
+
+@pytest.mark.parametrize("top10_pct", [0.1, 1.0, 2.0, 2.5])
+@pytest.mark.parametrize("creator_pct", [None, 0.0, 1.0, 3.0])
+@pytest.mark.parametrize("pool_pct", [None, 88.0, 99.0])
+def test_sample_never_confirms(top10_pct, creator_pct, pool_pct):
+    # Beweis über viele Kombinationen: Stichprobe -> nie "confirmed".
+    holders = [(f"H{i}", top10_pct) for i in range(10)]
+
+    if creator_pct is not None:
+        holders.append(("CREATOR", creator_pct))
+
+    total = sum(p for _, p in holders)
+
+    if pool_pct is not None and pool_pct + total > 100:
+        pool_pct = None
+
+    snapshot = make_snapshot(holders=holders, pool_pct=pool_pct, returned=20)
+
+    result = evaluate(snapshot)
+
+    assert result["top10_status"] in ("unclear", "rejected")
+    assert result["dev_status"] in ("unclear", "rejected")
+
+
+def test_sample_can_still_reject():
+    snapshot = make_snapshot(
+        holders=[(f"H{i}", 3.0) for i in range(10)] + [("CREATOR", 5.0)],
+        pool_pct=50.0,
+        returned=20,
+    )
+
+    result = evaluate(snapshot)
+
+    assert result["top10_status"] == "rejected"
+    assert result["dev_status"] == "rejected"
