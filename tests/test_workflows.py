@@ -92,3 +92,33 @@ def test_tests_workflow_is_read_only():
     workflow = load("tests.yml")
 
     assert workflow["permissions"] == {"contents": "read"}
+
+
+def _scan_step(name):
+    workflow = load("scan.yml")
+    for step in workflow["jobs"]["scan"]["steps"]:
+        if step.get("name") == name:
+            return step
+    raise AssertionError(f"Schritt fehlt: {name}")
+
+
+def test_latest_json_generated_from_scan_log():
+    step = _scan_step("Kurzübersicht erzeugen")
+
+    assert step["id"] == "latest"
+    assert "python -m desk.latest" in step["run"]
+    assert "desk-data/events.jsonl desk-data/latest.json" in step["run"]
+    assert "steps.scan.outcome" in step["run"]
+    assert "!cancelled()" in step["if"]
+    assert "secrets." not in yaml.safe_dump(step)
+    assert _scan_step("Programm starten")["id"] == "scan"
+
+
+def test_latest_json_saved_only_on_data_branch_and_removed_if_not_generated():
+    script = _scan_step("Protokoll speichern")["run"]
+
+    assert "git add events.jsonl" in script
+    assert "git add latest.json" in script
+    assert 'steps.latest.outcome }}" = "success"' in script
+    assert "git rm -q --cached --ignore-unmatch latest.json" in script
+    assert "data/latest.json" not in script

@@ -47,6 +47,7 @@
 | `desk/market_cap.py` | Marktkapitalisierung, Obergrenze, FDV, Entscheidung der On-Chain-Spanne |
 | `desk/circulating_bounds.py` | heuristische Wallet-Untergrenze: Authorities aggregieren, ausschließen, per getMultipleAccounts klassifizieren (Schalter, Standard an; technische Heuristik, keine Umlaufmenge) |
 | `desk/security_scan.py` | einzige Prüfkette, Bewertung je Pool |
+| `desk/latest.py` | Kurzübersicht `latest.json` (nur aus letzter Protokollzeile abgeleitet, keine Neubewertung; nicht `ok` → keine bereiten Token) |
 | `desk/check_queue.py` | faire Prüfreihenfolge: zuletzt abgelehnte Token nach hinten (nur Reihenfolge, nie Ergebnis) |
 | `desk/rules.py`, `risk.py`, `debate.py` | behalten, noch nicht angeschlossen |
 
@@ -63,7 +64,7 @@
 
 ## Infrastruktur
 - `.github/workflows/tests.yml`: Tests bei jedem PR und auf `main`, nur lesend.
-- `.github/workflows/scan.yml`: nur manuell; erst Tests, dann Scan. Protokoll geht in den Branch `desk-data` (`events.jsonl`), nie auf `main`. `data/events.jsonl` auf `main` ist nur noch Archiv.
+- `.github/workflows/scan.yml`: nur manuell; erst Tests, dann Scan. Protokoll geht in den Branch `desk-data` (`events.jsonl` + `latest.json`), nie auf `main`. `data/events.jsonl` auf `main` ist nur noch Archiv.
 - Secrets in GitHub: `SOLANA_RPC_URL` (vollständige Helius-URL `https://mainnet.helius-rpc.com/?api-key=…`, kostenloser Tarif: 1 Mio. Credits/Monat, 10 Anfragen/s), `DEXPAPRIKA_API_KEY`. Ohne gültige https-Adresse schlägt die RPC-Abfrage fehl (kein Zurückfallen auf die öffentliche RPC), Holder-Prüfung dann „unvollständig“. Helius ist in der Cloud-Umgebung nicht freigegeben, Holder-Prüfung deshalb nur im GitHub-Scan.
 - RPC-Fehlermeldungen enthalten nie die URL (API-Key), siehe `_safe_request_error` in `desk/solana_rpc.py`.
 - Cloud-Umgebung `solana-memecoin-desk` erlaubt api.dexpaprika.com, api.rugcheck.xyz, api.geckoterminal.com, api.mainnet.solana.com.
@@ -93,6 +94,9 @@
 - 2026-11-09 – PR #15 gemergt. PR #16: On-Chain-Spanne mit Nutzerfreigabe aktiviert (`allow_onchain_bounds: true`), Sicherheitslogik unverändert, Grenzen 10 Aufrufe / 100 je Aufruf / 150 Slots unverändert; Schalter-aus-Tests nutzen eigene Config-Kopie; neuer Test: echte Config + gescheiterte Abfrage → immer unvollständig. Untergrenze bleibt technische Heuristik, keine Umlaufmenge. Tests: 1210 bestanden.
 - 2026-11-09 – PR #16 gemergt; Scan #50 (Commit `08a6d3f`): erstmals 2 Token bereit (TTP: Untergrenze 1,81 Mio./Obergrenze 3,79 Mio. $, 1 Aufruf; BRUH: 0,353 Mio./2,16 Mio. $, 2 Aufrufe, knapp über 300k). USOE unvollständig (Obergrenze 39,9 Mio. $ > 20 Mio., Limit 10 Aufrufe erreicht). On-Chain-Spanne 3 Versuche, 0 Fehler, 13 getMultipleAccounts. Helius-Dashboard danach 344 Credits (vorher ca. 245, Anstieg enthält auch Holder-Listen). „Bereit“ ist keine Kaufempfehlung.
 - 2026-11-09 – Scan #51 (Commit `8b16765`): 41 Pools, 10 abgelehnt, 29 unvollständig, 2 bereit (TTP, BRUH wie in Scan #50). RugCheck 10/10, Helius 8/8, GeckoTerminal 2/2 HTTP 200. Liquiditätsvergleich 4 bestätigt, 6 unklar: 5 PumpSwap-Pools mit 96–97 % Abweichung (DexPaprika ca. 46–88k $ ≈ FDV, RugCheck ca. 1,6–2,3k $), GLD (Pump.fun) ohne RugCheck-Wert; alle 6 ohnehin aus anderen Gründen abgelehnt. Vermutung (nicht belegt): DexPaprika bewertet PumpSwap-Liquidität zu hoch. Keine Codeänderung.
+- 2026-11-09 – Beobachtung Scans #52–#54 (ohne Codeänderung): TTP und BRUH in 4 Scans in Folge bereit. PumpSwap-Abweichung 96–98 % bei 8/2/1 Pools (RugCheck stets ca. 1,6–2,4k $), nie bei Orca/Meteora/Raydium; Hauptpools TTP/BRUH/USOE stimmen. Kein Handlungsbedarf, Ursache offen.
+- 2026-11-09 – Android-Weg festgelegt: PWA auf GitHub Pages (Repo öffentlich), liest Dateien aus `desk-data`; Reihenfolge: 1. `latest.json`, 2. PWA nur lesend, 3. Paper-Broker (Einstiegsregel offen), 4. geplante Scans, 5. Telegram optional.
+- 2026-11-09 – PR 1 `latest.json`: `desk/latest.py` + Workflow-Schritt; Scan fehlgeschlagen → `failed`, leere Listen, keine alten Ergebnisse; nicht geprüfte Pools nur als Anzahl; Datei wird entfernt, wenn sie nicht erzeugt werden konnte. Scannerlogik unverändert. Tests: 1238 bestanden (28 neu).
 
 ## Offene Probleme
 - GeckoTerminal meldet die Umlaufmenge nur für etwa 5 % der Token; seit PR #16 kann die On-Chain-Spanne (Heuristik) die Marktkapitalisierung bestätigen, Werte nahe 300k $ können zwischen Scans kippen.
@@ -104,4 +108,4 @@
 - Offene Fragen: Repo öffentlich oder privat? Was ist im 20-€-Budget schon enthalten?
 
 ## Nächster Schritt
-Weitere Scans beobachten (Stabilität der bereiten Token, Credit-Verbrauch). Später: Löschung des Test-Branches, Ablehnungsregeln für Permanent Delegate/riskante Erweiterungen. Prüfregeln (25 % / 3 %, 300k–20 Mio. $) unverändert.
+Nach Merge von PR 1: Scan starten und `latest.json` in `desk-data` prüfen; danach PR 2 (PWA nur lesend). Später: Löschung des Test-Branches, Ablehnungsregeln für Permanent Delegate/riskante Erweiterungen. Prüfregeln (25 % / 3 %, 300k–20 Mio. $) unverändert.
