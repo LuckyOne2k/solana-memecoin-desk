@@ -48,6 +48,7 @@
 | `desk/circulating_bounds.py` | heuristische Wallet-Untergrenze: Authorities aggregieren, ausschließen, per getMultipleAccounts klassifizieren (Schalter, Standard an; technische Heuristik, keine Umlaufmenge) |
 | `desk/security_scan.py` | einzige Prüfkette, Bewertung je Pool |
 | `desk/latest.py` | Kurzübersicht `latest.json` (nur aus letzter Protokollzeile abgeleitet, keine Neubewertung; nicht `ok` → keine bereiten Token) |
+| `app/` | rein lesende Web-App (PWA, GitHub Pages): liest nur `latest.json` aus `desk-data`, keine Neubewertung |
 | `desk/check_queue.py` | faire Prüfreihenfolge: zuletzt abgelehnte Token nach hinten (nur Reihenfolge, nie Ergebnis) |
 | `desk/rules.py`, `risk.py`, `debate.py` | behalten, noch nicht angeschlossen |
 
@@ -64,6 +65,7 @@
 
 ## Infrastruktur
 - `.github/workflows/tests.yml`: Tests bei jedem PR und auf `main`, nur lesend.
+- `.github/workflows/pages.yml`: veröffentlicht nur `app/` auf GitHub Pages (nach Merge auf `main` oder manuell); einmalig in Settings → Pages „GitHub Actions“ wählen.
 - `.github/workflows/scan.yml`: nur manuell; erst Tests, dann Scan. Protokoll geht in den Branch `desk-data` (`events.jsonl` + `latest.json`), nie auf `main`. `data/events.jsonl` auf `main` ist nur noch Archiv.
 - Secrets in GitHub: `SOLANA_RPC_URL` (vollständige Helius-URL `https://mainnet.helius-rpc.com/?api-key=…`, kostenloser Tarif: 1 Mio. Credits/Monat, 10 Anfragen/s), `DEXPAPRIKA_API_KEY`. Ohne gültige https-Adresse schlägt die RPC-Abfrage fehl (kein Zurückfallen auf die öffentliche RPC), Holder-Prüfung dann „unvollständig“. Helius ist in der Cloud-Umgebung nicht freigegeben, Holder-Prüfung deshalb nur im GitHub-Scan.
 - RPC-Fehlermeldungen enthalten nie die URL (API-Key), siehe `_safe_request_error` in `desk/solana_rpc.py`.
@@ -97,6 +99,8 @@
 - 2026-11-09 – Beobachtung Scans #52–#54 (ohne Codeänderung): TTP und BRUH in 4 Scans in Folge bereit. PumpSwap-Abweichung 96–98 % bei 8/2/1 Pools (RugCheck stets ca. 1,6–2,4k $), nie bei Orca/Meteora/Raydium; Hauptpools TTP/BRUH/USOE stimmen. Kein Handlungsbedarf, Ursache offen.
 - 2026-11-09 – Android-Weg festgelegt: PWA auf GitHub Pages (Repo öffentlich), liest Dateien aus `desk-data`; Reihenfolge: 1. `latest.json`, 2. PWA nur lesend, 3. Paper-Broker (Einstiegsregel offen), 4. geplante Scans, 5. Telegram optional.
 - 2026-11-09 – PR 1 `latest.json`: `desk/latest.py` + Workflow-Schritt; Scan fehlgeschlagen → `failed`, leere Listen, keine alten Ergebnisse; nicht geprüfte Pools nur als Anzahl; Datei wird entfernt, wenn sie nicht erzeugt werden konnte. Scannerlogik unverändert. Tests: 1238 bestanden (28 neu).
+- 2026-11-09 – PR #19 gemergt; Scan #55 (Commit `44ff414`): `latest.json` im selben `desk-data`-Commit wie `events.jsonl`, `ok`, 42 Pools (7 abgelehnt, 33 unvollständig, 2 bereit), TTP und BRUH zum fünften Mal in Folge bereit, Werte 1:1 wie im Protokoll. Fall `failed` live noch nicht aufgetreten (nur Tests).
+- 2026-11-09 – PR 2 Web-App (`app/`, nur lesend): einzige Quelle `latest.json`; nicht `ok`, HTTP-Fehler oder unplausible Datei → Meldung, keine Token. Offline darf der letzte erfolgreich geladene Stand erscheinen, nur mit „Offline – Daten möglicherweise veraltet“; Scan-Alter immer sichtbar, ab 24 h gelbe Warnung. Service Worker speichert nur die App, nie Scan-Daten. Daten können bis 5 Min. verzögert sein (GitHub-Cache). Tests: 1247 bestanden (9 neu).
 
 ## Offene Probleme
 - GeckoTerminal meldet die Umlaufmenge nur für etwa 5 % der Token; seit PR #16 kann die On-Chain-Spanne (Heuristik) die Marktkapitalisierung bestätigen, Werte nahe 300k $ können zwischen Scans kippen.
@@ -105,7 +109,7 @@
 - Wallets derselben Person nicht erkennbar; Bonding-Curve-Token und Pools ohne SOL/USDC/USDT bleiben unvollständig.
 - Nur 10 Token pro Lauf; Scan nur manuell. Prüfreihenfolge rotiert (zuletzt abgelehnte nach hinten); ein beschädigtes Protokoll schaltet die Rotation ab (Rückfall, sichtbar in `check_order_source`).
 - Test-Branch `claude/helius-verbindungstest` (enthält die Testskripte) bleibt vorerst (Commit `5214857`), Löschung nach Abschluss der Integration; Ergebnisse stehen in `docs/helius_validierung.md`.
-- Offene Fragen: Repo öffentlich oder privat? Was ist im 20-€-Budget schon enthalten?
+- Offene Frage: Was ist im 20-€-Budget schon enthalten? (Repo ist öffentlich.)
 
 ## Nächster Schritt
-Nach Merge von PR 1: Scan starten und `latest.json` in `desk-data` prüfen; danach PR 2 (PWA nur lesend). Später: Löschung des Test-Branches, Ablehnungsregeln für Permanent Delegate/riskante Erweiterungen. Prüfregeln (25 % / 3 %, 300k–20 Mio. $) unverändert.
+Nach Merge von PR 2: einmalig GitHub Pages auf „GitHub Actions“ stellen, App auf dem Handy prüfen. Danach (vorgemerkt, Auftrag des Nutzers): unabhängige Bewertung 1. Architektur/Verschlankung (Struktur, Doppelungen, was getrennt bleiben muss, Token- und Wartungsaufwand) und 2. Nutzen eigener Claude-Code-Agenten (Aufgaben, Verbrauch vs. Nutzen) – nur Bewertung am tatsächlichen Repo-Stand, keine Änderungen ohne Freigabe. Danach Paper-Broker (Einstiegsregel offen). Später: Löschung des Test-Branches, Ablehnungsregeln für Permanent Delegate/riskante Erweiterungen. Prüfregeln (25 % / 3 %, 300k–20 Mio. $) unverändert.

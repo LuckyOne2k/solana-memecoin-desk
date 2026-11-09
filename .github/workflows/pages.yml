@@ -1,0 +1,45 @@
+name: App veröffentlichen
+
+# Veröffentlicht nur den Ordner app/ (rein lesende Web-App) auf GitHub Pages.
+# Läuft nur nach einem Merge auf main oder manuell. Kein Schreibzugriff auf
+# das Repository; die App liest ausschließlich latest.json aus desk-data.
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "app/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Repository herunterladen
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: App-Dateien bereitstellen
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: app
+
+      - name: Auf GitHub Pages veröffentlichen
+        id: deployment
+        uses: actions/deploy-pages@v5
