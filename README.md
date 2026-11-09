@@ -183,6 +183,14 @@ pump.fun bonding curve have no RugCheck market data and stay `incomplete`.
   On the first run the branch is created and the old log from
   `data/events.jsonl` is copied over. The old file on `main` stays
   unchanged as an archive.
+- After each scan, `python -m desk.latest` writes a compact summary
+  **`latest.json`** next to `events.jsonl` on `desk-data` (same commit).
+  It is derived only from the last log line and copies statuses, reasons
+  and counts 1:1 (no re-evaluation). `scan_status` is `ok`, `failed`,
+  `log_unreadable` or `inconsistent`; in every case except `ok` the lists
+  of ready tokens and pools are empty and no older results are reused.
+  Pools that were not checked appear only as a count (`pools_not_listed`).
+  If the summary could not be generated, an old `latest.json` is removed.
 - The scan code runs without GitHub write credentials; the token is only
   used in the final step that pushes the log.
 

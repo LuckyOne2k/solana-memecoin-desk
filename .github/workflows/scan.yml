@@ -88,11 +88,22 @@ jobs:
           fi
 
       - name: Programm starten
+        id: scan
         env:
           SOLANA_RPC_URL: ${{ secrets.SOLANA_RPC_URL }}
           DEXPAPRIKA_API_KEY: ${{ secrets.DEXPAPRIKA_API_KEY }}
           DESK_LOG_FILE: ${{ github.workspace }}/desk-data/events.jsonl
         run: python -m desk
+
+      - name: Kurzübersicht erzeugen
+        # Leitet latest.json nur aus events.jsonl ab. Bei fehlgeschlagenem
+        # Scan: Status "failed", keine bereiten Token, keine alten Ergebnisse.
+        id: latest
+        if: ${{ !cancelled() && steps.datadir.outcome == 'success' }}
+        run: >-
+          python -m desk.latest
+          desk-data/events.jsonl desk-data/latest.json
+          --scan-outcome "${{ steps.scan.outcome }}"
 
       - name: Protokoll speichern
         # Auch nach einem Fehler im Scan speichern, damit der Fehler
@@ -112,6 +123,15 @@ jobs:
           fi
 
           git add events.jsonl
+
+          # Kurzübersicht nur speichern, wenn sie in diesem Lauf erzeugt
+          # wurde; sonst eine alte Datei entfernen (nie veraltet zeigen).
+          if [ "${{ steps.latest.outcome }}" = "success" ] && [ -f latest.json ]; then
+            git add latest.json
+          else
+            rm -f latest.json latest.json.tmp
+            git rm -q --cached --ignore-unmatch latest.json
+          fi
 
           if git diff --cached --quiet; then
             echo "Keine neuen Protokolleinträge."
