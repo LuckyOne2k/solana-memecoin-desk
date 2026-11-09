@@ -183,3 +183,84 @@ def test_insufficient_data_stays_unclear(kwargs, reason):
     assert result["status"] == "unclear"
     assert result["reason"] == reason
     assert result["market_cap_usd"] is None
+
+
+# --------------------------------------------------
+# Preisgrundlage der Obergrenze: höherer von zwei Preisen
+# --------------------------------------------------
+
+@pytest.mark.parametrize(
+    "gecko, rugcheck, source",
+    [
+        (0.00055, 0.0005, "geckoterminal"),  # GeckoTerminal höher
+        (0.0005, 0.00055, "rugcheck"),       # RugCheck höher
+    ],
+)
+def test_upper_bound_uses_higher_of_two_prices(gecko, rugcheck, source):
+    result = evaluate(geckoterminal_price_usd=gecko, rugcheck_price_usd=rugcheck)
+
+    # 0,00055 $ x 1 Mrd. Token = 550.000 $, unabhängig von der Reihenfolge
+    assert result["market_cap_upper_bound_usd"] == pytest.approx(550000)
+    assert result["fdv_onchain_usd"] == pytest.approx(550000)
+    assert result["price_used_usd"] == 0.00055
+    assert result["price_used_source"] == source
+    assert result["price_used_basis"] == "higher_of_two_agreeing_sources"
+
+
+@pytest.mark.parametrize(
+    "gecko, rugcheck",
+    [(0.00055, 0.0005), (0.0005, 0.00055)],
+)
+def test_reported_market_cap_checked_against_higher_price_bound(gecko, rugcheck):
+    # 520.000 $ liegt über 0,0005 x 1 Mrd., aber unter 0,00055 x 1 Mrd.
+    result = evaluate(
+        reported_market_cap_usd=520000,
+        geckoterminal_price_usd=gecko,
+        rugcheck_price_usd=rugcheck,
+    )
+
+    assert result["status"] == "confirmed"
+    assert result["market_cap_usd"] == 520000
+
+
+def test_reported_market_cap_just_above_upper_bound_is_unclear():
+    # Obergrenze 500.000 $; früher galt hier noch 10 % Toleranz
+    result = evaluate(reported_market_cap_usd=500000.01)
+
+    assert result["market_cap_upper_bound_usd"] == pytest.approx(500000)
+    assert result["status"] == "unclear"
+    assert result["reason"] == "reported_market_cap_exceeds_supply_value"
+
+
+def test_reported_market_cap_inside_old_tolerance_is_now_unclear():
+    # 540.000 $ wäre mit der entfernten 10-%-Toleranz noch akzeptiert worden
+    result = evaluate(reported_market_cap_usd=540000)
+
+    assert result["status"] == "unclear"
+
+
+def test_reported_market_cap_exactly_at_upper_bound_is_allowed():
+    result = evaluate(
+        reported_market_cap_usd=500000,
+        geckoterminal_price_usd=0.0005,
+        rugcheck_price_usd=0.0005,
+        total_supply_raw=SUPPLY,
+    )
+
+    assert result["status"] == "confirmed"
+
+
+def test_single_price_basis_is_logged_for_rejection():
+    result = evaluate(geckoterminal_price_usd=None, rugcheck_price_usd=0.0001)
+
+    assert result["status"] == "rejected"
+    assert result["price_used_source"] == "rugcheck"
+    assert result["price_used_basis"] == "single_source"
+
+
+def test_conflicting_prices_leave_no_price_basis():
+    result = evaluate(reported_market_cap_usd=400000, rugcheck_price_usd=0.0009)
+
+    assert result["price_used_usd"] is None
+    assert result["price_used_basis"] is None
+    assert result["market_cap_upper_bound_usd"] is None

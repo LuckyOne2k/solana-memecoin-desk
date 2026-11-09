@@ -69,8 +69,13 @@ leaves the pool `incomplete`.
 - **Market cap:** price from GeckoTerminal, cross-checked with RugCheck
   (`data_quality.max_price_deviation_pct`). Conflicting or missing prices
   always leave the check unclear, even if a market cap is reported.
-  - Upper bound = price × (on-chain total supply − provable burns). It can
-    only reject (upper bound below the minimum); it never passes the check.
+  - Upper bound = price × (on-chain total supply − provable burns). With two
+    agreeing price sources the higher price is used; the log shows
+    `price_used_usd`, `price_used_source` and `price_used_basis`. The upper
+    bound can only reject (below the minimum); it never passes the check.
+  - The 10 % tolerance applies only to the comparison of the two price
+    sources, never to the comparison of a reported market cap with the upper
+    bound.
   - Passing requires the market cap reported by GeckoTerminal
     (`reported_circulating_supply`), two agreeing price sources, the on-chain
     supply, and a reported value not above the upper bound.

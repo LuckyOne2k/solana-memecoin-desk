@@ -82,44 +82,79 @@ def check_liquidity(
     return {**result, "status": CONFIRMED, "reason": "liquidity_sources_agree"}
 
 
-def check_price(*, primary_price_usd, secondary_price_usd, max_deviation_pct):
+# Kennzeichnung der verwendeten Preisgrundlage
+HIGHER_OF_TWO_SOURCES = "higher_of_two_agreeing_sources"
+SINGLE_SOURCE = "single_source"
+
+
+def check_price(
+    *,
+    primary_price_usd,
+    secondary_price_usd,
+    max_deviation_pct,
+    primary_source="geckoterminal",
+    secondary_source="rugcheck",
+):
     """Vergleicht zwei Preisquellen.
 
-    Ein einzelner gültiger Preis wird verwendet, aber als
-    "single_source" gekennzeichnet. Weichen zwei Preise stärker als
-    erlaubt ab, ist der Preis unklar.
+    - Weichen zwei Preise stärker als max_deviation_pct ab: unklar.
+      Die Toleranz gilt nur für diesen Vergleich der Preisquellen.
+    - Stimmen zwei Preise überein, wird der HÖHERE verwendet
+      (price_used_basis "higher_of_two_agreeing_sources"). Eine daraus
+      berechnete Obergrenze ist damit auch für den anderen Preis gültig.
+    - Ein einzelner gültiger Preis wird verwendet und als
+      "single_source" gekennzeichnet.
+    price_used_source nennt die Quelle des verwendeten Preises.
     """
     primary = positive_number(primary_price_usd)
     secondary = positive_number(secondary_price_usd)
 
     result = {
-        "primary_price_usd": primary,
-        "secondary_price_usd": secondary,
+        f"{primary_source}_price_usd": primary,
+        f"{secondary_source}_price_usd": secondary,
         "deviation_pct": None,
         "max_deviation_pct": max_deviation_pct,
         "price_used_usd": None,
+        "price_used_source": None,
+        "price_used_basis": None,
     }
 
     if primary is None and secondary is None:
         return {**result, "status": UNCLEAR, "reason": "no_price_available"}
 
     if primary is None or secondary is None:
+        used, source = (
+            (primary, primary_source)
+            if primary is not None
+            else (secondary, secondary_source)
+        )
         return {
             **result,
             "status": CONFIRMED,
             "reason": "single_source",
-            "price_used_usd": primary if primary is not None else secondary,
+            "price_used_usd": used,
+            "price_used_source": source,
+            "price_used_basis": SINGLE_SOURCE,
         }
 
     deviation = deviation_pct(primary, secondary)
-    result["deviation_pct"] = round(deviation, 2)
+    result["deviation_pct"] = deviation
 
     if deviation > max_deviation_pct:
         return {**result, "status": UNCLEAR, "reason": "price_sources_disagree"}
+
+    if primary > secondary:
+        source = primary_source
+    elif secondary > primary:
+        source = secondary_source
+    else:
+        source = f"{primary_source}+{secondary_source}"
 
     return {
         **result,
         "status": CONFIRMED,
         "reason": "price_sources_agree",
-        "price_used_usd": primary,
+        "price_used_usd": max(primary, secondary),
+        "price_used_source": source,
+        "price_used_basis": HIGHER_OF_TWO_SOURCES,
     }

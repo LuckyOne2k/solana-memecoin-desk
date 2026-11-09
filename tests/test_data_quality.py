@@ -94,19 +94,57 @@ def price(primary, secondary, tolerance=10):
     )
 
 
-def test_agreeing_prices_are_confirmed():
+def test_agreeing_prices_use_higher_value_secondary_higher():
     result = price(0.0005, 0.00051)
 
     assert result["status"] == "confirmed"
+    assert result["price_used_usd"] == 0.00051
+    assert result["price_used_source"] == "rugcheck"
+    assert result["price_used_basis"] == "higher_of_two_agreeing_sources"
+
+
+def test_agreeing_prices_use_higher_value_primary_higher():
+    result = price(0.00051, 0.0005)
+
+    assert result["price_used_usd"] == 0.00051
+    assert result["price_used_source"] == "geckoterminal"
+    assert result["price_used_basis"] == "higher_of_two_agreeing_sources"
+
+
+def test_equal_prices_name_both_sources():
+    result = price(0.0005, 0.0005)
+
     assert result["price_used_usd"] == 0.0005
+    assert result["price_used_source"] == "geckoterminal+rugcheck"
 
 
-def test_single_price_is_used_but_marked():
-    result = price(None, 0.0005)
+def test_both_source_prices_are_logged():
+    result = price(0.0005, 0.00051)
+
+    assert result["geckoterminal_price_usd"] == 0.0005
+    assert result["rugcheck_price_usd"] == 0.00051
+
+
+@pytest.mark.parametrize(
+    "primary, secondary, source",
+    [(None, 0.0005, "rugcheck"), (0.0005, None, "geckoterminal")],
+)
+def test_single_price_is_used_but_marked(primary, secondary, source):
+    result = price(primary, secondary)
 
     assert result["status"] == "confirmed"
     assert result["reason"] == "single_source"
     assert result["price_used_usd"] == 0.0005
+    assert result["price_used_source"] == source
+    assert result["price_used_basis"] == "single_source"
+
+
+def test_conflicting_prices_have_no_price_basis():
+    result = price(0.0005, 0.0009)
+
+    assert result["price_used_usd"] is None
+    assert result["price_used_source"] is None
+    assert result["price_used_basis"] is None
 
 
 def test_conflicting_prices_are_unclear():

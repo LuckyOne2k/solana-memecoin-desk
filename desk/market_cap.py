@@ -6,9 +6,12 @@ Begriffe:
 - Gemeldete Umlaufmenge: Die von GeckoTerminal gemeldete
   Marktkapitalisierung (Basis: von CoinGecko gemeldete Umlaufmenge),
   gekennzeichnet als "reported_circulating_supply".
-- Obergrenze (Schätzung): Preis x (Gesamtmenge - nachweislich verbrannt).
-  Die Umlaufmenge ist nie größer als diese Menge, deshalb ist der Wert
-  eine OBERGRENZE der echten Marktkapitalisierung.
+- Obergrenze: Preis x (Gesamtmenge - nachweislich verbrannt). Die
+  Umlaufmenge ist nie größer als diese Menge, deshalb ist der Wert eine
+  OBERGRENZE der echten Marktkapitalisierung. Bei zwei übereinstimmenden
+  Preisquellen wird der HÖHERE Preis verwendet (siehe
+  desk.data_quality.check_price); die Grundlage steht im Protokoll
+  (price_used_usd, price_used_source, price_used_basis).
 - FDV (Preis x Gesamtmenge) wird getrennt ausgewiesen und nie als
   Marktkapitalisierung verwendet.
 
@@ -19,7 +22,9 @@ Entscheidungsregeln:
   * zwei unabhängige Preisquellen (GeckoTerminal, RugCheck) vorliegen
     und übereinstimmen,
   * die Gesamtmenge von der Blockchain vorliegt und
-  * der gemeldete Wert nicht über der Obergrenze liegt.
+  * der gemeldete Wert nicht über der Obergrenze liegt (ohne
+    zusätzliche Toleranz; die Preistoleranz gilt nur für den Vergleich
+    der beiden Preisquellen).
 - Widersprüchliche Preise machen die Prüfung immer unklar, auch wenn
   ein gemeldeter Wert vorliegt.
 """
@@ -121,6 +126,10 @@ def evaluate_market_cap(
 
     result = {
         "price": price,
+        # Preisgrundlage für Obergrenze und FDV, eindeutig ausgewiesen
+        "price_used_usd": price_used,
+        "price_used_source": price["price_used_source"] if price_used else None,
+        "price_used_basis": price["price_used_basis"] if price_used else None,
         "total_supply": total_supply,
         "supply_after_provable_burns": supply_after_burns,
         # Getrennt ausgewiesen, nie als Marktkapitalisierung verwendet
@@ -182,7 +191,7 @@ def evaluate_market_cap(
             "reason": "reported_market_cap_not_verifiable_without_supply",
         }
 
-    if reported > upper_bound * (1 + max_price_deviation / 100):
+    if reported > upper_bound:
         return {
             **result,
             "status": UNCLEAR,
