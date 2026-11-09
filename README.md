@@ -107,6 +107,14 @@ leaves the pool `incomplete`.
     supply, and a reported value not above the upper bound.
   - FDV (DexPaprika, GeckoTerminal, on-chain) and the upper bound are logged
     separately and never used as market cap.
+  - GeckoTerminal token requests use bounded retries: network errors,
+    HTTP 429 and HTTP 5xx at most 3 attempts (waits 10 s / 30 s, `Retry-After`
+    honoured up to 60 s); HTTP 403 at most 2 attempts; other HTTP errors and
+    invalid responses are not retried. If the last attempt fails, no
+    GeckoTerminal prices are used at all (no stale values). Attempts, HTTP
+    status and reason are logged in `market_cap_diagnostics`
+    (`request_attempts`, `retries`, `last_http_status`, `error_reason`,
+    `request_log`).
 
 Known limitations: wallets of the same person cannot be linked; holdings of
 an owner outside the 20 largest accounts are not seen; tokens still on the

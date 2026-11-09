@@ -38,7 +38,7 @@
 | Modul | Aufgabe |
 |---|---|
 | `desk/config.py` | lädt und prüft `config.yaml` (einzige Quelle aller Grenzwerte) |
-| `desk/market_data.py` | DexPaprika-Pools, GeckoTerminal-Preis/FDV/gemeldete Marktkapitalisierung, Vorprüfung |
+| `desk/market_data.py` | DexPaprika-Pools, GeckoTerminal-Preis/FDV/gemeldete Marktkapitalisierung (begrenzte Wiederholungen), Vorprüfung |
 | `desk/token_classification.py` | Stablecoins/Staking-Token per geprüfter Mint-Adresse ausschließen |
 | `desk/security.py` | RugCheck: Authorities, LP-Sperre, Pool-/AMM-/Locker-Kennzeichnungen |
 | `desk/solana_rpc.py` | `fetch_mint_info` (Token-Programm, Token-2022-Erweiterungen), `fetch_full_holder_list` (alle Konten, Helius), Rückfall: 20 größte Token-Konten + Gesamtmenge |
@@ -81,7 +81,9 @@
 
 - 2026-11-09 – Strukturtest `getProgramAccountsV2` (NAOF 2 Seiten, MAGGIE 1 Seite, ca. 3 Credits): Antwortform belegt (`context.slot` int, `value.count` = Konten der Seite, letzte Seite `paginationKey: null`); Ergebnis in `docs/helius_validierung.md`.
 - 2026-11-09 – PR B (Helius, Einbindung): vollständige Liste in `security_scan.py`, Rückfall auf Stichprobe (nie bestätigen), Config `holders`, `value.count`-Gegenprobe, Pflichtprüfungen `permanent_delegate_absent` und `token_extensions_safe` (Positivliste nur Metadaten/Gruppe). Tests: 652 bestanden.
-- 2026-11-09 – Scan #45 (Commit `16ffcf4`): 0 Helius-Abfragen, alle 10 geprüften Token schon an der LP-Sperre abgelehnt; Starvation belegt (8 von 10 Token wie im Scan davor, 41 von 60 Token mehrfach geprüft, weiter unten stehende nie). Fairere Prüfreihenfolge (`desk/check_queue.py`) freigegeben und umgesetzt (PR offen). Tests: 688 bestanden.
+- 2026-11-09 – Scan #45 (Commit `16ffcf4`): 0 Helius-Abfragen, alle 10 geprüften Token schon an der LP-Sperre abgelehnt; Starvation belegt (8 von 10 Token wie im Scan davor, 41 von 60 Token mehrfach geprüft, weiter unten stehende nie). Fairere Prüfreihenfolge (`desk/check_queue.py`) umgesetzt, PR #13 gemergt. Tests: 688 bestanden.
+- 2026-11-09 – Scan #46 (Commit `588eace`): Rotation wirkt, Helius 7/7 vollständige Listen, 0 Rückfälle; 0 bereit. GeckoTerminal-Abruf mit HTTP 403 abgelehnt (kein zweiter Preis, keine gemeldete Marktkapitalisierung). TTP: alles bestätigt außer Marktkapitalisierung.
+- 2026-11-09 – PR „GeckoTerminal stabilisieren“: begrenzte Wiederholungen (Netzwerk/429/5xx höchstens 3 Versuche, 403 höchstens 2, sonst keine), Statuscode/Versuche/Grund in `market_cap_diagnostics`, keine alten Preise als Ersatz, Pflicht zu zwei Preisen unverändert. Tests: 711 bestanden. Eigene Marktkapitalisierungs-Spanne (PR 2) noch nicht freigegeben, Vorschlag wird überarbeitet.
 
 ## Offene Probleme
 - Praktisch wird kaum ein Token „bereit“: GeckoTerminal meldet die Umlaufmenge nur für etwa 5 % der Token (keine nachvollziehbare Alternative, Nutzer entscheidet).
@@ -92,4 +94,4 @@
 - Offene Fragen: Repo öffentlich oder privat? Was ist im 20-€-Budget schon enthalten?
 
 ## Nächster Schritt
-PR „faire Prüfreihenfolge“ prüfen und mergen (Nutzer). Danach ein manueller Scan über GitHub Actions, Auswertung mit `scan-auswertung`, Credits im Helius-Dashboard prüfen. Danach Entscheidung über Löschung des Test-Branches und über Ablehnungsregeln für Permanent Delegate/riskante Erweiterungen. Prüfregeln (25 % / 3 %) und Umlaufmengenregel unverändert.
+PR „GeckoTerminal stabilisieren“ prüfen und mergen (Nutzer), danach Scan und Auswertung mit `scan-auswertung`. Überarbeiteten Vorschlag zur Marktkapitalisierungs-Spanne prüfen (Freigabe offen). Danach Entscheidung über Löschung des Test-Branches und über Ablehnungsregeln für Permanent Delegate/riskante Erweiterungen. Prüfregeln (25 % / 3 %) und Umlaufmengenregel unverändert.

@@ -36,3 +36,10 @@ def isolated_log_file(tmp_path, monkeypatch):
     """Kein Test liest oder schreibt das echte Protokoll im Repository
     (wichtig für die Prüfreihenfolge aus desk.check_queue)."""
     monkeypatch.setenv("DESK_LOG_FILE", str(tmp_path / "events.jsonl"))
+
+
+@pytest.fixture(autouse=True)
+def no_real_retry_wait(monkeypatch):
+    """GeckoTerminal-Wiederholungen warten in Tests nicht wirklich.
+    Tests, die die Wartezeiten prüfen, ersetzen _wait selbst."""
+    monkeypatch.setattr("desk.market_data._wait", lambda seconds: None)
