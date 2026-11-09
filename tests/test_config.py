@@ -49,7 +49,7 @@ EXPECTED_THRESHOLDS = {
         "max_slot_span": 150,
     },
     "market_cap_onchain_bounds": {
-        "allow_onchain_bounds": False,
+        "allow_onchain_bounds": True,
         "max_account_calls_per_token": 10,
         "max_slot_span": 150,
     },

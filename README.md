@@ -32,7 +32,7 @@ values stop the program; `mode` must be `paper`.
 | Holder distribution (`desk/holders.py`) | active: full holder list via Helius (`fetch_full_holder_list`), top-20 sample only as fallback (can never confirm) |
 | Token-2022 extensions | active: permanent delegate and any extension not classified safe keep the pool `incomplete` |
 | Market cap (`desk/market_cap.py`) | active: passes only with reported circulating supply; upper bound can only reject; FDV separate |
-| On-chain market cap range (`desk/circulating_bounds.py`) | implemented, **off by default** (`market_cap_onchain_bounds.allow_onchain_bounds: false`) |
+| On-chain market cap range (`desk/circulating_bounds.py`) | implemented, **on by default** (`market_cap_onchain_bounds.allow_onchain_bounds: true`; `false` switches it off) |
 | `desk/rules.py`, `desk/risk.py`, `desk/debate.py` | kept, not wired yet |
 | Paper trading, strategy, AI agents, app | not implemented |
 
@@ -116,7 +116,7 @@ leaves the pool `incomplete`.
     status and reason are logged in `market_cap_diagnostics`
     (`request_attempts`, `retries`, `last_http_status`, `error_reason`,
     `request_log`).
-- **On-chain market cap range (optional, off by default):** only when the
+- **On-chain market cap range (on by default, `false` switches it off):** only when the
   switch `market_cap_onchain_bounds.allow_onchain_bounds` is `true` and the
   market cap is the *only* open check (all other checks confirmed, mint
   and freeze authority revoked, no permanent delegate, only safe Token-2022

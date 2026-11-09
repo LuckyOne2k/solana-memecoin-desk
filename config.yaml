@@ -52,8 +52,11 @@ holders:
 # Obergrenze = Gesamtmenge - nachweislich verbrannt. Bestätigt nur, wenn
 # p_niedrig x Untergrenze >= Minimum und p_hoch x Obergrenze <= Maximum.
 market_cap_onchain_bounds:
-  # Standard aus: ohne ausdrückliche Freigabe keine Abfragen, keine Credits
-  allow_onchain_bounds: false
+  # Standard an (vom Nutzer freigegeben): Abfragen nur, wenn allein die
+  # Marktkapitalisierung offen ist; false schaltet ab (keine Abfragen,
+  # keine Credits). Die Untergrenze ist eine technische Heuristik, keine
+  # echte Umlaufmenge.
+  allow_onchain_bounds: true
   # Höchstzahl getMultipleAccounts-Aufrufe (je bis zu 100 Authorities)
   # pro Token und Scan; erlaubt 1 bis 10 (mehr stoppt das Programm)
   max_account_calls_per_token: 10

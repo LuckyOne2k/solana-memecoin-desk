@@ -1,7 +1,8 @@
 """Einbindung der On-Chain-Spanne in die Prüfkette (PR 2).
 
-Kein Netzwerk. Standard-Config (Schalter aus) darf nie abfragen; die
-conftest-Sperre lässt jeden ungewollten Aufruf scheitern.
+Kein Netzwerk. Mit ausgeschaltetem Schalter (eigene Config-Kopie) wird
+nie abgefragt; die conftest-Sperre lässt jeden ungewollten Aufruf
+scheitern.
 """
 
 import base64
@@ -32,6 +33,14 @@ MINT = "TOKEN123"
 SUPPLY = 1_000_000_000_000_000
 DECIMALS = 6
 POOL = "POOL1"
+
+
+def disabled_config():
+    """Unabhängige Kopie der Projekt-Config mit ausdrücklich
+    ausgeschaltetem Schalter."""
+    config = copy.deepcopy(CONFIG)
+    config["market_cap_onchain_bounds"]["allow_onchain_bounds"] = False
+    return config
 
 
 def enabled_config(**overrides):
@@ -232,9 +241,9 @@ def first(result):
 # Schalter
 # --------------------------------------------------
 
-def test_switch_off_by_default_makes_no_queries():
-    # Standard-Config: conftest-Sperre würde jeden Abruf scheitern lassen.
-    result, accounts, frozen = scan(config=CONFIG)
+def test_switch_off_makes_no_queries():
+    # Schalter aus: conftest-Sperre würde jeden Abruf scheitern lassen.
+    result, accounts, frozen = scan(config=disabled_config())
     item = first(result)
 
     assert accounts.calls == [] and frozen.calls == []
@@ -255,7 +264,7 @@ def test_switch_off_with_real_default_functions_never_calls_rpc():
     for item in patches:
         item.start()
     try:
-        result = scan_pool_security([{}], CONFIG)
+        result = scan_pool_security([{}], disabled_config())
     finally:
         for item in patches:
             item.stop()
@@ -484,6 +493,54 @@ def test_errors_keep_pool_incomplete(accounts, frozen, reason):
     assert result["onchain_bounds_failed"] == 1
 
 
+class FailingFrozen:
+    def __init__(self):
+        self.calls = []
+
+    def __call__(self, mint, program, *, min_slot):
+        self.calls.append((mint, program, min_slot))
+        raise OnchainBoundsError("frozen_rpc_error")
+
+
+@pytest.mark.parametrize(
+    "accounts, frozen, reason",
+    [
+        (Accounts(error=OnchainBoundsError("rpc_error")), None, "rpc_error"),
+        (None, FailingFrozen(), "frozen_rpc_error"),
+    ],
+)
+def test_project_config_enabled_failed_query_stays_incomplete(accounts, frozen, reason):
+    # Echte Projekt-Config (ohne Kopie/Änderung): Schalter ist an, die
+    # Abfrage wird tatsächlich versucht, scheitert und darf nie "bereit"
+    # ergeben.
+    assert CONFIG["market_cap_onchain_bounds"]["allow_onchain_bounds"] is True
+    result, used_accounts, used_frozen = scan(
+        config=CONFIG, accounts=accounts, frozen=frozen
+    )
+    item = first(result)
+    bounds = item["market_cap_onchain_bounds"]
+
+    # Frozen-Abfrage läuft zuerst und wird in beiden Fällen aufgerufen.
+    assert used_frozen.calls
+    if reason == "rpc_error":
+        # Authority-Fehlerfall: Authority-Abfrage wurde tatsächlich aufgerufen.
+        assert used_accounts.calls
+    else:
+        # Frozen-Fehlerfall: danach keine Authority-Abfrage mehr.
+        assert used_accounts.calls == []
+    assert bounds["status"] == "error"
+    assert bounds["decision"] == {"status": "unclear", "reason": reason}
+    assert item["status"] == "incomplete"
+    assert item["status"] != "ready_for_full_risk_screen"
+    assert item["missing_checks"] == ["market_cap_usd"]
+    assert item["market_cap_basis"] != "onchain_bounds"
+    assert result["onchain_bounds_attempted"] == 1
+    assert result["onchain_bounds_failed"] == 1
+    assert all(
+        pool["status"] != "ready_for_full_risk_screen" for pool in result["pools"]
+    )
+
+
 def test_slot_span_limit_comes_from_config():
     result, _, _ = scan(config=enabled_config(max_slot_span=15), accounts=Accounts(slot=1016))
     assert first(result)["market_cap_onchain_bounds"]["decision"]["reason"] == "slot_span_exceeded"
@@ -660,7 +717,7 @@ def test_end_to_end_null_authorities_not_counted(monkeypatch):
 
 def test_end_to_end_switch_off_never_calls_bounds_methods(monkeypatch):
     fake = FakeRpc(TOKEN_PROGRAM_ID, rows())
-    result = real_scan(fake, monkeypatch, config=CONFIG)
+    result = real_scan(fake, monkeypatch, config=disabled_config())
 
     assert "getMultipleAccounts" not in fake.methods
     assert fake.methods.count("getProgramAccountsV2") == 1
@@ -685,7 +742,7 @@ def test_log_details_are_compact_and_marked_internal():
 def test_log_details_without_bounds():
     from desk.__main__ import _check_details
 
-    result, _, _ = scan(config=CONFIG)
+    result, _, _ = scan(config=disabled_config())
     details = _check_details(first(result))["market_cap"]["onchain_bounds"]
     assert details["status"] == "disabled"
     assert _check_details({})["market_cap"]["onchain_bounds"] is None

@@ -1,6 +1,7 @@
 """Ganze Prüfkette: Vorprüfung -> RugCheck -> Liquidität -> Holder ->
 Marktkapitalisierung. Externe Abfragen sind durch Testdaten ersetzt."""
 
+import copy
 from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
@@ -157,8 +158,11 @@ def test_fully_confirmed_token_is_ready():
 
 
 def test_upper_bound_alone_never_makes_token_ready():
-    # Alles bestätigt, aber keine gemeldete Umlaufmenge
-    item = run(full_list=True)
+    # Alles bestätigt, aber keine gemeldete Umlaufmenge; eigene
+    # On-Chain-Spanne ausdrücklich aus (eigene Config-Kopie).
+    config = copy.deepcopy(CONFIG)
+    config["market_cap_onchain_bounds"]["allow_onchain_bounds"] = False
+    item = run(full_list=True, config=config)
 
     market_cap = item["market_cap_evaluation"]
 

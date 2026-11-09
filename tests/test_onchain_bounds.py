@@ -952,14 +952,19 @@ def test_target_invalid_input(kwargs):
     assert onchain_target_amount_raw(**params) is None
 
 
-def test_config_switch_is_off_by_default():
-    assert CONFIG["market_cap_onchain_bounds"]["allow_onchain_bounds"] is False
+def test_config_switch_is_on():
+    # Freigegeben: Schalter an, Grenzen unverändert.
+    assert CONFIG["market_cap_onchain_bounds"] == {
+        "allow_onchain_bounds": True,
+        "max_account_calls_per_token": 10,
+        "max_slot_span": 150,
+    }
 
 
 def test_config_copy_is_independent():
     config = copy.deepcopy(CONFIG)
-    config["market_cap_onchain_bounds"]["allow_onchain_bounds"] = True
-    assert CONFIG["market_cap_onchain_bounds"]["allow_onchain_bounds"] is False
+    config["market_cap_onchain_bounds"]["allow_onchain_bounds"] = False
+    assert CONFIG["market_cap_onchain_bounds"]["allow_onchain_bounds"] is True
 
 
 @pytest.mark.parametrize("target", [pct(1), pct(41)])
