@@ -59,7 +59,8 @@
 ## Infrastruktur
 - `.github/workflows/tests.yml`: Tests bei jedem PR und auf `main`, nur lesend.
 - `.github/workflows/scan.yml`: nur manuell; erst Tests, dann Scan. Protokoll geht in den Branch `desk-data` (`events.jsonl`), nie auf `main`. `data/events.jsonl` auf `main` ist nur noch Archiv.
-- Secrets in GitHub: `SOLANA_RPC_URL`, `DEXPAPRIKA_API_KEY`. Die öffentliche Solana-RPC liefert bei `getTokenLargestAccounts` meist 429, Holder-Prüfung deshalb nur im GitHub-Scan.
+- Secrets in GitHub: `SOLANA_RPC_URL` (vollständige Helius-URL `https://mainnet.helius-rpc.com/?api-key=…`, kostenloser Tarif: 1 Mio. Credits/Monat, 10 Anfragen/s), `DEXPAPRIKA_API_KEY`. Ohne gültige https-Adresse schlägt die RPC-Abfrage fehl (kein Zurückfallen auf die öffentliche RPC), Holder-Prüfung dann „unvollständig“. Helius ist in der Cloud-Umgebung nicht freigegeben, Holder-Prüfung deshalb nur im GitHub-Scan.
+- RPC-Fehlermeldungen enthalten nie die URL (API-Key), siehe `_safe_request_error` in `desk/solana_rpc.py`.
 - Cloud-Umgebung `solana-memecoin-desk` erlaubt api.dexpaprika.com, api.rugcheck.xyz, api.geckoterminal.com, api.mainnet.solana.com.
 - pytest ist in der Cloud-Umgebung nicht vorinstalliert: lokal in einer venv außerhalb des Repos installieren.
 
@@ -68,15 +69,21 @@
 - 2026-11-09 – Arbeitsregeln zur Verbrauchsminimierung in CLAUDE.md festgelegt.
 - 2026-11-09 – Phase 0 (PR #2) und Phase 1 (PR #3) gemergt; CLAUDE.md (PR #4) gemergt. Tests: 329 bestanden.
 - 2026-11-09 – Live-Scan nach Phase 1: 58 Pools, 0 bereit; Liquiditätsvergleich 10/10 bestätigt, Holder-RPC 8/8 erfolgreich, aber Top-10, Entwickler-Anteil und Marktkapitalisierung bei allen geprüften Token unklar.
+- 2026-11-09 – Datenquellen-Recherche: Holder-Liste über Helius (kostenlos) gewählt; Birdeye/Solscan/Moralis zu teuer bzw. Black Box; Jupiter `circSupply` undokumentiert, höchstens Gegenprobe. Für die Umlaufmenge gibt es keine nachvollziehbare Quelle (Entscheidung des Nutzers offen, ob eine selbst berechnete, belegte Umlaufmenge erlaubt wird).
+- 2026-11-09 – Helius validiert (nur Test-Branch, ca. 204 Credits): `getProgramAccountsV2` und DAS `getTokenAccounts` liefern für Token-2022 (NAOF, PAD, USAR) und klassische SPL-Token (MAGGIE, TAOLF) alle Konten mit Eigentümer; Summe = Mint-Supply exakt; V2 liefert zusätzlich leere Konten. USAR-Widerspruch: Verteilung hat sich durch Kurssturz (−99,999 %, Pool hält danach 99,65 %) geändert; alte Methode liefert auf gleicher Datenbasis korrekte Werte.
+- 2026-11-09 – PR #7 gemergt: API-Key nicht mehr in RPC-Fehlermeldungen. Aufräum-PR: Testdateien von `main` entfernt (PR #8 war versehentlich gemergt), kein stilles Zurückfallen auf die öffentliche RPC.
 
 ## Offene Probleme
-- Praktisch wird kein Token „bereit“: Die 20 größten Konten erfassen oft unter 50 % der Menge, GeckoTerminal meldet die Umlaufmenge nur für etwa 5 % der Token. Abhilfe bräuchte eine vollständige Holder-Liste bzw. andere Datenquelle (Kosten klären, Nutzer entscheidet).
+- Praktisch wird kein Token „bereit“: Die 20 größten Konten erfassen oft unter 50 % der Menge (Abhilfe: vollständige Holder-Liste über Helius, noch nicht eingebaut), GeckoTerminal meldet die Umlaufmenge nur für etwa 5 % der Token (keine nachvollziehbare Alternative, Nutzer entscheidet).
+- Holder-Bewertung gilt nur für ihren Zeitpunkt (Beispiel USAR); vor simulierten Käufen später neu prüfen.
 - Wallets derselben Person nicht erkennbar; Bonding-Curve-Token und Pools ohne SOL/USDC/USDT bleiben unvollständig.
 - Nur 10 Token pro Lauf; Scan nur manuell.
-- Offener PR #1 („Add files via upload“, Branch `desk/__init__.py`) vermutlich versehentlich: Nutzer entscheidet.
+- Offener PR #1 („Add files via upload“, Branch `desk/__init__.py`): leerer Commit, veraltete Erstfassung ohne eigenständige Änderungen, gemeinsame Geschichte mit `main` fehlt. Schließen ohne Verlust möglich, Nutzer entscheidet.
+- Test-Branch `claude/helius-verbindungstest` (enthält die Testskripte) noch vorhanden, Nutzer entscheidet über Löschung.
 - Offene Fragen: Repo öffentlich oder privat? Was ist im 20-€-Budget schon enthalten?
 
 ## Nächster Schritt
-Nutzer entscheidet zwischen
-- (a) Datenquelle für eine vollständige Holder-Liste und die Umlaufmenge prüfen (Kosten zuerst klären), oder
-- (b) Phase 2 starten: Paper-Broker (SQLite, simulierte Käufe/Verkäufe mit Gebühren und Slippage, Stops über `risk.py`, Kennzahlen).
+Vollständige Holder-Liste einbauen (Freigabe des Nutzers nötig):
+- `getProgramAccountsV2` mit Mint-Filter (klassisch zusätzlich `dataSize 165`, Token-2022 ohne), nur Owner + Menge, leere Konten verwerfen.
+- Pflicht, sonst „unvollständig“: alle Seiten geladen, jedes Konto mit Bestand hat Eigentümer, Summe = Mint-Supply exakt, Obergrenze z. B. 30 Seiten.
+- Supply und Liste direkt nacheinander abfragen, Slot protokollieren. Prüfregeln (25 % / 3 %) unverändert.

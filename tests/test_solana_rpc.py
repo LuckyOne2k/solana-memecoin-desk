@@ -14,6 +14,12 @@ from desk.solana_rpc import (
 MINT = "TestMint123"
 
 
+@pytest.fixture(autouse=True)
+def rpc_url_env(monkeypatch):
+    """Tests laufen nie gegen eine echte RPC; Adresse ist ein Platzhalter."""
+    monkeypatch.setenv("SOLANA_RPC_URL", "https://rpc.test.invalid")
+
+
 def make_largest_account(amount, address):
     return {
         "address": address,
@@ -350,3 +356,45 @@ def test_rpc_connection_error_does_not_leak_url_or_key():
     assert "GEHEIM" not in message
     assert "api-key" not in message
     assert message == "Solana RPC request failed: ConnectionError"
+
+
+@pytest.mark.parametrize("value", [None, "", "   "])
+def test_rpc_call_fails_without_rpc_url(monkeypatch, value):
+    if value is None:
+        monkeypatch.delenv("SOLANA_RPC_URL", raising=False)
+    else:
+        monkeypatch.setenv("SOLANA_RPC_URL", value)
+
+    with patch("desk.solana_rpc.requests.post") as mock_post:
+        with pytest.raises(SolanaRpcError, match="not set"):
+            _rpc_call("getHealth", [])
+
+    mock_post.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    "value",
+    ["GEHEIM-12345", "http://rpc.example.invalid/?api-key=GEHEIM-12345"],
+)
+def test_rpc_call_rejects_non_https_url_without_leaking(monkeypatch, value):
+    monkeypatch.setenv("SOLANA_RPC_URL", value)
+
+    with patch("desk.solana_rpc.requests.post") as mock_post:
+        with pytest.raises(SolanaRpcError) as excinfo:
+            _rpc_call("getHealth", [])
+
+    assert "GEHEIM" not in str(excinfo.value)
+    assert "not an https URL" in str(excinfo.value)
+    mock_post.assert_not_called()
+
+
+def test_rpc_call_uses_configured_url(monkeypatch):
+    monkeypatch.setenv("SOLANA_RPC_URL", "https://rpc.example.invalid/?api-key=X")
+
+    with patch(
+        "desk.solana_rpc.requests.post",
+        return_value=make_rpc_response(200),
+    ) as mock_post:
+        _rpc_call("getHealth", [])
+
+    assert mock_post.call_args.args[0] == "https://rpc.example.invalid/?api-key=X"
