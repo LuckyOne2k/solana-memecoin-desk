@@ -33,7 +33,7 @@ values stop the program; `mode` must be `paper`.
 | Token-2022 extensions | active: permanent delegate and any extension not classified safe keep the pool `incomplete` |
 | Market cap (`desk/market_cap.py`) | active: passes only with reported circulating supply; upper bound can only reject; FDV separate |
 | On-chain market cap range (`desk/circulating_bounds.py`) | implemented, **on by default** (`market_cap_onchain_bounds.allow_onchain_bounds: true`; `false` switches it off) |
-| `desk/rules.py`, `desk/risk.py`, `desk/debate.py` | kept, not wired yet |
+| `desk/risk.py`, `desk/debate.py` | kept, not wired yet |
 | Paper trading, strategy, AI agents, app | not implemented |
 
 ## Check rules (phase 1)
@@ -172,7 +172,6 @@ pump.fun bonding curve have no RugCheck market data and stay `incomplete`.
 4. `pip install -r requirements.txt`
 5. Copy `.env.example` to `.env` (no secrets are needed for the demo)
 6. `python -m desk` (run the scan), `python -m pytest` (run the tests)
-7. Optional: `python -m desk.market_data` (connection diagnostics without security checks)
 
 ## GitHub Actions
 - **Tests** (`.github/workflows/tests.yml`): runs on every pull request and on

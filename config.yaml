@@ -1,5 +1,4 @@
 mode: paper
-timezone: Europe/Berlin
 
 # Einzige Quelle für alle Grenzwerte. Wird von desk/config.py geladen
 # und beim Start geprüft. Fehlende oder unplausible Werte stoppen das
@@ -73,6 +72,3 @@ paper_trading:
 debate:
   bear_objections_required: 3
   unresolved_objection_veto: true
-
-schedule:
-  interval_minutes: 15
