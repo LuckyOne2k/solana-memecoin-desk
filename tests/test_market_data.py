@@ -13,7 +13,7 @@ from desk.market_data import (
     MarketDataError,
     fetch_pools_by_age,
     fetch_new_pools,
-    fetch_token_market_caps,
+    fetch_token_market_data,
     prepare_pool,
     prepare_pools,
 )
@@ -98,8 +98,8 @@ def test_prepare_pool_marks_missing_security_checks():
 
     assert result["pair_age_hours"] == 48
     assert result["token_address"] == "TokenMintAddress123"
-    assert result["fdv_usd"] == 900000
-    assert result["market_cap_usd"] is None
+    assert result["fdv_usd_dexpaprika"] == 900000
+    assert result["market_cap_usd_reported"] is None
     assert result["status"] == "incomplete"
     assert "mint_authority_revoked" in result["missing_checks"]
 
@@ -137,7 +137,7 @@ def test_prepare_pool_does_not_guess_unknown_token_pair():
 # GeckoTerminal: Marktkapitalisierung
 # --------------------------------------------------
 
-def test_fetch_token_market_caps_returns_market_caps():
+def test_fetch_token_market_data_returns_market_caps():
     response = Mock()
     response.raise_for_status.return_value = None
     response.json.return_value = {
@@ -156,30 +156,30 @@ def test_fetch_token_market_caps_returns_market_caps():
         "desk.market_data.requests.get",
         return_value=response,
     ) as mocked_get:
-        result = fetch_token_market_caps(
+        result = fetch_token_market_data(
             ["TokenMintAddress123"]
         )
 
-    assert result["tokenmintaddress123"] == 150000.0
+    assert result["tokenmintaddress123"]["market_cap_usd"] == 150000.0
     mocked_get.assert_called_once()
 
 
-def test_fetch_token_market_caps_handles_empty_input():
-    result = fetch_token_market_caps([])
+def test_fetch_token_market_data_handles_empty_input():
+    result = fetch_token_market_data([])
 
     assert result == {}
 
 
-def test_fetch_token_market_caps_handles_api_error():
+def test_fetch_token_market_data_handles_api_error():
     with patch(
         "desk.market_data.requests.get",
         side_effect=requests.RequestException("API unavailable"),
     ):
         with pytest.raises(MarketDataError):
-            fetch_token_market_caps(["TokenMintAddress123"])
+            fetch_token_market_data(["TokenMintAddress123"])
 
 
-def test_fetch_token_market_caps_does_not_use_fdv_as_market_cap():
+def test_fetch_token_market_data_does_not_use_fdv_as_market_cap():
     response = Mock()
     response.raise_for_status.return_value = None
     response.json.return_value = {
@@ -199,12 +199,13 @@ def test_fetch_token_market_caps_does_not_use_fdv_as_market_cap():
         "desk.market_data.requests.get",
         return_value=response,
     ):
-        result = fetch_token_market_caps(
+        result = fetch_token_market_data(
             ["TokenMintAddress123"]
         )
 
     assert "tokenmintaddress123" in result
-    assert result["tokenmintaddress123"] is None
+    assert result["tokenmintaddress123"]["market_cap_usd"] is None
+    assert result["tokenmintaddress123"]["fdv_usd"] == 250000.0
 
 
 # --------------------------------------------------
@@ -213,8 +214,14 @@ def test_fetch_token_market_caps_does_not_use_fdv_as_market_cap():
 
 def test_prepare_pools_fetches_and_assigns_market_caps():
     with patch(
-        "desk.market_data.fetch_token_market_caps",
-        return_value={"tokenmintaddress123": 150000.0},
+        "desk.market_data.fetch_token_market_data",
+        return_value={
+            "tokenmintaddress123": {
+                "market_cap_usd": 500000.0,
+                "price_usd": 0.0005,
+                "fdv_usd": 500000.0,
+            }
+        },
     ):
         results = prepare_pools(
             [make_pool()],
@@ -223,14 +230,23 @@ def test_prepare_pools_fetches_and_assigns_market_caps():
         )
 
     assert len(results) == 1
-    assert results[0]["market_cap_usd"] == 150000.0
-    assert results[0]["market_cap_source"] == "geckoterminal"
+    assert results[0]["market_cap_usd_reported"] == 500000.0
+    assert results[0]["market_cap_reported_source"] == "geckoterminal"
+    assert results[0]["price_usd_geckoterminal"] == 0.0005
+    # Bestätigt wird erst in der Prüfkette mit Blockchain-Daten.
+    assert "market_cap_usd" in results[0]["missing_checks"]
 
 
 def test_prepare_pools_handles_missing_market_cap():
     with patch(
-        "desk.market_data.fetch_token_market_caps",
-        return_value={"tokenmintaddress123": None},
+        "desk.market_data.fetch_token_market_data",
+        return_value={
+            "tokenmintaddress123": {
+                "market_cap_usd": None,
+                "price_usd": None,
+                "fdv_usd": None,
+            }
+        },
     ):
         results = prepare_pools(
             [make_pool()],
@@ -239,13 +255,13 @@ def test_prepare_pools_handles_missing_market_cap():
         )
 
     assert len(results) == 1
-    assert results[0]["market_cap_usd"] is None
+    assert results[0]["market_cap_usd_reported"] is None
     assert "market_cap_usd" in results[0]["missing_checks"]
 
 
 def test_prepare_pools_handles_geckoterminal_errors_safely():
     with patch(
-        "desk.market_data.fetch_token_market_caps",
+        "desk.market_data.fetch_token_market_data",
         side_effect=MarketDataError("API unavailable"),
     ):
         results = prepare_pools(
@@ -255,7 +271,7 @@ def test_prepare_pools_handles_geckoterminal_errors_safely():
         )
 
     assert len(results) == 1
-    assert results[0]["market_cap_usd"] is None
+    assert results[0]["market_cap_usd_reported"] is None
     assert "market_cap_usd" in results[0]["missing_checks"]
     assert "market_data_error" in results[0]
     assert results[0]["status"] == "incomplete"
@@ -270,7 +286,7 @@ def test_prepare_pool_marks_all_security_checks_as_open():
         make_pool(),
         CONFIG,
         now=NOW,
-        market_caps={"tokenmintaddress123": 150000},
+        market_caps={"tokenmintaddress123": {"market_cap_usd": 500000}},
     )
 
     for check in SECURITY_CHECKS:

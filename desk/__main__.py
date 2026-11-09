@@ -9,6 +9,76 @@ from desk.market_data import (
 from desk.security_scan import scan_pool_security
 
 
+def _check_details(pool):
+    """Kompakte, nachvollziehbare Prüfdetails für das Protokoll."""
+    liquidity = pool.get("liquidity_check") or {}
+    holders = pool.get("holder_evaluation") or {}
+    market_cap = pool.get("market_cap_evaluation") or {}
+    price = market_cap.get("price") or {}
+
+    return {
+        "pool_address": pool.get("pool_address"),
+        "dex_name": pool.get("dex_name"),
+        "token_classification": pool.get("token_classification"),
+        "token_classification_detail": pool.get(
+            "token_classification_detail"
+        ),
+        "liquidity_check": {
+            "status": liquidity.get("status"),
+            "reason": liquidity.get("reason"),
+            "dexpaprika_usd": liquidity.get("dexpaprika_liquidity_usd"),
+            "rugcheck_usd": liquidity.get("rugcheck_market_liquidity_usd"),
+            "deviation_pct": liquidity.get("deviation_pct"),
+        },
+        "holders": {
+            "data_scope": holders.get("data_scope"),
+            "is_complete_distribution": holders.get("is_complete_distribution"),
+            "top10_status": holders.get("top10_status"),
+            "top10_share_lower_bound_pct": holders.get(
+                "top10_share_lower_bound_pct"
+            ),
+            "top10_share_upper_bound_pct": holders.get(
+                "top10_share_upper_bound_pct"
+            ),
+            "unseen_share_pct": holders.get("unseen_share_pct"),
+            "pool_share_pct": holders.get("pool_share_pct"),
+            "burned_amount_raw": holders.get("burned_amount_raw"),
+            "counted_owners_in_sample": holders.get(
+                "counted_owners_in_sample"
+            ),
+            "dev_status": holders.get("dev_status"),
+            "dev_share_lower_bound_pct": holders.get(
+                "dev_share_lower_bound_pct"
+            ),
+            "dev_share_upper_bound_pct": holders.get(
+                "dev_share_upper_bound_pct"
+            ),
+            "unconfirmed_reasons": holders.get("unconfirmed_reasons"),
+        },
+        "market_cap": {
+            "status": market_cap.get("status"),
+            "reason": market_cap.get("reason"),
+            "basis": market_cap.get("basis"),
+            "market_cap_usd": market_cap.get("market_cap_usd"),
+            "market_cap_upper_bound_usd": market_cap.get(
+                "market_cap_upper_bound_usd"
+            ),
+            "reported_market_cap_usd": pool.get("market_cap_usd_reported"),
+            "fdv_onchain_usd": market_cap.get("fdv_onchain_usd"),
+            "price_status": price.get("status"),
+            "price_reason": price.get("reason"),
+            "price_deviation_pct": price.get("deviation_pct"),
+            "geckoterminal_price_usd": price.get("geckoterminal_price_usd"),
+            "rugcheck_price_usd": price.get("rugcheck_price_usd"),
+            "price_used_usd": market_cap.get("price_used_usd"),
+            "price_used_source": market_cap.get("price_used_source"),
+            "price_used_basis": market_cap.get("price_used_basis"),
+        },
+        "fdv_usd_dexpaprika": pool.get("fdv_usd_dexpaprika"),
+        "fdv_usd_geckoterminal": pool.get("fdv_usd_geckoterminal"),
+    }
+
+
 def main():
     print("SOLANA MEMECOIN DESK")
     print("===================")
@@ -130,12 +200,7 @@ def main():
                 ),
                 "security_error": pool.get("security_error"),
                 "holder_error": pool.get("holder_error"),
-                "top10_observed_share_lower_bound_pct": pool.get(
-                    "top10_observed_share_lower_bound_pct"
-                ),
-                "creator_observed_share_lower_bound_pct": pool.get(
-                    "creator_observed_share_lower_bound_pct"
-                ),
+                **_check_details(pool),
             }
         )
 

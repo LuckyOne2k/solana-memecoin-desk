@@ -94,6 +94,86 @@ def _number(value):
     return number
 
 
+# knownAccounts-Typen, die als Börse gelten. Nur ausdrücklich
+# gekennzeichnete Konten; nichts wird geraten.
+EXCHANGE_LABEL_TYPES = {"EXCHANGE", "CEX"}
+POOL_LABEL_TYPES = {"AMM"}
+LOCKER_LABEL_TYPES = {"LOCKER"}
+
+
+def extract_holder_labels(report, mint):
+    """Liest Pool-, Börsen- und Locker-Kennzeichnungen aus RugCheck.
+
+    labels_complete ist nur True, wenn "markets" und "knownAccounts"
+    vorhanden und alle Einträge lesbar sind.
+    """
+    markets = report.get("markets")
+    known = report.get("knownAccounts")
+
+    complete = isinstance(markets, list) and isinstance(known, dict)
+
+    pool_vaults = set()
+    pool_owners = set()
+    exchanges = set()
+    lockers = set()
+    market_liquidity = {}
+    invalid_rows = 0
+
+    for market in markets if isinstance(markets, list) else []:
+        if not isinstance(market, dict):
+            invalid_rows += 1
+            continue
+
+        pubkey = market.get("pubkey")
+
+        if not isinstance(pubkey, str) or not pubkey.strip():
+            invalid_rows += 1
+            continue
+
+        pool_owners.add(pubkey)
+
+        for side in ("A", "B"):
+            if market.get(f"mint{side}") == mint:
+                vault = market.get(f"liquidity{side}")
+
+                if isinstance(vault, str) and vault.strip():
+                    pool_vaults.add(vault)
+                else:
+                    invalid_rows += 1
+
+        lp = market.get("lp")
+
+        if isinstance(lp, dict):
+            base_usd = _number(lp.get("baseUSD"))
+            quote_usd = _number(lp.get("quoteUSD"))
+
+            if base_usd is not None and quote_usd is not None:
+                market_liquidity[pubkey] = base_usd + quote_usd
+
+    for address, info in known.items() if isinstance(known, dict) else []:
+        if not isinstance(info, dict) or not isinstance(address, str):
+            invalid_rows += 1
+            continue
+
+        label_type = str(info.get("type", "")).upper()
+
+        if label_type in POOL_LABEL_TYPES:
+            pool_owners.add(address)
+        elif label_type in EXCHANGE_LABEL_TYPES:
+            exchanges.add(address)
+        elif label_type in LOCKER_LABEL_TYPES:
+            lockers.add(address)
+
+    return {
+        "pool_vault_accounts": sorted(pool_vaults),
+        "pool_owner_addresses": sorted(pool_owners),
+        "exchange_addresses": sorted(exchanges),
+        "locker_addresses": sorted(lockers),
+        "invalid_label_rows": invalid_rows,
+        "labels_complete": complete and invalid_rows == 0,
+    }, market_liquidity
+
+
 def analyze_rugcheck_report(report, summary, *, lp_locked_min_pct):
     if (
         isinstance(lp_locked_min_pct, bool)
@@ -191,9 +271,26 @@ def analyze_rugcheck_report(report, summary, *, lp_locked_min_pct):
         else None
     )
 
+    holder_labels, market_liquidity = extract_holder_labels(
+        report,
+        report.get("mint"),
+    )
+
+    supply_raw = token.get("supply")
+
+    if not isinstance(supply_raw, int) or isinstance(supply_raw, bool):
+        supply_raw = None
+
     return {
         "mint": report.get("mint"),
-        "creator_address": creator,
+        "creator_address": creator if isinstance(creator, str) and creator else None,
+        "holder_labels": holder_labels,
+        "market_liquidity_usd_by_pool": market_liquidity,
+        "total_market_liquidity_usd": _number(
+            report.get("totalMarketLiquidity")
+        ),
+        "rugcheck_price_usd": _number(report.get("price")),
+        "rugcheck_supply_raw": supply_raw,
         "mint_authority_revoked": mint_revoked,
         "freeze_authority_revoked": freeze_revoked,
         "lp_locked_pct": lp_locked_pct,

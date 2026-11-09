@@ -44,6 +44,10 @@ SCHEMA = {
         "reject_dev_share_above_pct": PERCENT,
         "lp_locked_min_pct": PERCENT,
     },
+    "data_quality": {
+        "max_liquidity_deviation_pct": PERCENT,
+        "max_price_deviation_pct": PERCENT,
+    },
     "paper_trading": {
         "max_position_pct": PERCENT,
         "initial_stop_loss_pct": PERCENT,
@@ -105,6 +109,15 @@ def validate_config(config):
             _check_value(section, key, kind, values[key])
 
     scanner = config["scanner"]
+
+    # Entfernter Schalter: Eine Schätzung aus der Gesamtmenge darf die
+    # Marktkapitalisierungs-Prüfung nie bestehen. Ein noch vorhandener
+    # Eintrag würde eine Lockerung vortäuschen.
+    if "market_cap_allow_total_supply_estimate" in scanner:
+        raise ConfigError(
+            "scanner.market_cap_allow_total_supply_estimate wird nicht "
+            "mehr unterstützt: Eine Schätzung kann die Prüfung nie bestehen"
+        )
 
     if scanner["pair_age_hours_min"] > scanner["pair_age_hours_max"]:
         raise ConfigError(

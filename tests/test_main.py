@@ -127,3 +127,31 @@ def test_main_stops_on_invalid_config(capsys):
     assert mocked_log.call_args.args[0] == "config_error"
 
     assert "Fehler in der Konfiguration" in capsys.readouterr().out
+
+
+def test_check_details_show_price_basis():
+    pool = {
+        "market_cap_evaluation": {
+            "status": "unclear",
+            "price": {
+                "status": "confirmed",
+                "reason": "price_sources_agree",
+                "deviation_pct": 9.09,
+                "geckoterminal_price_usd": 0.0005,
+                "rugcheck_price_usd": 0.00055,
+            },
+            "price_used_usd": 0.00055,
+            "price_used_source": "rugcheck",
+            "price_used_basis": "higher_of_two_agreeing_sources",
+            "market_cap_upper_bound_usd": 550000.0,
+        }
+    }
+
+    details = app._check_details(pool)["market_cap"]
+
+    assert details["geckoterminal_price_usd"] == 0.0005
+    assert details["rugcheck_price_usd"] == 0.00055
+    assert details["price_used_usd"] == 0.00055
+    assert details["price_used_source"] == "rugcheck"
+    assert details["price_used_basis"] == "higher_of_two_agreeing_sources"
+    assert details["market_cap_upper_bound_usd"] == 550000.0
