@@ -1,5 +1,8 @@
 
+import base64
+import binascii
 import os
+import struct
 import time
 
 import requests
@@ -422,3 +425,441 @@ def fetch_holder_snapshot(
     snapshot["supply_decimals"] = supply_data.get("decimals")
 
     return snapshot
+
+
+# ---------------------------------------------------------------------
+# Vollständige Holder-Liste (Helius getProgramAccountsV2)
+# Plan: docs/helius_integration_plan.md, Abschnitt 1 und 2.
+# Noch nicht in die Prüfkette eingebunden (PR B).
+# ---------------------------------------------------------------------
+
+TOKEN_PROGRAM_ID = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+TOKEN_2022_PROGRAM_ID = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+
+CLASSIC_ACCOUNT_SIZE = 165
+# Grundgröße eines Mint-Kontos ohne Erweiterungen
+BASE_MINT_SIZE = 82
+PAGE_LIMIT = 1000
+# dataSlice: Owner (32 Byte) + Menge (u64 little-endian, 8 Byte)
+SLICE_OFFSET = 32
+SLICE_LENGTH = 40
+
+PERMANENT_DELEGATE_EXTENSION = "permanentDelegate"
+UNPARSEABLE_EXTENSION = "unparseableExtension"
+
+# Namen der Token-2022-Erweiterungen, wie sie jsonParsed ausgibt.
+# Andere Namen werden als unbekannt erfasst.
+KNOWN_TOKEN_2022_EXTENSIONS = frozenset(
+    {
+        "transferFeeConfig",
+        "transferFeeAmount",
+        "mintCloseAuthority",
+        "confidentialTransferMint",
+        "confidentialTransferAccount",
+        "confidentialTransferFeeConfig",
+        "confidentialTransferFeeAmount",
+        "confidentialMintBurn",
+        "defaultAccountState",
+        "immutableOwner",
+        "memoTransfer",
+        "nonTransferable",
+        "nonTransferableAccount",
+        "interestBearingConfig",
+        "cpiGuard",
+        "permanentDelegate",
+        "transferHook",
+        "transferHookAccount",
+        "metadataPointer",
+        "tokenMetadata",
+        "groupPointer",
+        "tokenGroup",
+        "groupMemberPointer",
+        "tokenGroupMember",
+        "scaledUiAmountConfig",
+        "pausableConfig",
+        "pausableAccount",
+    }
+)
+
+ABSENT = "absent"
+PRESENT = "present"
+UNKNOWN = "unknown"
+
+_B58_ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
+
+
+class HolderListError(SolanaRpcError):
+    """Vollständige Holder-Liste nicht belegbar.
+
+    `reason` ist ein fester Grund ohne URL, Key oder Rohdaten. Es gibt
+    nie ein Teilergebnis.
+    """
+
+    def __init__(self, reason):
+        super().__init__(f"Full holder list rejected: {reason}")
+        self.reason = reason
+
+
+def _b58encode(data):
+    number = int.from_bytes(data, "big")
+    encoded = ""
+
+    while number:
+        number, rest = divmod(number, 58)
+        encoded = _B58_ALPHABET[rest] + encoded
+
+    leading_zeros = len(data) - len(data.lstrip(b"\0"))
+    return "1" * leading_zeros + encoded
+
+
+def _is_int(value):
+    return isinstance(value, int) and not isinstance(value, bool)
+
+
+def _context_slot(result):
+    """Slot aus einer RpcResponse {context: {slot}, value}; sonst None."""
+    if not isinstance(result, dict):
+        return None
+
+    context = result.get("context")
+
+    if not isinstance(context, dict):
+        return None
+
+    slot = context.get("slot")
+    return slot if _is_int(slot) and slot >= 0 else None
+
+
+def _call(method, params, rpc_url):
+    """RPC-Aufruf; Fehler werden zu festem Grund ohne URL."""
+    try:
+        return _rpc_call(method, params, rpc_url=rpc_url)
+    except SolanaRpcError:
+        raise HolderListError("rpc_error") from None
+
+
+def _read_extensions(info, space):
+    """Token-2022-Erweiterungen -> (Namen, unbekannte, Delegate-Status, Delegate)."""
+    extensions = info.get("extensions")
+
+    if extensions is None:
+        # Ohne Erweiterungen hat das Mint-Konto genau die Grundgröße.
+        if _is_int(space) and space == BASE_MINT_SIZE:
+            return [], [], ABSENT, None
+        return None, None, UNKNOWN, None
+
+    if not isinstance(extensions, list):
+        return None, None, UNKNOWN, None
+
+    names = []
+    unknown = []
+    delegate_status = ABSENT
+    delegate = None
+
+    for entry in extensions:
+        name = entry.get("extension") if isinstance(entry, dict) else None
+
+        if not isinstance(name, str) or not name:
+            return None, None, UNKNOWN, None
+
+        names.append(name)
+
+        if name == PERMANENT_DELEGATE_EXTENSION:
+            delegate_status = PRESENT
+            state = entry.get("state")
+            address = (
+                state.get("delegate") if isinstance(state, dict) else None
+            )
+            delegate = address if isinstance(address, str) and address else None
+        elif name not in KNOWN_TOKEN_2022_EXTENSIONS:
+            unknown.append(name)
+
+    # Eine nicht lesbare Erweiterung könnte ein Delegate sein.
+    if delegate_status == ABSENT and UNPARSEABLE_EXTENSION in names:
+        delegate_status = UNKNOWN
+
+    return names, unknown, delegate_status, delegate
+
+
+def fetch_mint_info(mint, rpc_url=None):
+    """Token-Programm, Decimals und Token-2022-Erweiterungen des Mints.
+
+    Permanent Delegate: "present" (Adresse kann None sein, zählt
+    trotzdem), "absent" nur bei belegtem Fehlen, sonst "unknown".
+    """
+    if not isinstance(mint, str) or not mint.strip():
+        raise ValueError("A token mint address is required")
+
+    result = _call(
+        "getAccountInfo",
+        [mint, {"encoding": "jsonParsed", "commitment": "finalized"}],
+        rpc_url,
+    )
+
+    slot = _context_slot(result)
+
+    if slot is None:
+        raise HolderListError("mint_slot_missing")
+
+    value = result.get("value")
+
+    if not isinstance(value, dict):
+        raise HolderListError("mint_not_found")
+
+    program = value.get("owner")
+
+    if program not in (TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID):
+        raise HolderListError("unsupported_token_program")
+
+    data = value.get("data")
+    parsed = data.get("parsed") if isinstance(data, dict) else None
+    info = parsed.get("info") if isinstance(parsed, dict) else None
+
+    if (
+        not isinstance(parsed, dict)
+        or parsed.get("type") != "mint"
+        or not isinstance(info, dict)
+    ):
+        raise HolderListError("mint_data_invalid")
+
+    decimals = info.get("decimals")
+
+    if not _is_int(decimals) or decimals < 0:
+        raise HolderListError("mint_data_invalid")
+
+    if program == TOKEN_PROGRAM_ID:
+        names, unknown, delegate_status, delegate = [], [], ABSENT, None
+    else:
+        names, unknown, delegate_status, delegate = _read_extensions(
+            info, value.get("space")
+        )
+
+    return {
+        "mint": mint,
+        "token_program": program,
+        "decimals": decimals,
+        "mint_info_slot": slot,
+        "token2022_extensions": names,
+        "unknown_extensions": unknown,
+        "extensions_readable": names is not None,
+        "permanent_delegate_status": delegate_status,
+        "permanent_delegate": delegate,
+    }
+
+
+def _fetch_supply(mint, rpc_url, min_slot=None):
+    config = {"commitment": "finalized"}
+
+    if min_slot is not None:
+        config["minContextSlot"] = min_slot
+
+    result = _call("getTokenSupply", [mint, config], rpc_url)
+    slot = _context_slot(result)
+
+    if slot is None:
+        raise HolderListError("supply_slot_missing")
+
+    value = result.get("value")
+    amount = _valid_amount(value.get("amount")) if isinstance(value, dict) else None
+    decimals = value.get("decimals") if isinstance(value, dict) else None
+
+    if amount is None or amount <= 0 or not _is_int(decimals):
+        raise HolderListError("supply_invalid")
+
+    return amount, decimals, slot
+
+
+def _decode_account(item, program):
+    """Ein Konto der Seite -> (Adresse, Owner, Menge); sonst Fehler."""
+    if not isinstance(item, dict):
+        raise HolderListError("invalid_account_data")
+
+    address = item.get("pubkey")
+    account = item.get("account")
+
+    if not isinstance(address, str) or not address or not isinstance(account, dict):
+        raise HolderListError("invalid_account_data")
+
+    # Gehört das Konto erkennbar zu einem anderen Programm -> Fehler.
+    if "owner" in account and account.get("owner") != program:
+        raise HolderListError("invalid_account_data")
+
+    data = account.get("data")
+
+    if (
+        not isinstance(data, list)
+        or len(data) != 2
+        or data[1] != "base64"
+        or not isinstance(data[0], str)
+    ):
+        raise HolderListError("invalid_account_data")
+
+    try:
+        raw = base64.b64decode(data[0], validate=True)
+    except (binascii.Error, ValueError):
+        raise HolderListError("invalid_account_data") from None
+
+    if len(raw) != SLICE_LENGTH:
+        raise HolderListError("invalid_account_data")
+
+    owner = _b58encode(raw[:32])
+    amount = struct.unpack("<Q", raw[32:40])[0]
+
+    return address, owner, amount
+
+
+def _page_parts(result):
+    """Erwartete Form (withContext): {context: {slot}, value: {accounts,
+    paginationKey}}. Jede andere Form -> Fehler, kein Ersatzweg."""
+    slot = _context_slot(result)
+
+    if slot is None:
+        raise HolderListError("page_slot_missing")
+
+    value = result.get("value")
+
+    if not isinstance(value, dict):
+        raise HolderListError("page_response_invalid")
+
+    accounts = value.get("accounts")
+
+    if not isinstance(accounts, list):
+        raise HolderListError("page_response_invalid")
+
+    key = value.get("paginationKey")
+
+    if key is not None and (not isinstance(key, str) or not key):
+        raise HolderListError("page_response_invalid")
+
+    return slot, accounts, key
+
+
+def fetch_full_holder_list(
+    mint,
+    mint_info,
+    *,
+    max_pages,
+    max_slot_span,
+    rpc_url=None,
+):
+    """Alle Token-Konten des Mints mit Owner und Menge.
+
+    Gibt nur ein vollständig geprüftes Ergebnis zurück, sonst
+    HolderListError mit festem Grund (siehe Plan, Abschnitt 1.3).
+
+    Grenze: Die Seiten werden nacheinander gelesen; das Ergebnis ist
+    keine atomare Momentaufnahme. Gegenläufige Überweisungen gleicher
+    Höhe können sich in der Summe ausgleichen. Die Slot-Spanne begrenzt
+    dieses Risiko, schließt es aber nicht aus.
+    """
+    if not isinstance(mint, str) or not mint.strip():
+        raise ValueError("A token mint address is required")
+
+    for name, value in (("max_pages", max_pages), ("max_slot_span", max_slot_span)):
+        if not _is_int(value) or value <= 0:
+            raise ValueError(f"{name} must be a positive integer")
+
+    if not isinstance(mint_info, dict) or mint_info.get("mint") != mint:
+        raise HolderListError("mint_info_mismatch")
+
+    program = mint_info.get("token_program")
+
+    if program not in (TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID):
+        raise HolderListError("unsupported_token_program")
+
+    supply_before, decimals, slot_before = _fetch_supply(mint, rpc_url)
+
+    if decimals != mint_info.get("decimals"):
+        raise HolderListError("decimals_mismatch")
+
+    filters = [{"memcmp": {"offset": 0, "bytes": mint}}]
+
+    # Token-2022-Konten mit Erweiterungen sind größer als 165 Byte.
+    if program == TOKEN_PROGRAM_ID:
+        filters.append({"dataSize": CLASSIC_ACCOUNT_SIZE})
+
+    page_slots = []
+    seen = set()
+    accounts = []
+    accounts_total = 0
+    key = None
+
+    while True:
+        if len(page_slots) >= max_pages:
+            raise HolderListError("too_many_pages")
+
+        config = {
+            "encoding": "base64",
+            "commitment": "finalized",
+            "withContext": True,
+            "minContextSlot": slot_before,
+            "limit": PAGE_LIMIT,
+            "dataSlice": {"offset": SLICE_OFFSET, "length": SLICE_LENGTH},
+            "filters": filters,
+        }
+
+        if key is not None:
+            config["paginationKey"] = key
+
+        result = _call("getProgramAccountsV2", [program, config], rpc_url)
+        slot, items, key = _page_parts(result)
+
+        if slot < slot_before:
+            raise HolderListError("page_slot_before_supply")
+
+        if page_slots and slot < page_slots[-1]:
+            raise HolderListError("page_slot_inconsistent")
+
+        page_slots.append(slot)
+
+        for item in items:
+            address, owner, amount = _decode_account(item, program)
+
+            if address in seen:
+                raise HolderListError("duplicate_account")
+
+            seen.add(address)
+            accounts_total += 1
+
+            if amount > 0:
+                accounts.append(
+                    {"address": address, "owner": owner, "amount": amount}
+                )
+
+        if key is None:
+            break
+
+    supply_after, _, slot_after = _fetch_supply(
+        mint, rpc_url, min_slot=page_slots[-1]
+    )
+
+    if slot_after < page_slots[-1]:
+        raise HolderListError("supply_slot_inconsistent")
+
+    slot_span = slot_after - slot_before
+
+    if slot_span > max_slot_span:
+        raise HolderListError("slot_span_exceeded")
+
+    if supply_after != supply_before:
+        raise HolderListError("supply_changed")
+
+    if sum(row["amount"] for row in accounts) != supply_before:
+        raise HolderListError("supply_sum_mismatch")
+
+    return {
+        "mint": mint,
+        "data_scope": "full_token_account_list",
+        "token_program": program,
+        "accounts": accounts,
+        "supply_amount_raw": supply_before,
+        "supply_decimals": decimals,
+        "sample_owner_mapping_complete": True,
+        "pages": len(page_slots),
+        "accounts_total": accounts_total,
+        "accounts_nonzero": len(accounts),
+        "slot_supply_before": slot_before,
+        "page_slots": page_slots,
+        "slot_supply_after": slot_after,
+        "slot_span": slot_span,
+    }

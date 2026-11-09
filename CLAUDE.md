@@ -41,7 +41,7 @@
 | `desk/market_data.py` | DexPaprika-Pools, GeckoTerminal-Preis/FDV/gemeldete Marktkapitalisierung, Vorprüfung |
 | `desk/token_classification.py` | Stablecoins/Staking-Token per geprüfter Mint-Adresse ausschließen |
 | `desk/security.py` | RugCheck: Authorities, LP-Sperre, Pool-/AMM-/Locker-Kennzeichnungen |
-| `desk/solana_rpc.py` | 20 größte Token-Konten + Gesamtmenge von der Blockchain |
+| `desk/solana_rpc.py` | 20 größte Token-Konten + Gesamtmenge; neu (PR A, noch nicht eingebunden): `fetch_mint_info`, `fetch_full_holder_list` |
 | `desk/data_quality.py` | Liquiditäts- und Preisvergleich zwischen Quellen |
 | `desk/holders.py` | Top-10-/Entwickler-Anteil mit Unter-/Obergrenze |
 | `desk/market_cap.py` | Marktkapitalisierung, Obergrenze, FDV |
@@ -74,6 +74,7 @@
 - 2026-11-09 – PR #7 gemergt: API-Key nicht mehr in RPC-Fehlermeldungen. PR #9 gemergt: Testdateien von `main` entfernt (PR #8 war versehentlich gemergt), kein stilles Zurückfallen auf die öffentliche RPC.
 - 2026-11-09 – PR #1 geschlossen (keine eigenständigen Änderungen). Testergebnisse dauerhaft in `docs/helius_validierung.md`, Umsetzungsplan in `docs/helius_integration_plan.md`. Helius-Integration grundsätzlich freigegeben; Umsetzung erst nach Freigabe des Plans.
 - 2026-11-09 – Plan-Entscheidungen: `holders.max_pages: 30` und `holders.max_slot_span: 150` freigegeben; Rückfall auf Top-20-Stichprobe erlaubt, Stichprobe darf aber nur ablehnen oder „unclear“ liefern, nie bestätigen; > 30 Seiten, Slot-Spanne überschritten, fehlende/widersprüchliche Slots → „unclear“; kein Teilergebnis gilt als vollständige Liste. Permanent Delegate (Token-2022) → „unclear“, Adresse + Erweiterung protokollieren, nie bereit; endgültige Ablehnungsregel später gesondert. Summenprüfung ist keine atomare Momentaufnahme (gegenläufige Überweisungen können sich ausgleichen).
+- 2026-11-09 – PR A (Helius, Abruf): `fetch_mint_info` und `fetch_full_holder_list` in `desk/solana_rpc.py`, Fehler als `HolderListError` mit festem Grund, nie Teilergebnis; noch nicht in `security_scan.py` eingebunden. Tests: 427 bestanden (90 neu). Antwortform von `getProgramAccountsV2` mit `withContext` nicht belegt; Parser akzeptiert nur `{context.slot, value.accounts, value.paginationKey}`.
 
 ## Offene Probleme
 - Praktisch wird kein Token „bereit“: Die 20 größten Konten erfassen oft unter 50 % der Menge (Abhilfe: vollständige Holder-Liste über Helius, noch nicht eingebaut), GeckoTerminal meldet die Umlaufmenge nur für etwa 5 % der Token (keine nachvollziehbare Alternative, Nutzer entscheidet).
@@ -84,4 +85,4 @@
 - Offene Fragen: Repo öffentlich oder privat? Was ist im 20-€-Budget schon enthalten?
 
 ## Nächster Schritt
-Umsetzung nach `docs/helius_integration_plan.md` in zwei getrennten PRs: PR A (Mint-Info, vollständige Liste, Pflichtprüfungen inkl. Slots, Tests; noch nicht eingebunden), dann PR B (Einbindung, Config `holders`, Rückfall, Permanent-Delegate-Prüfung, Stichprobe darf nicht bestätigen). Prüfregeln (25 % / 3 %) und Umlaufmengenregel unverändert. Nutzer merged selbst.
+PR A prüfen und mergen (Nutzer). Vor PR B: Antwortform von `getProgramAccountsV2` mit `withContext` einmal rein lesend prüfen (Test-Branch, Freigabe nötig). Danach PR B nach `docs/helius_integration_plan.md` (Einbindung, Config `holders`, Rückfall, Permanent-Delegate-Prüfung, Stichprobe darf nicht bestätigen). Prüfregeln (25 % / 3 %) und Umlaufmengenregel unverändert.

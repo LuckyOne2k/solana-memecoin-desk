@@ -76,6 +76,14 @@ Hinweis (nicht belegt): Ob Helius bei `getProgramAccountsV2` mit
 nicht ausdrücklich geprüft worden. Fehlt er, greift `page_slot_missing`:
 Alles bleibt dann „unclear“ und ist im ersten Scan sofort sichtbar.
 
+Umsetzung PR A: Der Parser akzeptiert ausschließlich die Form
+`{context: {slot}, value: {accounts: [...], paginationKey}}`. Die
+Helius-Dokumentation war aus der Entwicklungsumgebung nicht erreichbar,
+die Form ist deshalb nicht belegt. Jede andere Form ergibt
+`page_slot_missing` oder `page_response_invalid`. Es gibt keinen
+Ersatzweg ohne Slot. Vor PR B sollte die Form einmal rein lesend
+geprüft werden (Test-Branch, wenige Credits).
+
 ### 1.4 Grenzen der Summenprüfung
 - Die Seiten werden nacheinander gelesen. Das Ergebnis ist **keine
   atomare Momentaufnahme** eines einzigen Slots.
