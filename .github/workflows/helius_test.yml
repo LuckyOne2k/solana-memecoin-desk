@@ -27,7 +27,7 @@ jobs:
       - name: Abhängigkeiten installieren
         run: pip install -r requirements.txt
 
-      - name: Validierungstest
+      - name: Strukturtest getProgramAccountsV2
         env:
           SOLANA_RPC_URL: ${{ secrets.SOLANA_RPC_URL }}
-        run: python .github/helius_test/validation_test.py
+        run: python .github/helius_test/structure_test.py
