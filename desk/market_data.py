@@ -430,6 +430,8 @@ SECURITY_CHECKS = (
     "liquidity_cross_check",
     "top10_share_pct",
     "dev_share_pct",
+    "permanent_delegate_absent",
+    "token_extensions_safe",
 )
 
 

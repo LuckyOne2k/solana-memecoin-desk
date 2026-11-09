@@ -30,7 +30,20 @@ def _check_details(pool):
             "rugcheck_usd": liquidity.get("rugcheck_market_liquidity_usd"),
             "deviation_pct": liquidity.get("deviation_pct"),
         },
+        "token": {
+            "mint_info_status": pool.get("mint_info_status"),
+            "mint_info_error": pool.get("mint_info_error"),
+            "token_program": pool.get("token_program"),
+            "token2022_extensions": pool.get("token2022_extensions"),
+            "unknown_token_extensions": pool.get("unknown_token_extensions"),
+            "unsafe_token_extensions": pool.get("unsafe_token_extensions"),
+            "permanent_delegate_status": pool.get("permanent_delegate_status"),
+            "permanent_delegate": pool.get("permanent_delegate"),
+            "token_check_reasons": pool.get("token_check_reasons"),
+        },
         "holders": {
+            "holder_source": pool.get("holder_source"),
+            "full_holder_list_error": pool.get("full_holder_list_error"),
             "data_scope": holders.get("data_scope"),
             "is_complete_distribution": holders.get("is_complete_distribution"),
             "top10_status": holders.get("top10_status"),
@@ -217,6 +230,12 @@ def main():
         "holder_checks_attempted": result["holder_checks_attempted"],
         "holder_checks_succeeded": result["holder_checks_succeeded"],
         "holder_checks_failed": result["holder_checks_failed"],
+        "mint_info_checks_attempted": result.get("mint_info_checks_attempted"),
+        "mint_info_checks_failed": result.get("mint_info_checks_failed"),
+        "full_holder_list_attempted": result.get("full_holder_list_attempted"),
+        "full_holder_list_succeeded": result.get("full_holder_list_succeeded"),
+        "full_holder_list_failed": result.get("full_holder_list_failed"),
+        "holder_fallbacks": result.get("holder_fallbacks"),
         "pagination_complete": market_data["pagination_complete"],
         "market_cap_diagnostics": (
             scanned_pools[0].get("market_cap_diagnostics")
@@ -249,6 +268,8 @@ def main():
     print("Versucht:", result["holder_checks_attempted"])
     print("Erfolgreich:", result["holder_checks_succeeded"])
     print("Fehlgeschlagen:", result["holder_checks_failed"])
+    print("Vollständige Liste erfolgreich:", result.get("full_holder_list_succeeded"))
+    print("Rückfall auf Stichprobe:", result.get("holder_fallbacks"))
 
     print("\nKI-Agenten: Noch nicht verbunden")
     print("Paper-Trading: Noch nicht aktiviert")

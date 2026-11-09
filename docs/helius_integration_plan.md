@@ -71,10 +71,10 @@ Teilergebnis zurückgegeben.
 | jedes Konto: 40 Byte, Owner vorhanden, gültige Menge | `invalid_account_data` |
 | Summe aller Bestände = A1 exakt | `supply_sum_mismatch` |
 
-Hinweis (nicht belegt): Ob Helius bei `getProgramAccountsV2` mit
-`withContext` je Seite einen Slot liefert, ist in den bisherigen Tests
-nicht ausdrücklich geprüft worden. Fehlt er, greift `page_slot_missing`:
-Alles bleibt dann „unclear“ und ist im ersten Scan sofort sichtbar.
+Belegt (Strukturtest, siehe `docs/helius_validierung.md`): Helius
+liefert je Seite `context.slot` als Ganzzahl, `value.count` und auf der
+letzten Seite `paginationKey: null`. PR B prüft zusätzlich
+`value.count == Anzahl Konten der Seite` (`page_count_mismatch`).
 
 Umsetzung PR A: Der Parser akzeptiert ausschließlich die Form
 `{context: {slot}, value: {accounts: [...], paginationKey}}`. Die
@@ -201,7 +201,23 @@ selbst stündlich ≈ 80.000 Credits/Monat (≈ 8 % des Freikontingents).
    `scan-auswertung`, Credits im Helius-Dashboard prüfen.
 4. Danach Entscheidung über die Löschung des Test-Branches.
 
+## Umsetzung PR B (Stand)
+- Einbindung wie 3.1/3.2, Config wie 4.
+- Strenger als 3.1: Neben `permanent_delegate_absent` gibt es die
+  Pflichtprüfung `token_extensions_safe`. Geklärt nur, wenn jede
+  Token-2022-Erweiterung ausdrücklich als unbedenklich eingestuft ist
+  (`SAFE_TOKEN_2022_EXTENSIONS` in `desk/security_scan.py`: nur
+  `metadataPointer`, `tokenMetadata`, `groupPointer`, `tokenGroup`,
+  `groupMemberPointer`, `tokenGroupMember`). Alle anderen, unbekannte
+  und nicht lesbare Erweiterungen → offen (Status höchstens
+  `incomplete`), mit Liste `unsafe_token_extensions` im Protokoll.
+- Der Rückfall wird in `security_scan.py` immer als Stichprobe
+  markiert, auch wenn die Antwort etwas anderes behauptet.
+
 ## Später gesondert zu entscheiden
 - Endgültige Ablehnungsregel für Permanent Delegate.
-- Weitere riskante Token-2022-Erweiterungen (z. B. Transfer Hook, der
-  Verkäufe blockieren könnte): werden protokolliert, aber nicht bewertet.
+- Ablehnungsregeln für riskante Token-2022-Erweiterungen (z. B.
+  Transfer Hook, Transfer Fee, Pausable): seit PR B „unclear“, keine
+  Ablehnung.
+- Erweiterung der Liste unbedenklicher Erweiterungen (nur mit
+  Zustimmung).

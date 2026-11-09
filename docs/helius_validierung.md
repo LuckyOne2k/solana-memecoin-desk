@@ -64,3 +64,39 @@ simulierten Kauf neu prüfen.
   die ID aus der Blockchain, Ergebnisse gültig).
 - Fehlermeldungen von `requests` enthalten die URL samt Key → PR #7
   (`_safe_request_error`).
+
+## Strukturtest `getProgramAccountsV2` mit `withContext` (2026-11-09)
+Zwei rein lesende Läufe auf dem Test-Branch (Skripte
+`.github/helius_test/structure_test.py` und `last_page_test.py`),
+zusammen geschätzt 3 Credits.
+
+| Lauf | Token | Programm | Aufrufe | Ergebnis |
+|---|---|---|---|---|
+| 42624589998 (Commit `7380c24`) | NAOF | Token-2022 | 2 Seiten | je 1.000 Konten, `paginationKey` Text (44 Zeichen), Slot beide Seiten gleich |
+| 42625141977 (Commit `21cd8bc`) | MAGGIE | SPL Token (`dataSize 165`) | 1 Seite | 49 Konten (inkl. leerer), letzte Seite |
+
+Tatsächliche Antwort (alle Seiten gleich aufgebaut):
+```
+result: {
+  context: { apiVersion: str, slot: int },
+  value:   { accounts: list, count: int, paginationKey: str | null }
+}
+accounts[i]: { pubkey: str, account: { data: [base64-str, "base64"],
+               executable, lamports, owner, rentEpoch, space } }
+```
+- Slot: `result.context.slot`, Ganzzahl.
+- `value.count` = Anzahl der Konten **dieser Seite** (MAGGIE: 49 = 49).
+- Letzte Seite: `value.paginationKey` ist vorhanden und `null` (weder
+  fehlend noch leerer Text).
+- `account.owner` = Token-Programm; `data` dekodiert genau 40 Byte.
+
+Vergleich mit PR #11: Die Form entspricht dem Parser in allen
+geprüften Fällen (erste, mittlere, letzte Seite; Token-2022 und
+klassisch). Keine Codeänderung nötig. Seit PR B wird `value.count`
+zusätzlich geprüft: vorhanden → muss gleich der Kontenzahl der Seite
+sein, sonst `page_count_mismatch` (→ unklar, Rückfall auf Stichprobe).
+
+Panne im ersten Testskript: Eine Vergleichszeile gab den Wert des
+`paginationKey` (eine öffentliche Konto-Adresse als Seitenzeiger, kein
+Secret) zweimal im Log aus. URL und Key wurden nicht ausgegeben. Das
+zweite Skript gibt nur noch den Zustand des Feldes aus.

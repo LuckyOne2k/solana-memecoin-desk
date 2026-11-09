@@ -26,6 +26,8 @@ class ConfigError(Exception):
 NUMBER = "number"
 PERCENT = "percent"
 COUNT = "count"
+# Ganze Zahl größer als 0
+POSITIVE_COUNT = "positive_count"
 FLAG = "flag"
 
 SCHEMA = {
@@ -47,6 +49,10 @@ SCHEMA = {
     "data_quality": {
         "max_liquidity_deviation_pct": PERCENT,
         "max_price_deviation_pct": PERCENT,
+    },
+    "holders": {
+        "max_pages": POSITIVE_COUNT,
+        "max_slot_span": POSITIVE_COUNT,
     },
     "paper_trading": {
         "max_position_pct": PERCENT,
@@ -80,8 +86,11 @@ def _check_value(section, key, kind, value):
     if kind == PERCENT and value > 100:
         raise ConfigError(f"{name} darf nicht über 100 liegen")
 
-    if kind == COUNT and not isinstance(value, int):
+    if kind in (COUNT, POSITIVE_COUNT) and not isinstance(value, int):
         raise ConfigError(f"{name} muss eine ganze Zahl sein")
+
+    if kind == POSITIVE_COUNT and value <= 0:
+        raise ConfigError(f"{name} muss größer als 0 sein")
 
 
 def validate_config(config):

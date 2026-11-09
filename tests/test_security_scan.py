@@ -10,7 +10,7 @@ from desk.security_scan import scan_pool_security
 
 CONFIG = load_config()
 from desk.solana_rpc import SolanaRpcError
-from factories import make_security, make_snapshot
+from factories import make_full_list, make_mint_info, make_security, make_snapshot
 
 
 def make_pool(
@@ -55,7 +55,13 @@ def make_holder_snapshot(
 
 
 def test_successful_security_and_holder_checks_update_pool():
+    # Vollständige Holder-Liste gelingt; die Stichprobe wird nicht abgefragt.
     pool = make_pool()
+    full_list = {
+        **make_holder_snapshot(),
+        "data_scope": "full_token_account_list",
+        "token_program": make_mint_info()["token_program"],
+    }
 
     with patch(
         "desk.security_scan.prepare_pools",
@@ -64,8 +70,13 @@ def test_successful_security_and_holder_checks_update_pool():
         "desk.security_scan.check_token_security",
         return_value=make_security(),
     ) as mocked_security, patch(
+        "desk.security_scan.fetch_mint_info",
+        return_value=make_mint_info(),
+    ) as mocked_mint, patch(
+        "desk.security_scan.fetch_full_holder_list",
+        return_value=full_list,
+    ) as mocked_full, patch(
         "desk.security_scan.fetch_holder_snapshot",
-        return_value=make_holder_snapshot(),
     ) as mocked_holder:
         result = scan_pool_security([{}], CONFIG)
 
@@ -101,6 +112,45 @@ def test_successful_security_and_holder_checks_update_pool():
         "TOKEN123",
         lp_locked_min_pct=CONFIG["risk_filters"]["lp_locked_min_pct"],
     )
+    mocked_mint.assert_called_once_with("TOKEN123")
+    mocked_full.assert_called_once_with(
+        "TOKEN123",
+        make_mint_info(),
+        max_pages=CONFIG["holders"]["max_pages"],
+        max_slot_span=CONFIG["holders"]["max_slot_span"],
+    )
+    mocked_holder.assert_not_called()
+    assert item["holder_source"] == "full_holder_list"
+    assert "permanent_delegate_absent" not in item["missing_checks"]
+    assert "token_extensions_safe" not in item["missing_checks"]
+
+
+def test_successful_sample_fallback_does_not_confirm():
+    # Gleiche Daten wie oben, aber nur über den Rückfall (Stichprobe).
+    # Vorher wurde hier bestätigt; jetzt bleibt die Prüfung offen.
+    pool = make_pool()
+
+    with patch(
+        "desk.security_scan.prepare_pools",
+        return_value=[pool],
+    ), patch(
+        "desk.security_scan.check_token_security",
+        return_value=make_security(),
+    ), patch(
+        "desk.security_scan.fetch_holder_snapshot",
+        return_value=make_holder_snapshot(),
+    ) as mocked_holder:
+        result = scan_pool_security([{}], CONFIG)
+
+    item = result["pools"][0]
+
+    assert result["holder_checks_succeeded"] == 1
+    assert result["holder_fallbacks"] == 1
+    assert item["holder_source"] == "sample_fallback"
+    assert item["holder_evaluation"]["top10_status"] == "unclear"
+    assert "top10_share_pct" in item["missing_checks"]
+    assert "dev_share_pct" in item["missing_checks"]
+    assert item["status"] == "incomplete"
     mocked_holder.assert_called_once_with(
         "TOKEN123",
         creator_address="CREATOR",

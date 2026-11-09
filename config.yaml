@@ -34,6 +34,15 @@ data_quality:
   # GeckoTerminal-Preis gegen RugCheck-Preis
   max_price_deviation_pct: 10
 
+# Vollständige Holder-Liste über Helius (desk/solana_rpc.py,
+# fetch_full_holder_list). Mehr Seiten oder eine größere Slot-Spanne
+# zwischen den beiden Supply-Abfragen -> Holder-Prüfung "unklar".
+holders:
+  # Höchstzahl Seiten zu je 1000 Token-Konten
+  max_pages: 30
+  # Höchster Abstand in Slots (150 ≈ 1 Minute)
+  max_slot_span: 150
+
 paper_trading:
   max_position_pct: 8
   initial_stop_loss_pct: 6
