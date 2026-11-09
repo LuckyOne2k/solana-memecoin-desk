@@ -520,7 +520,14 @@ def test_project_config_enabled_failed_query_stays_incomplete(accounts, frozen, 
     item = first(result)
     bounds = item["market_cap_onchain_bounds"]
 
-    assert used_frozen.calls  # Abfrage wurde wirklich versucht
+    # Frozen-Abfrage läuft zuerst und wird in beiden Fällen aufgerufen.
+    assert used_frozen.calls
+    if reason == "rpc_error":
+        # Authority-Fehlerfall: Authority-Abfrage wurde tatsächlich aufgerufen.
+        assert used_accounts.calls
+    else:
+        # Frozen-Fehlerfall: danach keine Authority-Abfrage mehr.
+        assert used_accounts.calls == []
     assert bounds["status"] == "error"
     assert bounds["decision"] == {"status": "unclear", "reason": reason}
     assert item["status"] == "incomplete"
