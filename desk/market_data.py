@@ -26,6 +26,20 @@ QUOTE_TOKEN_IDS = {
 GECKOTERMINAL_BATCH_SIZE = 30
 GECKOTERMINAL_BATCH_DELAY_SECONDS = 6
 
+# Begrenzte Wiederholungen beim Token-Abruf (technische Parameter, keine
+# Prüf-Grenzwerte). Nie unbegrenzt; nach dem letzten Versuch gilt der
+# Abruf als fehlgeschlagen und es werden KEINE alten Werte verwendet.
+# - Netzwerkfehler, HTTP 429 und HTTP 5xx: höchstens 3 Versuche
+# - HTTP 403: höchstens 2 Versuche (ein kontrollierter erneuter Versuch)
+# - andere HTTP-Fehler (z. B. 400, 404) und ungültige Antworten: keine
+#   Wiederholung
+GECKOTERMINAL_MAX_ATTEMPTS = 3
+GECKOTERMINAL_MAX_ATTEMPTS_403 = 2
+# Wartezeit vor dem 2. bzw. 3. Versuch
+GECKOTERMINAL_RETRY_DELAYS_SECONDS = (10, 30)
+# Obergrenze für eine vom Server verlangte Wartezeit (Retry-After)
+GECKOTERMINAL_MAX_RETRY_AFTER_SECONDS = 60
+
 
 class MarketDataError(Exception):
     pass
@@ -250,6 +264,132 @@ def _resolve_token(tokens):
     )
 
 
+def _wait(seconds):
+    """Wartezeit zwischen Wiederholungen (in Tests ersetzt)."""
+    time.sleep(seconds)
+
+
+def _status_code(response):
+    status = getattr(response, "status_code", None)
+
+    if isinstance(status, int) and not isinstance(status, bool):
+        return status
+
+    return None
+
+
+def _http_status(error):
+    return _status_code(getattr(error, "response", None))
+
+
+def _failure_reason(status):
+    if status is None:
+        return "network_error"
+
+    if status == 429:
+        return "http_429_rate_limited"
+
+    if status == 403:
+        return "http_403_forbidden"
+
+    if 500 <= status <= 599:
+        return "http_5xx_server_error"
+
+    return f"http_{status}"
+
+
+def _max_attempts(status):
+    if status is None or status == 429 or 500 <= status <= 599:
+        return GECKOTERMINAL_MAX_ATTEMPTS
+
+    if status == 403:
+        return GECKOTERMINAL_MAX_ATTEMPTS_403
+
+    return 1
+
+
+def _retry_delay(error, status, attempt):
+    """Wartezeit vor dem nächsten Versuch (attempt = bisherige Versuche)."""
+    delay = GECKOTERMINAL_RETRY_DELAYS_SECONDS[
+        min(attempt - 1, len(GECKOTERMINAL_RETRY_DELAYS_SECONDS) - 1)
+    ]
+
+    if status == 429:
+        headers = getattr(getattr(error, "response", None), "headers", None)
+        retry_after = (
+            headers.get("Retry-After") if isinstance(headers, dict) else None
+        )
+
+        try:
+            requested = int(retry_after)
+        except (TypeError, ValueError):
+            requested = None
+
+        if requested is not None and requested > 0:
+            delay = min(
+                max(delay, requested),
+                GECKOTERMINAL_MAX_RETRY_AFTER_SECONDS,
+            )
+
+    return delay
+
+
+def _get_token_batch(url, timeout, stats):
+    """Ein Token-Abruf mit begrenzten Wiederholungen.
+
+    Protokolliert jeden Versuch in stats["request_log"] (Statuscode,
+    Versuchsnummer, Fehlergrund). Gibt bei Erfolg die Antwort zurück,
+    sonst wird der letzte Fehler weitergereicht.
+    """
+    attempt = 0
+
+    while True:
+        attempt += 1
+        stats["request_attempts"] += 1
+
+        try:
+            response = requests.get(
+                url,
+                headers={"Accept": "application/json;version=20230203"},
+                timeout=timeout,
+            )
+            response.raise_for_status()
+
+        except requests.RequestException as error:
+            status = _http_status(error)
+            reason = _failure_reason(status)
+            stats["last_http_status"] = status
+            stats["error_reason"] = reason
+            stats["request_log"].append(
+                {
+                    "batch": stats["batches_requested"],
+                    "attempt": attempt,
+                    "http_status": status,
+                    "reason": reason,
+                }
+            )
+
+            if attempt >= _max_attempts(status):
+                raise
+
+            stats["retries"] += 1
+            _wait(_retry_delay(error, status, attempt))
+            continue
+
+        status = _status_code(response)
+        stats["last_http_status"] = status
+        stats["error_reason"] = None
+        stats["request_log"].append(
+            {
+                "batch": stats["batches_requested"],
+                "attempt": attempt,
+                "http_status": status,
+                "reason": "ok",
+            }
+        )
+        return response
+
+
 def fetch_token_market_data(token_addresses, timeout=15, diagnostics=None):
     """
     Lädt Marktdaten je Token von GeckoTerminal.
@@ -277,6 +417,11 @@ def fetch_token_market_data(token_addresses, timeout=15, diagnostics=None):
         "requested_tokens_not_returned": 0,
         "unrequested_token_objects_ignored": 0,
         "api_error": None,
+        "request_attempts": 0,
+        "retries": 0,
+        "last_http_status": None,
+        "error_reason": None,
+        "request_log": [],
     }
 
     market_caps = {}
@@ -290,12 +435,11 @@ def fetch_token_market_data(token_addresses, timeout=15, diagnostics=None):
         stats["batches_requested"] += 1
 
         try:
-            response = requests.get(
+            response = _get_token_batch(
                 f"{BASE_URL}/networks/solana/tokens/multi/{','.join(batch)}",
-                headers={"Accept": "application/json;version=20230203"},
-                timeout=timeout,
+                timeout,
+                stats,
             )
-            response.raise_for_status()
             payload = response.json()
 
         except requests.RequestException as error:
@@ -313,6 +457,7 @@ def fetch_token_market_data(token_addresses, timeout=15, diagnostics=None):
             stats["api_error"] = (
                 "Invalid GeckoTerminal token JSON response"
             )
+            stats["error_reason"] = "invalid_json"
 
             if diagnostics is not None:
                 diagnostics.clear()
@@ -620,6 +765,11 @@ def empty_market_cap_diagnostics(requested_unique_tokens=0):
         "requested_tokens_not_returned": requested_unique_tokens,
         "unrequested_token_objects_ignored": 0,
         "api_error": None,
+        "request_attempts": 0,
+        "retries": 0,
+        "last_http_status": None,
+        "error_reason": None,
+        "request_log": [],
     }
 
 
