@@ -19,6 +19,10 @@ CONFIG_PATH_ENV = "DESK_CONFIG_PATH"
 ALLOWED_MODE = "paper"
 
 
+# Obergrenze für market_cap_onchain_bounds.max_account_calls_per_token
+MAX_ONCHAIN_ACCOUNT_CALLS = 10
+
+
 class ConfigError(Exception):
     pass
 
@@ -141,6 +145,17 @@ def validate_config(config):
     if scanner["market_cap_usd_min"] > scanner["market_cap_usd_max"]:
         raise ConfigError(
             "scanner.market_cap_usd_min ist größer als market_cap_usd_max"
+        )
+
+    # Hartes Abruflimit (vom Nutzer festgelegt): höchstens 10
+    # getMultipleAccounts-Aufrufe je Token und Scan. Mehr wäre eine
+    # Erhöhung des Credit-Verbrauchs ohne Freigabe.
+    calls = config["market_cap_onchain_bounds"]["max_account_calls_per_token"]
+
+    if calls > MAX_ONCHAIN_ACCOUNT_CALLS:
+        raise ConfigError(
+            "market_cap_onchain_bounds.max_account_calls_per_token darf "
+            f"höchstens {MAX_ONCHAIN_ACCOUNT_CALLS} sein"
         )
 
     # Nur das Veto-Verhalten ist implementiert. Ein anderer Wert würde

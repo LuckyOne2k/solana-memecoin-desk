@@ -441,7 +441,7 @@ def test_standard_case_counts_only_wallets_outside_top10():
 
     assert result["status"] == cb.COMPLETED
     # 40 Wallets je 1 %; Top-10, Creator und Pool nicht
-    assert result["wallet_lower_bound_raw"] == pct(40)
+    assert result["wallet_like_lower_bound_raw"] == pct(40)
     assert result["excluded_authorities"] == {"top10": 10, "creator": 1, "pool": 1}
     assert set(queried(accounts)) == set(WALLETS[100:140])
     assert result["note"] == cb.NOTE
@@ -459,7 +459,7 @@ def test_multiple_token_accounts_per_authority_are_aggregated_first():
 
     assert big not in queried(accounts)
     assert result["excluded_amount_raw"]["top10"] == pct(18) + 5 * pct(0.6)
-    assert result["wallet_lower_bound_raw"] == pct(40)
+    assert result["wallet_like_lower_bound_raw"] == pct(40)
 
 
 def test_aggregated_wallet_amount_is_counted_once():
@@ -469,7 +469,7 @@ def test_aggregated_wallet_amount_is_counted_once():
     result, accounts, _ = compute(full_list(rows), target=pct(0.75))
 
     assert queried(accounts) == [wallet]
-    assert result["wallet_lower_bound_raw"] == pct(0.5) + pct(0.25)
+    assert result["wallet_like_lower_bound_raw"] == pct(0.5) + pct(0.25)
 
 
 def test_all_label_lists_apply_to_authorities():
@@ -496,7 +496,7 @@ def test_all_label_lists_apply_to_authorities():
         "exchange": 1,
         "locker": 1,
     }
-    assert result["wallet_lower_bound_raw"] == pct(2)
+    assert result["wallet_like_lower_bound_raw"] == pct(2)
 
 
 def test_pool_vault_account_excludes_its_authority():
@@ -526,7 +526,7 @@ def test_off_curve_authorities_are_excluded_without_query():
 
     assert not set(PDAS[:5]) & set(queried(accounts))
     assert result["excluded_authorities"]["off_curve_pda"] == 5
-    assert result["wallet_lower_bound_raw"] == pct(1)
+    assert result["wallet_like_lower_bound_raw"] == pct(1)
 
 
 @pytest.mark.parametrize(
@@ -546,7 +546,7 @@ def test_non_wallet_authorities_are_not_counted(info, category):
     accounts = FakeAccounts({special: info})
     result, _, _ = compute(full_list(rows), target=pct(2), accounts=accounts)
 
-    assert result["wallet_lower_bound_raw"] == pct(1)
+    assert result["wallet_like_lower_bound_raw"] == pct(1)
     assert result["reason"] == "target_not_reached"
     assert result["classified"] == {cb.WALLET: 1, category: 1}
 
@@ -559,7 +559,7 @@ def test_frozen_token_accounts_are_subtracted():
 
     # acc1 vollständig eingefroren -> nicht abgefragt
     assert queried(accounts) == [WALLETS[100]]
-    assert result["wallet_lower_bound_raw"] == pct(1)
+    assert result["wallet_like_lower_bound_raw"] == pct(1)
     assert result["frozen_accounts"] == 2
     assert result["frozen_amount_raw"] == pct(1.5)
 
@@ -577,8 +577,8 @@ def test_lower_bound_never_exceeds_upper_bound():
     rows = standard_rows(others=60, other_pct=1.0)
     result, _, _ = compute(full_list(rows), target=pct(60))
     upper = SUPPLY  # keine Burns
-    assert result["wallet_lower_bound_raw"] <= upper
-    assert result["wallet_lower_bound_raw"] == pct(60)
+    assert result["wallet_like_lower_bound_raw"] <= upper
+    assert result["wallet_like_lower_bound_raw"] == pct(60)
 
 
 # --------------------------------------------------
@@ -604,7 +604,7 @@ def test_largest_authorities_are_queried_first_in_blocks_of_100():
     first_block = accounts.calls[0][0]
     assert first_block == WALLETS[20:120]
     assert result["authorities_queried"] == 250
-    assert result["wallet_lower_bound_raw"] == total(rows)
+    assert result["wallet_like_lower_bound_raw"] == total(rows)
     assert result["reason"] == "target_reached"
 
 
@@ -656,7 +656,7 @@ def test_slot_going_backwards_is_error():
 
     assert result["status"] == cb.ERROR
     assert result["reason"] == "slot_inconsistent"
-    assert result["wallet_lower_bound_raw"] is None
+    assert result["wallet_like_lower_bound_raw"] is None
 
 
 def test_frozen_slot_before_holder_list_is_error():
@@ -716,7 +716,7 @@ def test_rpc_errors_are_errors_without_partial_result(fetch):
 
     assert result["status"] == cb.ERROR
     assert result["reason"] == "rpc_error"
-    assert result["wallet_lower_bound_raw"] is None
+    assert result["wallet_like_lower_bound_raw"] is None
 
 
 @pytest.mark.parametrize(
@@ -799,7 +799,7 @@ def test_bounds_confirm_inside_range():
     assert result["status"] == "confirmed"
     assert result["reason"] == "onchain_bounds_in_range"
     assert result["basis"] == "onchain_bounds"
-    assert result["market_cap_lower_bound_usd"] == pytest.approx(400_000)
+    assert result["market_cap_heuristic_lower_bound_usd"] == pytest.approx(400_000)
     assert result["market_cap_upper_bound_usd"] == pytest.approx(1_000_000)
     assert "market_cap_usd" not in result
 
@@ -866,7 +866,7 @@ def test_bounds_use_low_price_for_lower_and_high_price_for_upper():
     # 0,00099 = 297k -> unklar, obwohl der hohe Preis 330k ergäbe.
     result = bounds(300_000_000, low=0.00099, high=0.0011)
     assert result["status"] == "unclear"
-    assert result["market_cap_lower_bound_usd"] == pytest.approx(297_000)
+    assert result["market_cap_heuristic_lower_bound_usd"] == pytest.approx(297_000)
     assert result["market_cap_upper_bound_usd"] == pytest.approx(1_100_000)
 
 
@@ -960,3 +960,23 @@ def test_config_copy_is_independent():
     config = copy.deepcopy(CONFIG)
     config["market_cap_onchain_bounds"]["allow_onchain_bounds"] = True
     assert CONFIG["market_cap_onchain_bounds"]["allow_onchain_bounds"] is False
+
+
+@pytest.mark.parametrize("target", [pct(1), pct(41)])
+def test_evidence_flags_are_always_false(target):
+    result, _, _ = compute(full_list(standard_rows()), target=target)
+    for flag in (
+        "private_key_proven",
+        "free_transferability_proven",
+        "economic_circulating_supply_proven",
+    ):
+        assert result[flag] is False
+    assert result["lower_bound_kind"] == "heuristic_wallet_like_lower_bound"
+    assert result["residual_risk"] == "on_curve_address_without_known_private_key"
+
+
+def test_evidence_flags_present_on_error():
+    result, _, _ = compute(None)
+    assert result["status"] == cb.ERROR
+    assert result["private_key_proven"] is False
+    assert result["economic_circulating_supply_proven"] is False

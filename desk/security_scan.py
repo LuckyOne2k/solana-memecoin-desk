@@ -18,7 +18,8 @@ Ablauf pro Pool:
    (desk.market_cap)
 6. Nur mit market_cap_onchain_bounds.allow_onchain_bounds (Standard aus)
    und nur, wenn allein die Marktkapitalisierung offen ist: eigene
-   On-Chain-Spanne aus Wallet-Untergrenze (desk.circulating_bounds) und
+   On-Chain-Spanne aus heuristischer Wallet-Untergrenze
+   (desk.circulating_bounds) und
    Obergrenze. Jede Lücke -> bleibt unvollständig.
 
 Externe Daten werden je Token nur einmal abgefragt; bewertet wird je
@@ -579,7 +580,7 @@ def _evaluate_onchain_bounds(
         data["onchain_lower_bound"] = lower
 
     lower = data["onchain_lower_bound"]
-    log = {"status": lower["status"], "wallet_lower_bound": lower}
+    log = {"status": lower["status"], "wallet_like_lower_bound": lower}
 
     if lower["status"] != COMPLETED:
         log["decision"] = {"status": "unclear", "reason": lower["reason"]}
@@ -590,7 +591,7 @@ def _evaluate_onchain_bounds(
         config=config,
         price_low_usd=price_low,
         price_high_usd=price_high,
-        lower_amount_raw=lower["wallet_lower_bound_raw"],
+        lower_amount_raw=lower["wallet_like_lower_bound_raw"],
         upper_amount_raw=upper_amount,
         decimals=decimals,
     )
@@ -600,7 +601,7 @@ def _evaluate_onchain_bounds(
     if decision["status"] == CONFIRMED:
         _resolve(item, "market_cap_usd")
         item["market_cap_basis"] = ONCHAIN_BOUNDS
-        item["market_cap_lower_bound_usd"] = decision["market_cap_lower_bound_usd"]
+        item["market_cap_heuristic_lower_bound_usd"] = decision["market_cap_heuristic_lower_bound_usd"]
         market_cap.update(
             status=CONFIRMED,
             reason=decision["reason"],

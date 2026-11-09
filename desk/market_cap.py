@@ -30,9 +30,10 @@ Entscheidungsregeln:
 
 Eigene On-Chain-Spanne (evaluate_onchain_bounds, nur mit Schalter
 market_cap_onchain_bounds.allow_onchain_bounds, Standard aus):
-- Untergrenze = niedriger Preis x Wallet-Untergrenze L
-  (desk.circulating_bounds; interne konservative Untergrenze, keine
-  offizielle Umlaufmenge), Obergrenze = hoher Preis x (Gesamtmenge -
+- Untergrenze = niedriger Preis x heuristische Wallet-Untergrenze L
+  (desk.circulating_bounds: Summe technisch wallet-ähnlicher Konten;
+  kein Nachweis eines privaten Schlüssels, keine nachgewiesene
+  Umlaufmenge), Obergrenze = hoher Preis x (Gesamtmenge -
   nachweislich verbrannt).
 - Bestätigt nur, wenn Untergrenze >= Minimum und Obergrenze <= Maximum.
   Abgelehnt, wenn Obergrenze < Minimum oder Untergrenze > Maximum.
@@ -244,7 +245,7 @@ def _exact(value):
 
 def onchain_target_amount_raw(*, config, price_low_usd, price_high_usd,
                               upper_amount_raw, decimals):
-    """Rohmenge der Wallet-Untergrenze, ab der die Entscheidung feststeht.
+    """Rohmenge der heuristischen Wallet-Untergrenze, ab der die Entscheidung feststeht.
 
     - Obergrenze (hoher Preis x U) <= Maximum: Ziel ist das Minimum
       (p_low x L >= Minimum -> bestätigt).
@@ -292,7 +293,7 @@ def evaluate_onchain_bounds(
 ):
     """Entscheidung aus belegter Spanne [p_low x L, p_high x U].
 
-    L = Wallet-Untergrenze (desk.circulating_bounds), U = Gesamtmenge
+    L = heuristische Wallet-Untergrenze (desk.circulating_bounds), U = Gesamtmenge
     minus nachweislich verbrannt. Nie ein Punktwert:
     market_cap_usd bleibt None.
 
@@ -315,7 +316,7 @@ def evaluate_onchain_bounds(
         "price_high_usd": price_high_usd,
         "lower_amount_raw": lower_amount_raw,
         "upper_amount_raw": upper_amount_raw,
-        "market_cap_lower_bound_usd": None,
+        "market_cap_heuristic_lower_bound_usd": None,
         "market_cap_upper_bound_usd": None,
         "range_usd": [scanner["market_cap_usd_min"], scanner["market_cap_usd_max"]],
     }
@@ -349,7 +350,7 @@ def evaluate_onchain_bounds(
     lower_usd = low * lower_amount_raw / scale
     upper_usd = high * upper_amount_raw / scale
 
-    result["market_cap_lower_bound_usd"] = float(lower_usd)
+    result["market_cap_heuristic_lower_bound_usd"] = float(lower_usd)
     result["market_cap_upper_bound_usd"] = float(upper_usd)
 
     if upper_usd < minimum:

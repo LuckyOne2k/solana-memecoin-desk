@@ -121,9 +121,11 @@ leaves the pool `incomplete`.
   market cap is the *only* open check (all other checks confirmed, mint
   and freeze authority revoked, no permanent delegate, only safe Token-2022
   extensions, full holder list, two agreeing prices).
-  - Lower amount L = tokens held in technically confirmed normal wallets.
-    This is an **internal conservative lower bound**, never an official or
-    actual circulating supply. Token accounts are first aggregated per
+  - Lower amount L = **heuristic wallet-like lower bound**: tokens held by
+    authorities that technically look like normal wallets. It is never an
+    official, actual or economically proven circulating supply. It does
+    **not** prove that a private key exists or that the tokens are freely
+    transferable. Token accounts are first aggregated per
     token authority (bytes 32–63 of the account data, never the technical
     account owner, which is always the token program). Excluded from L:
     the 10 largest authorities, pool vaults and pool addresses (RugCheck
@@ -133,11 +135,20 @@ leaves the pool `incomplete`.
     state filter). The remaining authorities are checked largest first
     with `getMultipleAccounts` (up to 100 per call, at most
     `max_account_calls_per_token` = 10 calls per token and scan,
-    `minContextSlot` = end of the holder list). Only an account owned by
-    the System Program, not executable, with 0 data bytes and SOL > 0
-    counts as a wallet. Authorities without an account (`null`), program
+    `minContextSlot` = end of the holder list; hard limit 10, a higher
+    value stops the program). Only an on-curve address whose account is
+    owned by the System Program, not executable, with 0 data bytes and
+    SOL > 0 counts as wallet-like. Authorities without an account (`null`), program
     or token accounts, executables and system accounts with data are not
     counted (unknown).
+  - **Residual risk:** an on-curve address does not need a known private
+    key. Any 32-byte value that happens to be a valid curve point can be a
+    token authority and receive SOL (placeholder or vanity addresses, lost
+    keys). Such tokens can never move but are counted as wallet-like. Only
+    a signature would prove a key; this is not checked and not assumed.
+    The log marks this with `lower_bound_kind`,
+    `private_key_proven: false`, `free_transferability_proven: false`,
+    `economic_circulating_supply_proven: false` and `residual_risk`.
   - Upper amount U = on-chain supply − provable burns (as before).
   - Decision: high price × U < minimum → rejected; low price × L > maximum
     → rejected; low price × L ≥ minimum and high price × U ≤ maximum →

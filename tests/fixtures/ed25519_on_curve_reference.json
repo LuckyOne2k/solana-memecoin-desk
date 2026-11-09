@@ -1,0 +1,1277 @@
+{
+ "source": "solders 0.29.0, solders.pubkey.Pubkey.is_on_curve (Solana SDK, curve25519-dalek CompressedEdwardsY::decompress)",
+ "generated": "2026-11-09",
+ "note": "Erwartete Werte stammen ausschlie\u00dflich aus der Referenz, nicht aus desk.solana_rpc.is_on_curve.",
+ "vectors": [
+  {
+   "label": "y=0",
+   "hex": "0000000000000000000000000000000000000000000000000000000000000000",
+   "on_curve": true
+  },
+  {
+   "label": "y=0+sign",
+   "hex": "0000000000000000000000000000000000000000000000000000000000000080",
+   "on_curve": true
+  },
+  {
+   "label": "y=1",
+   "hex": "0100000000000000000000000000000000000000000000000000000000000000",
+   "on_curve": true
+  },
+  {
+   "label": "y=1+sign",
+   "hex": "0100000000000000000000000000000000000000000000000000000000000080",
+   "on_curve": true
+  },
+  {
+   "label": "y=2",
+   "hex": "0200000000000000000000000000000000000000000000000000000000000000",
+   "on_curve": false
+  },
+  {
+   "label": "y=2+sign",
+   "hex": "0200000000000000000000000000000000000000000000000000000000000080",
+   "on_curve": false
+  },
+  {
+   "label": "y=3",
+   "hex": "0300000000000000000000000000000000000000000000000000000000000000",
+   "on_curve": true
+  },
+  {
+   "label": "y=3+sign",
+   "hex": "0300000000000000000000000000000000000000000000000000000000000080",
+   "on_curve": true
+  },
+  {
+   "label": "y=4",
+   "hex": "0400000000000000000000000000000000000000000000000000000000000000",
+   "on_curve": true
+  },
+  {
+   "label": "y=4+sign",
+   "hex": "0400000000000000000000000000000000000000000000000000000000000080",
+   "on_curve": true
+  },
+  {
+   "label": "y=5",
+   "hex": "0500000000000000000000000000000000000000000000000000000000000000",
+   "on_curve": true
+  },
+  {
+   "label": "y=5+sign",
+   "hex": "0500000000000000000000000000000000000000000000000000000000000080",
+   "on_curve": true
+  },
+  {
+   "label": "y=6",
+   "hex": "0600000000000000000000000000000000000000000000000000000000000000",
+   "on_curve": true
+  },
+  {
+   "label": "y=6+sign",
+   "hex": "0600000000000000000000000000000000000000000000000000000000000080",
+   "on_curve": true
+  },
+  {
+   "label": "y=7",
+   "hex": "0700000000000000000000000000000000000000000000000000000000000000",
+   "on_curve": false
+  },
+  {
+   "label": "y=7+sign",
+   "hex": "0700000000000000000000000000000000000000000000000000000000000080",
+   "on_curve": false
+  },
+  {
+   "label": "y=8",
+   "hex": "0800000000000000000000000000000000000000000000000000000000000000",
+   "on_curve": false
+  },
+  {
+   "label": "y=8+sign",
+   "hex": "0800000000000000000000000000000000000000000000000000000000000080",
+   "on_curve": false
+  },
+  {
+   "label": "y=9",
+   "hex": "0900000000000000000000000000000000000000000000000000000000000000",
+   "on_curve": true
+  },
+  {
+   "label": "y=9+sign",
+   "hex": "0900000000000000000000000000000000000000000000000000000000000080",
+   "on_curve": true
+  },
+  {
+   "label": "y=10",
+   "hex": "0a00000000000000000000000000000000000000000000000000000000000000",
+   "on_curve": true
+  },
+  {
+   "label": "y=10+sign",
+   "hex": "0a00000000000000000000000000000000000000000000000000000000000080",
+   "on_curve": true
+  },
+  {
+   "label": "y=11",
+   "hex": "0b00000000000000000000000000000000000000000000000000000000000000",
+   "on_curve": false
+  },
+  {
+   "label": "y=11+sign",
+   "hex": "0b00000000000000000000000000000000000000000000000000000000000080",
+   "on_curve": false
+  },
+  {
+   "label": "y=12",
+   "hex": "0c00000000000000000000000000000000000000000000000000000000000000",
+   "on_curve": false
+  },
+  {
+   "label": "y=12+sign",
+   "hex": "0c00000000000000000000000000000000000000000000000000000000000080",
+   "on_curve": false
+  },
+  {
+   "label": "y=13",
+   "hex": "0d00000000000000000000000000000000000000000000000000000000000000",
+   "on_curve": false
+  },
+  {
+   "label": "y=13+sign",
+   "hex": "0d00000000000000000000000000000000000000000000000000000000000080",
+   "on_curve": false
+  },
+  {
+   "label": "y=14",
+   "hex": "0e00000000000000000000000000000000000000000000000000000000000000",
+   "on_curve": true
+  },
+  {
+   "label": "y=14+sign",
+   "hex": "0e00000000000000000000000000000000000000000000000000000000000080",
+   "on_curve": true
+  },
+  {
+   "label": "y=15",
+   "hex": "0f00000000000000000000000000000000000000000000000000000000000000",
+   "on_curve": true
+  },
+  {
+   "label": "y=15+sign",
+   "hex": "0f00000000000000000000000000000000000000000000000000000000000080",
+   "on_curve": true
+  },
+  {
+   "label": "y=16",
+   "hex": "1000000000000000000000000000000000000000000000000000000000000000",
+   "on_curve": true
+  },
+  {
+   "label": "y=16+sign",
+   "hex": "1000000000000000000000000000000000000000000000000000000000000080",
+   "on_curve": true
+  },
+  {
+   "label": "y=17",
+   "hex": "1100000000000000000000000000000000000000000000000000000000000000",
+   "on_curve": false
+  },
+  {
+   "label": "y=17+sign",
+   "hex": "1100000000000000000000000000000000000000000000000000000000000080",
+   "on_curve": false
+  },
+  {
+   "label": "y=18",
+   "hex": "1200000000000000000000000000000000000000000000000000000000000000",
+   "on_curve": true
+  },
+  {
+   "label": "y=18+sign",
+   "hex": "1200000000000000000000000000000000000000000000000000000000000080",
+   "on_curve": true
+  },
+  {
+   "label": "y=19",
+   "hex": "1300000000000000000000000000000000000000000000000000000000000000",
+   "on_curve": true
+  },
+  {
+   "label": "y=19+sign",
+   "hex": "1300000000000000000000000000000000000000000000000000000000000080",
+   "on_curve": true
+  },
+  {
+   "label": "y=20",
+   "hex": "1400000000000000000000000000000000000000000000000000000000000000",
+   "on_curve": false
+  },
+  {
+   "label": "y=20+sign",
+   "hex": "1400000000000000000000000000000000000000000000000000000000000080",
+   "on_curve": false
+  },
+  {
+   "label": "y=21",
+   "hex": "1500000000000000000000000000000000000000000000000000000000000000",
+   "on_curve": true
+  },
+  {
+   "label": "y=21+sign",
+   "hex": "1500000000000000000000000000000000000000000000000000000000000080",
+   "on_curve": true
+  },
+  {
+   "label": "y=22",
+   "hex": "1600000000000000000000000000000000000000000000000000000000000000",
+   "on_curve": false
+  },
+  {
+   "label": "y=22+sign",
+   "hex": "1600000000000000000000000000000000000000000000000000000000000080",
+   "on_curve": false
+  },
+  {
+   "label": "y=23",
+   "hex": "1700000000000000000000000000000000000000000000000000000000000000",
+   "on_curve": true
+  },
+  {
+   "label": "y=23+sign",
+   "hex": "1700000000000000000000000000000000000000000000000000000000000080",
+   "on_curve": true
+  },
+  {
+   "label": "y=24",
+   "hex": "1800000000000000000000000000000000000000000000000000000000000000",
+   "on_curve": true
+  },
+  {
+   "label": "y=24+sign",
+   "hex": "1800000000000000000000000000000000000000000000000000000000000080",
+   "on_curve": true
+  },
+  {
+   "label": "y=25",
+   "hex": "1900000000000000000000000000000000000000000000000000000000000000",
+   "on_curve": true
+  },
+  {
+   "label": "y=25+sign",
+   "hex": "1900000000000000000000000000000000000000000000000000000000000080",
+   "on_curve": true
+  },
+  {
+   "label": "y=26",
+   "hex": "1a00000000000000000000000000000000000000000000000000000000000000",
+   "on_curve": true
+  },
+  {
+   "label": "y=26+sign",
+   "hex": "1a00000000000000000000000000000000000000000000000000000000000080",
+   "on_curve": true
+  },
+  {
+   "label": "y=27",
+   "hex": "1b00000000000000000000000000000000000000000000000000000000000000",
+   "on_curve": true
+  },
+  {
+   "label": "y=27+sign",
+   "hex": "1b00000000000000000000000000000000000000000000000000000000000080",
+   "on_curve": true
+  },
+  {
+   "label": "y=28",
+   "hex": "1c00000000000000000000000000000000000000000000000000000000000000",
+   "on_curve": true
+  },
+  {
+   "label": "y=28+sign",
+   "hex": "1c00000000000000000000000000000000000000000000000000000000000080",
+   "on_curve": true
+  },
+  {
+   "label": "y=29",
+   "hex": "1d00000000000000000000000000000000000000000000000000000000000000",
+   "on_curve": true
+  },
+  {
+   "label": "y=29+sign",
+   "hex": "1d00000000000000000000000000000000000000000000000000000000000080",
+   "on_curve": true
+  },
+  {
+   "label": "y=30",
+   "hex": "1e00000000000000000000000000000000000000000000000000000000000000",
+   "on_curve": true
+  },
+  {
+   "label": "y=30+sign",
+   "hex": "1e00000000000000000000000000000000000000000000000000000000000080",
+   "on_curve": true
+  },
+  {
+   "label": "y=31",
+   "hex": "1f00000000000000000000000000000000000000000000000000000000000000",
+   "on_curve": false
+  },
+  {
+   "label": "y=31+sign",
+   "hex": "1f00000000000000000000000000000000000000000000000000000000000080",
+   "on_curve": false
+  },
+  {
+   "label": "y=p+0 (non-canonical)",
+   "hex": "edffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f",
+   "on_curve": true
+  },
+  {
+   "label": "y=p+0+sign (non-canonical)",
+   "hex": "edffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+   "on_curve": true
+  },
+  {
+   "label": "y=p+1 (non-canonical)",
+   "hex": "eeffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f",
+   "on_curve": true
+  },
+  {
+   "label": "y=p+1+sign (non-canonical)",
+   "hex": "eeffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+   "on_curve": true
+  },
+  {
+   "label": "y=p+2 (non-canonical)",
+   "hex": "efffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f",
+   "on_curve": false
+  },
+  {
+   "label": "y=p+2+sign (non-canonical)",
+   "hex": "efffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+   "on_curve": false
+  },
+  {
+   "label": "y=p+3 (non-canonical)",
+   "hex": "f0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f",
+   "on_curve": true
+  },
+  {
+   "label": "y=p+3+sign (non-canonical)",
+   "hex": "f0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+   "on_curve": true
+  },
+  {
+   "label": "y=p+4 (non-canonical)",
+   "hex": "f1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f",
+   "on_curve": true
+  },
+  {
+   "label": "y=p+4+sign (non-canonical)",
+   "hex": "f1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+   "on_curve": true
+  },
+  {
+   "label": "y=p+5 (non-canonical)",
+   "hex": "f2ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f",
+   "on_curve": true
+  },
+  {
+   "label": "y=p+5+sign (non-canonical)",
+   "hex": "f2ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+   "on_curve": true
+  },
+  {
+   "label": "y=p+6 (non-canonical)",
+   "hex": "f3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f",
+   "on_curve": true
+  },
+  {
+   "label": "y=p+6+sign (non-canonical)",
+   "hex": "f3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+   "on_curve": true
+  },
+  {
+   "label": "y=p+7 (non-canonical)",
+   "hex": "f4ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f",
+   "on_curve": false
+  },
+  {
+   "label": "y=p+7+sign (non-canonical)",
+   "hex": "f4ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+   "on_curve": false
+  },
+  {
+   "label": "y=p+8 (non-canonical)",
+   "hex": "f5ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f",
+   "on_curve": false
+  },
+  {
+   "label": "y=p+8+sign (non-canonical)",
+   "hex": "f5ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+   "on_curve": false
+  },
+  {
+   "label": "y=p+9 (non-canonical)",
+   "hex": "f6ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f",
+   "on_curve": true
+  },
+  {
+   "label": "y=p+9+sign (non-canonical)",
+   "hex": "f6ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+   "on_curve": true
+  },
+  {
+   "label": "y=p+10 (non-canonical)",
+   "hex": "f7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f",
+   "on_curve": true
+  },
+  {
+   "label": "y=p+10+sign (non-canonical)",
+   "hex": "f7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+   "on_curve": true
+  },
+  {
+   "label": "y=p+11 (non-canonical)",
+   "hex": "f8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f",
+   "on_curve": false
+  },
+  {
+   "label": "y=p+11+sign (non-canonical)",
+   "hex": "f8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+   "on_curve": false
+  },
+  {
+   "label": "y=p+12 (non-canonical)",
+   "hex": "f9ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f",
+   "on_curve": false
+  },
+  {
+   "label": "y=p+12+sign (non-canonical)",
+   "hex": "f9ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+   "on_curve": false
+  },
+  {
+   "label": "y=p+13 (non-canonical)",
+   "hex": "faffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f",
+   "on_curve": false
+  },
+  {
+   "label": "y=p+13+sign (non-canonical)",
+   "hex": "faffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+   "on_curve": false
+  },
+  {
+   "label": "y=p+14 (non-canonical)",
+   "hex": "fbffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f",
+   "on_curve": true
+  },
+  {
+   "label": "y=p+14+sign (non-canonical)",
+   "hex": "fbffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+   "on_curve": true
+  },
+  {
+   "label": "y=p+15 (non-canonical)",
+   "hex": "fcffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f",
+   "on_curve": true
+  },
+  {
+   "label": "y=p+15+sign (non-canonical)",
+   "hex": "fcffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+   "on_curve": true
+  },
+  {
+   "label": "y=p+16 (non-canonical)",
+   "hex": "fdffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f",
+   "on_curve": true
+  },
+  {
+   "label": "y=p+16+sign (non-canonical)",
+   "hex": "fdffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+   "on_curve": true
+  },
+  {
+   "label": "y=p+17 (non-canonical)",
+   "hex": "feffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f",
+   "on_curve": false
+  },
+  {
+   "label": "y=p+17+sign (non-canonical)",
+   "hex": "feffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+   "on_curve": false
+  },
+  {
+   "label": "y=p+18 (non-canonical)",
+   "hex": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f",
+   "on_curve": true
+  },
+  {
+   "label": "y=p+18+sign (non-canonical)",
+   "hex": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+   "on_curve": true
+  },
+  {
+   "label": "y=p-1",
+   "hex": "ecffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f",
+   "on_curve": true
+  },
+  {
+   "label": "y=p-1+sign",
+   "hex": "ecffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+   "on_curve": true
+  },
+  {
+   "label": "y=p-2",
+   "hex": "ebffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f",
+   "on_curve": false
+  },
+  {
+   "label": "y=p-2+sign",
+   "hex": "ebffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+   "on_curve": false
+  },
+  {
+   "label": "y=p-3",
+   "hex": "eaffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f",
+   "on_curve": true
+  },
+  {
+   "label": "y=p-3+sign",
+   "hex": "eaffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+   "on_curve": true
+  },
+  {
+   "label": "y=p-4",
+   "hex": "e9ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f",
+   "on_curve": true
+  },
+  {
+   "label": "y=p-4+sign",
+   "hex": "e9ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+   "on_curve": true
+  },
+  {
+   "label": "y=p-5",
+   "hex": "e8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f",
+   "on_curve": true
+  },
+  {
+   "label": "y=p-5+sign",
+   "hex": "e8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+   "on_curve": true
+  },
+  {
+   "label": "y=p-6",
+   "hex": "e7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f",
+   "on_curve": true
+  },
+  {
+   "label": "y=p-6+sign",
+   "hex": "e7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+   "on_curve": true
+  },
+  {
+   "label": "y=p-7",
+   "hex": "e6ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f",
+   "on_curve": false
+  },
+  {
+   "label": "y=p-7+sign",
+   "hex": "e6ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+   "on_curve": false
+  },
+  {
+   "label": "y=p-8",
+   "hex": "e5ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f",
+   "on_curve": false
+  },
+  {
+   "label": "y=p-8+sign",
+   "hex": "e5ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+   "on_curve": false
+  },
+  {
+   "label": "small-order point",
+   "hex": "ecffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f",
+   "on_curve": true
+  },
+  {
+   "label": "small-order point",
+   "hex": "c7176a703d4dd84fba3c0b760d10670f2a2053fa2c39ccc64ec7fd7792ac037a",
+   "on_curve": true
+  },
+  {
+   "label": "small-order point",
+   "hex": "c7176a703d4dd84fba3c0b760d10670f2a2053fa2c39ccc64ec7fd7792ac03fa",
+   "on_curve": true
+  },
+  {
+   "label": "small-order point",
+   "hex": "26e8958fc2b227b045c3f489f2ef98f0d5dfac05d3c63339b13802886d53fc05",
+   "on_curve": true
+  },
+  {
+   "label": "small-order point",
+   "hex": "26e8958fc2b227b045c3f489f2ef98f0d5dfac05d3c63339b13802886d53fc85",
+   "on_curve": true
+  },
+  {
+   "label": "all 0xff",
+   "hex": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+   "on_curve": true
+  },
+  {
+   "label": "random",
+   "hex": "2f0c7d4a9e236c5f2e02de77e018fef1347e365ff9d62951a6f2d7ee4dcdeb29",
+   "on_curve": true
+  },
+  {
+   "label": "random",
+   "hex": "5e6c6637949e6bdcb3c6f816302fb2402891d874224c515ba27ac42d76238ddd",
+   "on_curve": true
+  },
+  {
+   "label": "random",
+   "hex": "3055f4b2140e25fe9cedaf3c0f63413ed24ddf8cf4e49d26a783af9fb173bb64",
+   "on_curve": true
+  },
+  {
+   "label": "random",
+   "hex": "c2ad7dcae80673802f1a3f00d6dd0b32f5121d0c6721116e1cb331014cccc9ad",
+   "on_curve": false
+  },
+  {
+   "label": "random",
+   "hex": "7b6a5cab9a6da736c3d2de9d40e044fd80349b4cf47029c9d9de55090889afaa",
+   "on_curve": true
+  },
+  {
+   "label": "random",
+   "hex": "bebace5d49485e34a5d75f75babdd869153d5b6ce1dfe56b347f0d67794bf739",
+   "on_curve": false
+  },
+  {
+   "label": "random",
+   "hex": "046cdb3011f38d58f063c987f1ce92cb2aebf0f7636ef58e59515ec6aee1fd7f",
+   "on_curve": true
+  },
+  {
+   "label": "random",
+   "hex": "3c9439828ccd3ef7a1bf3f397e95c0dcfcd982638dfe72069ccb51eb8c779eb2",
+   "on_curve": false
+  },
+  {
+   "label": "random",
+   "hex": "cbc7da7ea1e9b478df4a18bda27baad551f1350aece7203fdd8293746609ae65",
+   "on_curve": true
+  },
+  {
+   "label": "random",
+   "hex": "993d59084b00dac3d4b46f4b6d02574f7b2ed2e3e625cfa3275ebdc67d158806",
+   "on_curve": false
+  },
+  {
+   "label": "random",
+   "hex": "ff4958bd5499fb08baca71fe85e927e8039f1e23e725cbe51c6a3707157bec30",
+   "on_curve": true
+  },
+  {
+   "label": "random",
+   "hex": "232c859e7d01cb822573fd8ab14264e6707bee37faf7e90741b108bf2d43805b",
+   "on_curve": true
+  },
+  {
+   "label": "random",
+   "hex": "37b91a9c2bdf7d8e05656662debd90e6383bd1c1f992e663f3629f1761976b93",
+   "on_curve": true
+  },
+  {
+   "label": "random",
+   "hex": "9efe88a26a07013f9f3b5144bd26a520e17e72542f4fcea76790ad073990e139",
+   "on_curve": false
+  },
+  {
+   "label": "random",
+   "hex": "31522378a0e6f8eb2029b69a0018b13fbbb9f03e825fdc0a97bcd7095f08f626",
+   "on_curve": false
+  },
+  {
+   "label": "random",
+   "hex": "d56f8a52056c54bf5c415ea6210c5813043552fe37e73349dd993baf0ecb5b7a",
+   "on_curve": false
+  },
+  {
+   "label": "random",
+   "hex": "96ac5eb17100218e3a9708536261052e37f7c2cb6f924f7adaec57b57280a2df",
+   "on_curve": true
+  },
+  {
+   "label": "random",
+   "hex": "cac620cd89b45494c97deadc0dd42fa365ee8cdb9625b0863388c0d2c64ebcc1",
+   "on_curve": true
+  },
+  {
+   "label": "random",
+   "hex": "7060da8af3c34202dca4c04d376ce0356758e69c3750811763261988e15c7950",
+   "on_curve": true
+  },
+  {
+   "label": "random",
+   "hex": "ca0e3ce49d65b281402332acb8b67f6299bc255fed2f6d421618effa9a7fec47",
+   "on_curve": false
+  },
+  {
+   "label": "random",
+   "hex": "182d228a0423557ac111a99fb21b45fc7cb9d46e071ab9fb7356710fc5e7f1c7",
+   "on_curve": false
+  },
+  {
+   "label": "random",
+   "hex": "9787f4623a21652a6589e8799885318e4645d735be6393fda8cac1a5829e183e",
+   "on_curve": true
+  },
+  {
+   "label": "random",
+   "hex": "b64adeeef70179e6f388c504379237cd73631ab7942b1d72ca209dc5f8182872",
+   "on_curve": true
+  },
+  {
+   "label": "random",
+   "hex": "ed3cf1498067bccf5c7ae42c43afb9b55e44c3c8f4ecfd4d04f5277e42a96789",
+   "on_curve": false
+  },
+  {
+   "label": "random",
+   "hex": "2fd6b7c7b70f8a4cd456241d64ae33cd4dbe7975f9fbdd8651f9c6e84e863055",
+   "on_curve": true
+  },
+  {
+   "label": "random",
+   "hex": "e1889b6ef88aeda51c6449008e4e09a1c533fa4bb10014fba1cea6b0da104598",
+   "on_curve": false
+  },
+  {
+   "label": "random",
+   "hex": "1a82cd9af45f1279641c74e03216e4b3011e7dd944c7c7f87f53845dc8fd1340",
+   "on_curve": true
+  },
+  {
+   "label": "random",
+   "hex": "42b86179dee44760a2d2ae195f01b99c7107921a9c8066ec3649441601058570",
+   "on_curve": false
+  },
+  {
+   "label": "random",
+   "hex": "31c84fb08a92ae58f56d7f4bd56f59e80fd87bdc7e98dbb28f53c6cec9a54a12",
+   "on_curve": false
+  },
+  {
+   "label": "random",
+   "hex": "e25695386a2b787d6d474ff275ebec94c542ee88a6fe6595ab249a14dee70b19",
+   "on_curve": true
+  },
+  {
+   "label": "random",
+   "hex": "06f305f470f8d7a42c23ecb9f1fbb51a6eb7d99e97cf37cbedd2a4fc06d638a4",
+   "on_curve": true
+  },
+  {
+   "label": "random",
+   "hex": "684443dd7c91dcc1cafb2fd1b8372210acd02294a8e090d2001d7bd2781cc33f",
+   "on_curve": true
+  },
+  {
+   "label": "random",
+   "hex": "0734ca048f6b04a3bd3e868b28e6eb5fbbc5c1198dd178d0bee705edb57f3905",
+   "on_curve": true
+  },
+  {
+   "label": "random",
+   "hex": "612e1132591d1426ee55a544c2e9c751ce4f4118eecc66b873365d5f9b5d9ceb",
+   "on_curve": false
+  },
+  {
+   "label": "random",
+   "hex": "d9de4fde67300c01d6d469dee4e3616d67dd781e34f5c9f881e19634e8e6348e",
+   "on_curve": false
+  },
+  {
+   "label": "random",
+   "hex": "5a7f9c69abf55fdc46c6fd33ef102252fbeb5d60c80f91824db2a7308c1a03f6",
+   "on_curve": false
+  },
+  {
+   "label": "random",
+   "hex": "f70a01bcfead4d7ad163d21f3e49c5fafaf24e18b388c4dba5230e96b4f63583",
+   "on_curve": true
+  },
+  {
+   "label": "random",
+   "hex": "69229cdf1e56f4436f91533a1bf83eeb23059dd4ed372013f67ae2ca72431836",
+   "on_curve": false
+  },
+  {
+   "label": "random",
+   "hex": "362b7ba976864a5ecee5de38e0bbda1f1cd683901a3822d35b6588a43635f30a",
+   "on_curve": false
+  },
+  {
+   "label": "random",
+   "hex": "af37f24f682cf4ca39d365f6e66ff402e3e14ec5e59f2f8e0c3a7ce31d7722f1",
+   "on_curve": true
+  },
+  {
+   "label": "random",
+   "hex": "61ccfecce625853e67c85c28c8c31abd39dc0d19fa70b1cbcbde253bfcba7e8f",
+   "on_curve": false
+  },
+  {
+   "label": "random",
+   "hex": "3089602cad928e1b88833c1c0576180f87c6d11bf25f834412568e1fc9541c24",
+   "on_curve": false
+  },
+  {
+   "label": "random",
+   "hex": "e9ffa7b9d6ff2f9349f7254327cb44423907e80407110c9e4abc90687b3f27d9",
+   "on_curve": false
+  },
+  {
+   "label": "random",
+   "hex": "2c6fc414876bcc5306038940e227064d9f71706bcec0f43ec958e20a118f193f",
+   "on_curve": false
+  },
+  {
+   "label": "random",
+   "hex": "5b150f139d77d05be12022c533c44da6cb01297542ab88aeab224a6fd5926ead",
+   "on_curve": true
+  },
+  {
+   "label": "random",
+   "hex": "a49f300d85fa7e7e1eca8344ff6f1d69a7685a09310364349b05b89a873e4cb4",
+   "on_curve": false
+  },
+  {
+   "label": "random",
+   "hex": "d93d584578985c0b03b05222d480ddb770e43a935ab35f7f8618ff971779835a",
+   "on_curve": false
+  },
+  {
+   "label": "random",
+   "hex": "655f2654b151df37b2e73ab3b2a70febd838d286f50b7eaddd5ad750f84263df",
+   "on_curve": true
+  },
+  {
+   "label": "random",
+   "hex": "7ec6fb1baa12521c979dd604873a9835db76a1d6a8cbebc56b715bee0cae1012",
+   "on_curve": false
+  },
+  {
+   "label": "random",
+   "hex": "6bfbfb11d514dade3c9f834274c467192f02c5e4d2fb2c0bc95bed443c296093",
+   "on_curve": false
+  },
+  {
+   "label": "random",
+   "hex": "d44abf06aa00303671860b990cc24ed5d7cede6bb93707197265abc7cdcdb214",
+   "on_curve": false
+  },
+  {
+   "label": "random",
+   "hex": "13dfe07b72e34afedaca2cf1cf602dae5a17f978e5b3d48b6a74612715056298",
+   "on_curve": true
+  },
+  {
+   "label": "random",
+   "hex": "7cbb68a3c0b1bebdd6c22939461fb49fcb0980819b3f31f6c57946e80dc72ec1",
+   "on_curve": false
+  },
+  {
+   "label": "random",
+   "hex": "3bd317a37a2a952784105df22d00c922f44969971a35d62d2dff3d92cdf8bbb3",
+   "on_curve": true
+  },
+  {
+   "label": "random",
+   "hex": "cfe022cfa38bccdead9b03c1756df0bfae046ed3db20036de57d793a0c47f657",
+   "on_curve": false
+  },
+  {
+   "label": "random",
+   "hex": "24423b99c342fc0ffb446d26d0025c7968fb12caee1bd2042721996a69e6a639",
+   "on_curve": false
+  },
+  {
+   "label": "random",
+   "hex": "ecf94af0179728f6bde194fd3dabbcf80b7ce8cdafe61e53c1df19e5966649e5",
+   "on_curve": true
+  },
+  {
+   "label": "random",
+   "hex": "9542270675aea695f9b79492c69a29aa304e459de6ad0f828973d6f28067e369",
+   "on_curve": true
+  },
+  {
+   "label": "random",
+   "hex": "db786c9105e5a902fbbc94c539c960e22602d3ad1bc535d26e06b645b091f3c3",
+   "on_curve": false
+  },
+  {
+   "label": "random",
+   "hex": "95d504cdb05faa791a542f580173752e8b92e52c81eea0be36f97bfd0e82e6f4",
+   "on_curve": false
+  },
+  {
+   "label": "random",
+   "hex": "65c57a9aaefd8e31f54734cb4795697bdee38718fd02ef0b35de7d1babc4f45c",
+   "on_curve": true
+  },
+  {
+   "label": "random",
+   "hex": "64ce855d7629bbbd4ad2ec16752c2a703ff40d79aac701da55c12ab76a2e68e4",
+   "on_curve": false
+  },
+  {
+   "label": "random",
+   "hex": "c4550f778dd68803ba6340218eb27c4ea969753e9d85f8d1ebbf2b5b1064eaed",
+   "on_curve": false
+  },
+  {
+   "label": "random",
+   "hex": "ceceec86a602f37dd010dd77045e392f07d0a613bf60b4ef91bd13fcd9d6c28a",
+   "on_curve": false
+  },
+  {
+   "label": "random",
+   "hex": "13b2422360c31868ced8a63710da023cb1c86d11d867319eec02deae83782ffb",
+   "on_curve": false
+  },
+  {
+   "label": "random",
+   "hex": "19c1d509edcf48851af3daea1050c375287ccd0d6b9bf16289be4d7e698f9bcd",
+   "on_curve": false
+  },
+  {
+   "label": "random",
+   "hex": "aaec15f818fd28b69e15c79ab513d56859c0ab778dc0202d3567dcb17e3cd044",
+   "on_curve": false
+  },
+  {
+   "label": "random",
+   "hex": "4be5f6b27b576c206dd78eb2768d928832f834f2dc52648368a25cd55778d625",
+   "on_curve": true
+  },
+  {
+   "label": "random",
+   "hex": "3fabadd5adb2a6d8fee4abb17033df2f9c8c17d4eb2a8719fc28f8a2e921da5a",
+   "on_curve": false
+  },
+  {
+   "label": "random",
+   "hex": "b076dfd15f5a395e8cf26a195a832f4de66968eede7c80fc769401ebe40e9408",
+   "on_curve": true
+  },
+  {
+   "label": "random",
+   "hex": "930c69464e7a482a4209ea84a8f330c9add008f134a86b48a3a5e46ebc170bda",
+   "on_curve": true
+  },
+  {
+   "label": "random",
+   "hex": "b2ad4527a7262a8addc85362cc61c8287bbb65c69fd837fdc621879ec9dc2fd2",
+   "on_curve": false
+  },
+  {
+   "label": "random",
+   "hex": "b42d3f220a11cc6e31da0072574884c103186621392fac96a696aee926864d50",
+   "on_curve": true
+  },
+  {
+   "label": "random",
+   "hex": "2119877356d2a34b1affb7c6a910ea33d1ac8a3b98db421db237010308990279",
+   "on_curve": true
+  },
+  {
+   "label": "random",
+   "hex": "91e43b6f3970cbab676c64765b9f239429b43e8afbd550e7d91729dddf9ccbe7",
+   "on_curve": true
+  },
+  {
+   "label": "random",
+   "hex": "3da1b2af2130a694d461e9d13007cd3ec2ee6a5658e8c7dce8d799516fdf317f",
+   "on_curve": true
+  },
+  {
+   "label": "random",
+   "hex": "9663bac98bdb99c8f0e7aec5537113f69df6945717500351c3e873efc568a3c3",
+   "on_curve": true
+  },
+  {
+   "label": "random",
+   "hex": "e606bc24df3df1c1adcf776f3585f11f0f3f3b48f6e9775e69d4a26313134461",
+   "on_curve": true
+  },
+  {
+   "label": "random",
+   "hex": "84c242c54ad3aec621c599eb8891338f3bb562eaf12d71a6748257c9a8473a14",
+   "on_curve": true
+  },
+  {
+   "label": "random",
+   "hex": "671e0a0774f12886229b8ff20038212135b6f6de6152830d4bf094e263b1d179",
+   "on_curve": true
+  },
+  {
+   "label": "create_program_address accepted (PDA)",
+   "hex": "dec000cda8ef55b01d833522704f714c5b548c7c5b7d6abedb4cf77fd9f6f89c",
+   "on_curve": false
+  },
+  {
+   "label": "create_program_address rejected (on curve)",
+   "hex": "c8e15fae4345edaf45b836bf9dc0f33520fc695908b1e73b1c35999b50568567",
+   "on_curve": true
+  },
+  {
+   "label": "create_program_address accepted (PDA)",
+   "hex": "e3d35cb2dfc9f8baa323944bd06f0ab2e77f9107f1ff31120805d6434129b008",
+   "on_curve": false
+  },
+  {
+   "label": "create_program_address accepted (PDA)",
+   "hex": "5234e5c9f5f4d8ed7e749f20e40938b4eebb916ad860c2f9b712629e1e7b22b8",
+   "on_curve": false
+  },
+  {
+   "label": "create_program_address accepted (PDA)",
+   "hex": "a40b81597fa121619a86d5e65935568f3742e5525608ffe6212c28937620d984",
+   "on_curve": false
+  },
+  {
+   "label": "create_program_address accepted (PDA)",
+   "hex": "34ce87b75230e7a0334d62e5348f4338f32c0e131c21cf904b44eb9ff10d4930",
+   "on_curve": false
+  },
+  {
+   "label": "create_program_address accepted (PDA)",
+   "hex": "754bc0e4aeea237cfd57c580d99b15f4bc479db19ac5d771b0129f8f55ca95e9",
+   "on_curve": false
+  },
+  {
+   "label": "create_program_address rejected (on curve)",
+   "hex": "a3c892cd83abce6828cb512755675388e97eb4e598d348e650b586b9287f36a9",
+   "on_curve": true
+  },
+  {
+   "label": "create_program_address rejected (on curve)",
+   "hex": "46d046d1e30f182917f75a14577b579485d81790159fb09476635c26fa56bf6d",
+   "on_curve": true
+  },
+  {
+   "label": "create_program_address rejected (on curve)",
+   "hex": "850fa263afcf1fad08496a2161db337e0311c37c0c367056fa0312edc726229e",
+   "on_curve": true
+  },
+  {
+   "label": "create_program_address accepted (PDA)",
+   "hex": "22adc6407b8112ca80ec9e6f19f491cb8fe0f11147223bf1730315ccdc9e6ea6",
+   "on_curve": false
+  },
+  {
+   "label": "create_program_address rejected (on curve)",
+   "hex": "1bc4e649797cc292332cc98986c010242ff06fc536ec38fac88940e7598024f6",
+   "on_curve": true
+  },
+  {
+   "label": "create_program_address rejected (on curve)",
+   "hex": "febf13ca6831c7a3806a8e1fa4c1d42ff295cb3c1485c9fd67225ec43ae4ebdd",
+   "on_curve": true
+  },
+  {
+   "label": "create_program_address rejected (on curve)",
+   "hex": "4131da7cf820783a1ff332e321d6789cbd9f3ced8a7739a4e67d00e14cd660e8",
+   "on_curve": true
+  },
+  {
+   "label": "create_program_address accepted (PDA)",
+   "hex": "763fbaadcbdf67fec40e4047bdebda920c46ea61f9e2e51a8f2d76c4042574e1",
+   "on_curve": false
+  },
+  {
+   "label": "create_program_address accepted (PDA)",
+   "hex": "1e447800e29c40021fb71c3f25da0a37cacc546ab7751d1458bc38ff2719ad18",
+   "on_curve": false
+  },
+  {
+   "label": "create_program_address accepted (PDA)",
+   "hex": "7505365ba82e308129d9b925d323fb568d2369e0f615aaebb8e8b935fbcb3ab6",
+   "on_curve": false
+  },
+  {
+   "label": "create_program_address accepted (PDA)",
+   "hex": "746bb843113366f0b40df4f7d10f108833c13dc988a7e4f1bd7334105f45563e",
+   "on_curve": false
+  },
+  {
+   "label": "create_program_address accepted (PDA)",
+   "hex": "e805cc211de11a8bf736a50bcd3692302f7eb9a56fcf1d253d7168c783a22e29",
+   "on_curve": false
+  },
+  {
+   "label": "create_program_address accepted (PDA)",
+   "hex": "7b3af2fd6ecfb970a69356e791e8ead839b683018cb963d927c35c72eddeb865",
+   "on_curve": false
+  },
+  {
+   "label": "create_program_address accepted (PDA)",
+   "hex": "6b92a962f07d747631505a26228a12bdcb98420dce03bc11b628280d5d676215",
+   "on_curve": false
+  },
+  {
+   "label": "create_program_address accepted (PDA)",
+   "hex": "fbaac17664b0079128d7599e9b78e863b0803b5e8a5756e0e089c1886c654c07",
+   "on_curve": false
+  },
+  {
+   "label": "create_program_address accepted (PDA)",
+   "hex": "da4d48cc022759257021f13e00bf14f221796c1bad776d0553733768c705f487",
+   "on_curve": false
+  },
+  {
+   "label": "create_program_address rejected (on curve)",
+   "hex": "3799f99530d47af216e8b1ef4ab9d4b3cb9d8df5f44e9c8bffbb5cc61de19bd5",
+   "on_curve": true
+  },
+  {
+   "label": "create_program_address accepted (PDA)",
+   "hex": "7edb00e0cb605e2af65bf17ab1439b5e5e812a6ec3be020137bee85f9fce724f",
+   "on_curve": false
+  },
+  {
+   "label": "create_program_address accepted (PDA)",
+   "hex": "f2e3f5e7aa681be892428cd5623bd23c14c7a30698e2b56fce1d21b072c022a0",
+   "on_curve": false
+  },
+  {
+   "label": "create_program_address accepted (PDA)",
+   "hex": "a81e7dd75d0da0a0e6e1383630945d27de93fd637720b0af0197b2bf6206f84e",
+   "on_curve": false
+  },
+  {
+   "label": "create_program_address accepted (PDA)",
+   "hex": "06d35444fe901c7b8536cc676538a5c14e0cecd00c9ae0272e9fc599b59eef15",
+   "on_curve": false
+  },
+  {
+   "label": "create_program_address rejected (on curve)",
+   "hex": "8a01090161a2b47e6f9d69c70763494401a5c1ffe42e5f8ee81cd74206f256c5",
+   "on_curve": true
+  },
+  {
+   "label": "create_program_address rejected (on curve)",
+   "hex": "16ec184ccd3c25398a8d4c1d3e8e9610e6f341fd0c5eb86befe0ff80e99d1419",
+   "on_curve": true
+  },
+  {
+   "label": "create_program_address rejected (on curve)",
+   "hex": "f44043a09c2d2ab1c14dd03d3ce7e5c23bc2eb2b89491aa2057991920d7ca8cc",
+   "on_curve": true
+  },
+  {
+   "label": "create_program_address rejected (on curve)",
+   "hex": "1b4f23ac839859590f0e8f3de3aa17159be825d6bd6c6bb8ae39f31ef8524c7f",
+   "on_curve": true
+  },
+  {
+   "label": "create_program_address rejected (on curve)",
+   "hex": "11939849fcd1a30e87345144631d0b09860ae56dfcd28bf3320fe23598e69371",
+   "on_curve": true
+  },
+  {
+   "label": "create_program_address rejected (on curve)",
+   "hex": "06d271469d55f830b52d3f930b93e9d4c37eb20159215dc9ebb3f47865cb8aa2",
+   "on_curve": true
+  },
+  {
+   "label": "create_program_address rejected (on curve)",
+   "hex": "554d1854fc3ea34fb380ea1c2f60dd36c7c20c12953b00f29a79282320623c96",
+   "on_curve": true
+  },
+  {
+   "label": "create_program_address rejected (on curve)",
+   "hex": "a2c22208b7394efdc8e9589a352133d9b413286c27e25538368fa70dff25bcf8",
+   "on_curve": true
+  },
+  {
+   "label": "create_program_address rejected (on curve)",
+   "hex": "93866826ce911503c26a0d1e45de1961179e73fc098f4fc419b07ae68f0eae44",
+   "on_curve": true
+  },
+  {
+   "label": "create_program_address rejected (on curve)",
+   "hex": "b946c238e251d9805256d3e9b7f363e1ff4e1adcc08776484139d570f0111e21",
+   "on_curve": true
+  },
+  {
+   "label": "create_program_address rejected (on curve)",
+   "hex": "f55d1df9e2ee64c067267242171f885f56ac61f64a0ab6f894d18c6efbe60068",
+   "on_curve": true
+  },
+  {
+   "label": "create_program_address rejected (on curve)",
+   "hex": "391d93cdd9b863b59b6e9a9fb5a4f7351f7a9e9b19f75ec335c02c7c7b361c93",
+   "on_curve": true
+  },
+  {
+   "label": "find_program_address",
+   "hex": "2e0505bf732c35470efa3ec122ad5719fba341ec54767596b82b5ca09c0ee494",
+   "on_curve": false
+  },
+  {
+   "label": "find_program_address",
+   "hex": "847b585ae48dd8196cae7fcdf7eca5eee821885f6b1c4efa002d25ba22dd1874",
+   "on_curve": false
+  },
+  {
+   "label": "find_program_address",
+   "hex": "d833069e31af84be85d5a178d0cc927f9eb1d6d88e8e28873d933e719acdedfb",
+   "on_curve": false
+  },
+  {
+   "label": "find_program_address",
+   "hex": "a1922ef6a32e1d2bb802f70e1355cae12303da85499f0499ea6dfab06e05202c",
+   "on_curve": false
+  },
+  {
+   "label": "find_program_address",
+   "hex": "38a4a50e5fa7614d402ec68eeae6a39bb4d6944a8ae780801a7d28cdd53314eb",
+   "on_curve": false
+  },
+  {
+   "label": "find_program_address",
+   "hex": "3051e62350e6c0e2ee56e40302dca85ecd0834de85a644bd8110fa1d2aca662f",
+   "on_curve": false
+  },
+  {
+   "label": "find_program_address",
+   "hex": "b9ad6859925c487651f188ab86a14bb8c3b6cea44cf78fad41f20bb365185187",
+   "on_curve": false
+  },
+  {
+   "label": "find_program_address",
+   "hex": "76d14fa12089557e6bb66bbe48f8512b6307e3f64c68d8df113efda05216802e",
+   "on_curve": false
+  },
+  {
+   "label": "find_program_address",
+   "hex": "227e0a8c253b776735a5fb23c07e1e4df790d2452a15beaefeee53e444235161",
+   "on_curve": false
+  },
+  {
+   "label": "find_program_address",
+   "hex": "3a7271002a1f25e9eb94dade3999a6058e59c93295c6d18966a76d5a2828a32e",
+   "on_curve": false
+  }
+ ]
+}

@@ -11,27 +11,36 @@ from desk.security_scan import scan_pool_security
 
 
 def _onchain_details(pool):
-    """Eigene On-Chain-Spanne, kompakt. Die Wallet-Untergrenze ist eine
-    interne konservative Untergrenze, keine offizielle Umlaufmenge."""
+    """Eigene On-Chain-Spanne, kompakt. Die Untergrenze ist eine
+    HEURISTISCHE Wallet-Untergrenze aus technisch wallet-ähnlichen
+    Konten, keine nachgewiesene wirtschaftliche Umlaufmenge; das steht
+    ausdrücklich in lower_bound_kind und den *_proven-Feldern."""
     bounds = pool.get("market_cap_onchain_bounds")
 
     if not isinstance(bounds, dict):
         return None
 
-    lower = bounds.get("wallet_lower_bound") or {}
+    lower = bounds.get("wallet_like_lower_bound") or {}
     decision = bounds.get("decision") or {}
 
     return {
         "status": bounds.get("status"),
         "reason": bounds.get("reason") or lower.get("reason"),
         "note": lower.get("note"),
+        "lower_bound_kind": lower.get("lower_bound_kind"),
+        "private_key_proven": lower.get("private_key_proven"),
+        "free_transferability_proven": lower.get("free_transferability_proven"),
+        "economic_circulating_supply_proven": lower.get(
+            "economic_circulating_supply_proven"
+        ),
+        "residual_risk": lower.get("residual_risk"),
         "decision_status": decision.get("status"),
         "decision_reason": decision.get("reason"),
-        "market_cap_lower_bound_usd": decision.get("market_cap_lower_bound_usd"),
+        "market_cap_heuristic_lower_bound_usd": decision.get("market_cap_heuristic_lower_bound_usd"),
         "market_cap_upper_bound_usd": decision.get("market_cap_upper_bound_usd"),
         "price_low_usd": decision.get("price_low_usd"),
         "price_high_usd": decision.get("price_high_usd"),
-        "wallet_lower_bound_raw": lower.get("wallet_lower_bound_raw"),
+        "wallet_like_lower_bound_raw": lower.get("wallet_like_lower_bound_raw"),
         "target_amount_raw": lower.get("target_amount_raw"),
         "target_reached": lower.get("target_reached"),
         "account_calls": lower.get("account_calls"),

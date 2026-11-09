@@ -1,9 +1,27 @@
-"""Konservative On-Chain-Untergrenze der Umlaufmenge (Wallet-Untergrenze).
+"""Heuristische Wallet-Untergrenze für die On-Chain-Spanne.
 
-Interne Definition (vom Nutzer freigegeben): Frei übertragbare Bestände
-in technisch bestätigten normalen Wallets bilden eine konservative
-UNTERGRENZE der Umlaufmenge. Sie ist ausdrücklich KEINE offizielle oder
-tatsächliche zirkulierende Menge und wird nie so ausgegeben.
+Was diese Größe IST: die Summe der Bestände von Authorities, die
+technisch wie ein normales Wallet aussehen ("wallet-ähnlich": On-Curve-
+Adresse, Owner System Program, nicht ausführbar, 0 Byte Daten,
+SOL-Guthaben > 0). Sie heißt deshalb überall "heuristische
+Wallet-Untergrenze" (wallet_like_lower_bound).
+
+Was sie NICHT ist:
+- keine offizielle, tatsächliche oder wirtschaftlich nachgewiesene
+  Umlaufmenge,
+- kein Nachweis, dass ein privater Schlüssel existiert,
+- kein Nachweis, dass die Token frei übertragbar sind.
+
+Restrisiko (bewusst nicht "wegdefiniert"): Eine On-Curve-Adresse muss
+keinen bekannten privaten Schlüssel haben. Jede 32-Byte-Folge, die
+zufällig ein gültiger Kurvenpunkt ist, kann als Authority eingetragen
+werden und SOL erhalten (z. B. Vanity-/Platzhalter-Adressen, Adressen
+mit verlorenem Schlüssel). Token einer solchen Authority sind dann
+dauerhaft unbeweglich, werden hier aber als wallet-ähnlich gezählt.
+Ob ein Schlüssel existiert, lässt sich on-chain nur durch eine
+Signatur belegen; das wird hier nicht geprüft und nicht angenommen.
+Ebenso können Wallet-ähnliche Konten Börsen, Projekten oder einer
+einzigen Person gehören.
 
 Datengrundlage: die vollständige Holder-Liste (desk/solana_rpc.py,
 fetch_full_holder_list). Jede Zeile enthält
@@ -36,10 +54,9 @@ festem Grund; es gibt nie ein Teilergebnis. Die Untergrenze kann die
 Marktkapitalisierungs-Prüfung nur zusammen mit der Obergrenze und nur
 über desk.market_cap.evaluate_onchain_bounds bestätigen.
 
-Grenzen: Wallets können Smart-Wallets oder Börsen ohne Kennzeichnung
-sein; ein Keypair-Wallet kann einem Projekt gehören. Das macht die
-Untergrenze nicht falsch, solange die Token frei übertragbar sind,
-aber "Umlauf" ist hier eine technische, keine wirtschaftliche Aussage.
+Die Entscheidung über die Marktkapitalisierung trifft
+desk.market_cap.evaluate_onchain_bounds; im Protokoll steht die Größe
+immer mit lower_bound_kind und den Kennzeichen unten.
 """
 
 from desk.holders import BURN_OWNERS, FULL_LIST_SCOPE, TOP_N
@@ -57,7 +74,7 @@ COMPLETED = "completed"
 ERROR = "error"
 
 # Klassen einer Authority
-WALLET = "wallet"
+WALLET = "wallet_like_system_account"
 OFF_CURVE = "off_curve_pda"
 EXECUTABLE = "executable_program"
 TOKEN_ACCOUNT = "token_program_account"
@@ -76,14 +93,25 @@ EXCLUDED_TOP10 = "top10"
 TOKEN_PROGRAMS = frozenset({TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID})
 
 NOTE = (
-    "internal_conservative_lower_bound_not_official_circulating_supply"
+    "heuristic_wallet_like_lower_bound_not_proven_circulating_supply"
 )
+LOWER_BOUND_KIND = "heuristic_wallet_like_lower_bound"
+
+# Feste Kennzeichen im Protokoll: was die Größe ausdrücklich NICHT belegt.
+EVIDENCE_FLAGS = {
+    "private_key_proven": False,
+    "free_transferability_proven": False,
+    "economic_circulating_supply_proven": False,
+    "residual_risk": "on_curve_address_without_known_private_key",
+}
 
 
 def classify_authority_account(info):
     """Kontodaten einer Authority (fetch_authority_accounts) -> Klasse.
 
-    Nur WALLET zählt zur Untergrenze.
+    Nur WALLET ("wallet_like_system_account") zählt zur heuristischen
+    Untergrenze. Das ist eine technische Einordnung, kein Nachweis eines
+    privaten Schlüssels.
     """
     if info is None:
         return UNFUNDED
@@ -243,20 +271,22 @@ def compute_wallet_lower_bound(
     fetch_accounts,
     fetch_frozen,
 ):
-    """Wallet-Untergrenze (Rohmenge) mit Protokoll.
+    """Heuristische Wallet-Untergrenze (Rohmenge) mit Protokoll.
 
     target_amount_raw: Menge, ab der die Entscheidung feststeht
     (früher Abbruch). fetch_accounts/fetch_frozen: Abruffunktionen aus
     desk.solana_rpc (in Tests ersetzbar).
 
-    status "completed": wallet_lower_bound_raw ist belegt (kann 0 sein).
+    status "completed": wallet_like_lower_bound_raw ist belegt (kann 0 sein).
     status "error": kein Wert; reason nennt den festen Grund.
     """
     result = {
         "status": ERROR,
         "reason": None,
         "note": NOTE,
-        "wallet_lower_bound_raw": None,
+        "lower_bound_kind": LOWER_BOUND_KIND,
+        **EVIDENCE_FLAGS,
+        "wallet_like_lower_bound_raw": None,
         "target_amount_raw": target_amount_raw,
         "target_reached": False,
         "account_calls": 0,
@@ -347,10 +377,10 @@ def compute_wallet_lower_bound(
                 )
                 continue
 
-            free_amount = entry["amount"] - entry["frozen_amount"]
+            unfrozen_amount = entry["amount"] - entry["frozen_amount"]
 
-            if free_amount > 0:
-                candidates.append((authority, free_amount))
+            if unfrozen_amount > 0:
+                candidates.append((authority, unfrozen_amount))
 
         # Größte zuerst; bei Gleichstand stabil nach Adresse.
         candidates.sort(key=lambda pair: (-pair[1], pair[0]))
@@ -413,7 +443,7 @@ def compute_wallet_lower_bound(
 
     result.update(
         status=COMPLETED,
-        wallet_lower_bound_raw=lower,
+        wallet_like_lower_bound_raw=lower,
         target_reached=lower >= target_amount_raw,
         reason=(
             "target_reached"

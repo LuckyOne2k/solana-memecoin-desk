@@ -45,7 +45,7 @@
 | `desk/data_quality.py` | Liquiditäts- und Preisvergleich zwischen Quellen |
 | `desk/holders.py` | Top-10-/Entwickler-Anteil mit Unter-/Obergrenze; Bestätigung nur mit vollständiger Liste |
 | `desk/market_cap.py` | Marktkapitalisierung, Obergrenze, FDV, Entscheidung der On-Chain-Spanne |
-| `desk/circulating_bounds.py` | Wallet-Untergrenze: Authorities aggregieren, ausschließen, per getMultipleAccounts klassifizieren (Schalter, Standard aus) |
+| `desk/circulating_bounds.py` | heuristische Wallet-Untergrenze: Authorities aggregieren, ausschließen, per getMultipleAccounts klassifizieren (Schalter, Standard aus) |
 | `desk/security_scan.py` | einzige Prüfkette, Bewertung je Pool |
 | `desk/check_queue.py` | faire Prüfreihenfolge: zuletzt abgelehnte Token nach hinten (nur Reihenfolge, nie Ergebnis) |
 | `desk/rules.py`, `risk.py`, `debate.py` | behalten, noch nicht angeschlossen |
@@ -59,7 +59,7 @@
 - Token-2022: Pflichtprüfungen `permanent_delegate_absent` und `token_extensions_safe`. Permanent Delegate, unbekannte, nicht lesbare oder nicht ausdrücklich als unbedenklich eingestufte Erweiterungen (unbedenklich nur Metadaten/Gruppe) → unklar, nie bereit; noch keine Ablehnung.
 - Prüfreihenfolge: höchstens 10 Token je Lauf; Token, deren letzte abgeschlossene Sicherheitsprüfung abgelehnt wurde, rücken nach hinten (älteste Ablehnung zuerst). Jeder Token wird frisch geprüft; Protokoll fehlt/beschädigt → bisherige Reihenfolge.
 - Der Config-Schlüssel `market_cap_allow_total_supply_estimate` ist verboten und stoppt das Programm.
-- On-Chain-Spanne (`market_cap_onchain_bounds`, Standard `allow_onchain_bounds: false`): nur wenn allein die Marktkapitalisierung offen ist. L = Bestände in technisch bestätigten normalen Wallets (interne konservative Untergrenze, nie als offizielle Umlaufmenge ausgeben), ohne Top-10, Pool, Creator, Burn, Börsen, Locker, PDAs, eingefrorene Konten; Authorities ohne SOL-Konto zählen nicht. U = Gesamtmenge − Burns. Bestätigt nur bei p_niedrig × L ≥ 300k und p_hoch × U ≤ 20 Mio.; p_niedrig × L > 20 Mio. → abgelehnt; sonst unklar. Höchstens 10 getMultipleAccounts-Aufrufe je Token und Scan, größte zuerst; Fehler, Slot-Abweichung oder Limit → unklar.
+- On-Chain-Spanne (`market_cap_onchain_bounds`, Standard `allow_onchain_bounds: false`): nur wenn allein die Marktkapitalisierung offen ist. L = heuristische Wallet-Untergrenze: Bestände technisch wallet-ähnlicher Konten (kein Nachweis eines privaten Schlüssels oder freier Übertragbarkeit, nie als Umlaufmenge ausgeben; Restrisiko: On-Curve-Adressen ohne bekannten Schlüssel), ohne Top-10, Pool, Creator, Burn, Börsen, Locker, PDAs, eingefrorene Konten; Authorities ohne SOL-Konto zählen nicht. U = Gesamtmenge − Burns. Bestätigt nur bei p_niedrig × L ≥ 300k und p_hoch × U ≤ 20 Mio.; p_niedrig × L > 20 Mio. → abgelehnt; sonst unklar. Höchstens 10 getMultipleAccounts-Aufrufe je Token und Scan (hart in `config.py`, > 10 stoppt das Programm), größte zuerst; Fehler, Slot-Abweichung oder Limit → unklar.
 
 ## Infrastruktur
 - `.github/workflows/tests.yml`: Tests bei jedem PR und auf `main`, nur lesend.
@@ -89,6 +89,7 @@
 
 - 2026-11-09 – PR #14 gemergt; Scan #47: GeckoTerminal wieder 2/2 HTTP 200, 0 Wiederholungen; TTP, BRUH, USOE: alles bestätigt außer Marktkapitalisierung. Helius-Verbrauch laut Dashboard bis dahin 225 Credits.
 - 2026-11-09 – PR 2 „On-Chain-Spanne der Marktkapitalisierung“ freigegeben und umgesetzt (Schalter standardmäßig aus): Definition L = frei übertragbare Bestände in bestätigten normalen Wallets (nur interne Untergrenze); „null“-Authorities zählen nicht; max. 10 getMultipleAccounts à 100 je Token, größte zuerst; Top-10 ausgeschlossen; jede Lücke → unvollständig; kein Credit-Messtest (Verbrauch im Dashboard prüfen). Zusätzlich (konservativ): eingefrorene Token-Konten per 1 getProgramAccountsV2-Aufruf abgezogen. Tests: 920 bestanden.
+- 2026-11-09 – PR #15 überarbeitet (Nutzer-Review): `max_account_calls_per_token` hart auf 1–10 begrenzt (> 10 → ConfigError). Untergrenze heißt jetzt „heuristische Wallet-Untergrenze“ (technisch wallet-ähnliche Konten); kein Nachweis von privatem Schlüssel, freier Übertragbarkeit oder Umlaufmenge; Protokoll mit `lower_bound_kind`, `*_proven: false`, `residual_risk`. Restrisiko dokumentiert: On-Curve-Adressen ohne bekannten Schlüssel. `is_on_curve` gegen Solana-SDK-Referenz (solders 0.29.0, curve25519-dalek) geprüft: 0 Abweichungen bei 200.000 Zufallswerten, 3.500 PDA-Ableitungen und allen Kantenfällen; 254 feste Referenzvektoren + RFC-8032-Vergleich in den Tests. Tests: 1208 bestanden.
 
 ## Offene Probleme
 - Praktisch wird kaum ein Token „bereit“: GeckoTerminal meldet die Umlaufmenge nur für etwa 5 % der Token (keine nachvollziehbare Alternative, Nutzer entscheidet).

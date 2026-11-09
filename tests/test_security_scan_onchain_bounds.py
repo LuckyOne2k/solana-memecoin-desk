@@ -280,9 +280,9 @@ def test_confirmed_bounds_make_pool_ready_without_point_value():
     assert item["market_cap_evaluation"]["market_cap_usd"] is None
     assert item["market_cap_evaluation"]["status"] == "confirmed"
     assert item["market_cap_evaluation"]["reason"] == "onchain_bounds_in_range"
-    assert bounds["decision"]["market_cap_lower_bound_usd"] == pytest.approx(400_000)
+    assert bounds["decision"]["market_cap_heuristic_lower_bound_usd"] == pytest.approx(400_000)
     assert bounds["decision"]["market_cap_upper_bound_usd"] == pytest.approx(1_000_000)
-    assert bounds["wallet_lower_bound"]["note"] == NOTE
+    assert bounds["wallet_like_lower_bound"]["note"] == NOTE
     assert len(accounts.calls) == 1
     assert set(accounts.calls[0]) == set(WALLETS[20:60])
     assert len(frozen.calls) == 1
@@ -309,7 +309,7 @@ def test_lower_bound_below_minimum_stays_incomplete():
 
     assert item["status"] == "incomplete"
     assert item["missing_checks"] == ["market_cap_usd"]
-    assert item["market_cap_onchain_bounds"]["wallet_lower_bound"]["reason"] == "target_unreachable"
+    assert item["market_cap_onchain_bounds"]["wallet_like_lower_bound"]["reason"] == "target_unreachable"
     assert item["market_cap_onchain_bounds"]["decision"]["reason"] == "onchain_lower_bound_below_minimum"
 
 
@@ -321,7 +321,7 @@ def test_upper_bound_above_maximum_stays_incomplete():
     assert item["status"] == "incomplete"
     assert item["market_cap_onchain_bounds"]["decision"]["reason"] == "onchain_upper_bound_above_maximum"
     # Ziel ist dann der Nachweis > 20 Mio. $ (unerreichbar) -> keine Abfrage
-    assert item["market_cap_onchain_bounds"]["wallet_lower_bound"]["reason"] == "target_unreachable"
+    assert item["market_cap_onchain_bounds"]["wallet_like_lower_bound"]["reason"] == "target_unreachable"
 
 
 def test_lower_bound_above_maximum_rejects():
@@ -341,7 +341,7 @@ def test_non_wallets_reduce_lower_bound():
     item = first(result)
 
     assert item["status"] == "incomplete"
-    assert item["market_cap_onchain_bounds"]["wallet_lower_bound"]["wallet_lower_bound_raw"] == pct(25)
+    assert item["market_cap_onchain_bounds"]["wallet_like_lower_bound"]["wallet_like_lower_bound_raw"] == pct(25)
 
 
 @pytest.mark.parametrize(
@@ -363,7 +363,7 @@ def test_lower_bound_uses_lower_price(others, status, lower_usd, calls):
     bounds = first(result)["market_cap_onchain_bounds"]["decision"]
     assert bounds["price_low_usd"] == 0.0009
     assert bounds["price_high_usd"] == 0.00099
-    assert bounds["market_cap_lower_bound_usd"] == pytest.approx(lower_usd)
+    assert bounds["market_cap_heuristic_lower_bound_usd"] == pytest.approx(lower_usd)
     assert len(accounts.calls) == calls
     assert first(result)["status"] == status
 
@@ -504,11 +504,11 @@ def test_call_limit_comes_from_config():
         snapshot=full_list(many),
         accounts=accounts,
     )
-    lower = first(result)["market_cap_onchain_bounds"]["wallet_lower_bound"]
+    lower = first(result)["market_cap_onchain_bounds"]["wallet_like_lower_bound"]
 
     assert len(accounts.calls) == 1
     assert lower["reason"] == "call_limit_reached"
-    assert lower["wallet_lower_bound_raw"] == 100 * pct(0.25)
+    assert lower["wallet_like_lower_bound_raw"] == 100 * pct(0.25)
     assert first(result)["status"] == "incomplete"
 
 
@@ -652,9 +652,9 @@ def test_end_to_end_null_authorities_not_counted(monkeypatch):
     fake = FakeRpc(TOKEN_PROGRAM_ID, rows(), null_wallets=WALLETS[20:35])
     result = real_scan(fake, monkeypatch)
     item = first(result)
-    lower = item["market_cap_onchain_bounds"]["wallet_lower_bound"]
+    lower = item["market_cap_onchain_bounds"]["wallet_like_lower_bound"]
 
-    assert lower["classified"] == {"wallet": 25, "no_sol_account_unknown": 15}
+    assert lower["classified"] == {"wallet_like_system_account": 25, "no_sol_account_unknown": 15}
     assert item["status"] == "incomplete"
 
 
@@ -678,7 +678,7 @@ def test_log_details_are_compact_and_marked_internal():
     assert details["note"] == NOTE
     assert details["account_calls"] == 1
     assert details["max_account_calls"] == 10
-    assert details["market_cap_lower_bound_usd"] == pytest.approx(400_000)
+    assert details["market_cap_heuristic_lower_bound_usd"] == pytest.approx(400_000)
     assert "accounts" not in details
 
 
@@ -689,3 +689,24 @@ def test_log_details_without_bounds():
     details = _check_details(first(result))["market_cap"]["onchain_bounds"]
     assert details["status"] == "disabled"
     assert _check_details({})["market_cap"]["onchain_bounds"] is None
+
+
+def test_log_separates_heuristic_lower_bound_from_proven_supply():
+    from desk.__main__ import _check_details
+
+    result, _, _ = scan()
+    item = first(result)
+    details = _check_details(item)["market_cap"]["onchain_bounds"]
+
+    # Auch bei Bestätigung: nichts davon gilt als nachgewiesen.
+    assert details["decision_status"] == "confirmed"
+    assert details["lower_bound_kind"] == "heuristic_wallet_like_lower_bound"
+    assert details["private_key_proven"] is False
+    assert details["free_transferability_proven"] is False
+    assert details["economic_circulating_supply_proven"] is False
+    assert details["residual_risk"] == "on_curve_address_without_known_private_key"
+    assert details["note"] == "heuristic_wallet_like_lower_bound_not_proven_circulating_supply"
+    assert set(details["classified"]) == {"wallet_like_system_account"}
+    # keine Umlaufmenge, kein Punktwert
+    assert item["market_cap_usd"] is None
+    assert "circulating_supply" not in details

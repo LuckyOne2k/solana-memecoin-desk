@@ -276,3 +276,28 @@ def test_invalid_onchain_bounds_limits_are_rejected(key, value):
 
     with pytest.raises(ConfigError, match=f"market_cap_onchain_bounds.{key}"):
         validate_config(config)
+
+
+@pytest.mark.parametrize("value", [1, 5, 10])
+def test_onchain_call_limit_up_to_ten_is_valid(value):
+    config = load_config()
+    config["market_cap_onchain_bounds"]["max_account_calls_per_token"] = value
+
+    validate_config(config)
+
+
+@pytest.mark.parametrize("value", [11, 12, 100, 10_000])
+def test_onchain_call_limit_above_ten_is_rejected(value):
+    config = load_config()
+    config["market_cap_onchain_bounds"]["max_account_calls_per_token"] = value
+
+    with pytest.raises(ConfigError, match="höchstens 10"):
+        validate_config(config)
+
+
+def test_onchain_call_limit_above_ten_in_file_stops_program(tmp_path):
+    config = load_config()
+    config["market_cap_onchain_bounds"]["max_account_calls_per_token"] = 11
+
+    with pytest.raises(ConfigError, match="max_account_calls_per_token"):
+        load_config(write_config(tmp_path, config))
