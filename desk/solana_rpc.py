@@ -12,6 +12,15 @@ class SolanaRpcError(Exception):
     pass
 
 
+def _safe_request_error(error, status_code):
+    message = f"Solana RPC request failed: {type(error).__name__}"
+
+    if status_code is not None:
+        message += f" (HTTP {status_code})"
+
+    return message
+
+
 def _rpc_call(method, params, rpc_url=None, timeout=20):
     url = rpc_url or os.getenv(
         "SOLANA_RPC_URL",
@@ -86,9 +95,12 @@ def _rpc_call(method, params, rpc_url=None, timeout=20):
                 time.sleep(2 ** attempt)
                 continue
 
+            # Die Fehlermeldung von requests enthält die vollständige
+            # URL und damit einen möglichen API-Key. Deshalb nur Typ
+            # und HTTP-Status weitergeben, nie die Meldung selbst.
             raise SolanaRpcError(
-                f"Solana RPC request failed: {error}"
-            ) from error
+                _safe_request_error(error, status_code)
+            ) from None
 
         except ValueError as error:
             raise SolanaRpcError(
