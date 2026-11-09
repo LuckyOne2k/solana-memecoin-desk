@@ -19,8 +19,13 @@ Ablauf pro Pool:
 
 Externe Daten werden je Token nur einmal abgefragt; bewertet wird je
 Pool. Alle Grenzwerte kommen aus config.yaml.
+
+Welche Token das Kontingent (max_checks) erhalten, legt
+desk.check_queue fest: Token, die zuletzt abgelehnt wurden, rücken nach
+hinten. Das ändert nur die Reihenfolge, nie das Ergebnis einer Prüfung.
 """
 
+from desk.check_queue import order_check_mints
 from desk.data_quality import CONFIRMED, REJECTED, check_liquidity
 from desk.holders import evaluate_holders
 from desk.market_cap import evaluate_market_cap
@@ -440,12 +445,16 @@ def _evaluate_item(item, data, config, counters):
             _reject(item, market_cap["reason"])
 
 
-def scan_pool_security(pools, config, max_checks=None):
+def scan_pool_security(pools, config, max_checks=None, check_history=None):
     """Vorprüfung plus Sicherheits-, Liquiditäts-, Holder- und
     Marktkapitalisierungs-Prüfung aller Pools.
 
     max_checks begrenzt die Zahl der geprüften Token pro Lauf. Ohne
     Angabe gilt scanner.max_security_checks_per_run aus config.yaml.
+
+    check_history (desk.check_queue.load_check_history) legt nur fest,
+    welche Token zuerst geprüft werden. Ohne Historie gilt die
+    bisherige Reihenfolge.
     """
     if max_checks is None:
         max_checks = config["scanner"]["max_security_checks_per_run"]
@@ -475,6 +484,22 @@ def scan_pool_security(pools, config, max_checks=None):
         "holder_fallbacks": 0,
     }
 
+    # Prüfreihenfolge: eindeutige Token, die überhaupt geprüft würden.
+    candidates = []
+
+    for item in prepared:
+        mint = item.get("token_address")
+
+        if item["status"] != "rejected" and mint and mint not in candidates:
+            candidates.append(mint)
+
+    queue = order_check_mints(candidates, check_history)
+    selected = {mint for mint, _, _ in queue[:max_checks]}
+    queue_info = {
+        mint: (position, reason, previous)
+        for position, (mint, reason, previous) in enumerate(queue, start=1)
+    }
+
     data_by_mint = {}
 
     for item in prepared:
@@ -493,12 +518,19 @@ def scan_pool_security(pools, config, max_checks=None):
             item["holder_check_status"] = "skipped_missing_mint"
             continue
 
+        position, reason, previous = queue_info[mint]
+        item["check_queue_position"] = position
+        item["queue_reason"] = reason
+        item["previous_rejection_at"] = previous
+
+        # Nicht ausgewählt: bleibt ungeprüft und damit "incomplete".
+        if mint not in selected:
+            item["security_check_status"] = "skipped_run_limit"
+            item["holder_check_status"] = "skipped_run_limit"
+            continue
+
         # Bereits geprüfte Token nicht erneut abfragen.
         if mint not in data_by_mint:
-            if counters["checks_attempted"] >= max_checks:
-                item["security_check_status"] = "skipped_run_limit"
-                item["holder_check_status"] = "skipped_run_limit"
-                continue
 
             data_by_mint[mint] = _fetch_security(
                 mint,
@@ -513,4 +545,12 @@ def scan_pool_security(pools, config, max_checks=None):
         "pools": prepared,
         **counters,
         "max_checks_per_run": max_checks,
+        "check_order_source": (
+            check_history.get("source")
+            if isinstance(check_history, dict)
+            else "not_provided"
+        ),
+        "deprioritized_tokens": sum(
+            1 for _, reason, _ in queue if reason == "rejected_in_previous_scan"
+        ),
     }

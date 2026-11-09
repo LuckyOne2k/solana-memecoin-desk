@@ -29,3 +29,10 @@ def no_helius_by_default(monkeypatch):
     monkeypatch.setattr(
         "desk.security_scan.fetch_full_holder_list", full_list_unavailable
     )
+
+
+@pytest.fixture(autouse=True)
+def isolated_log_file(tmp_path, monkeypatch):
+    """Kein Test liest oder schreibt das echte Protokoll im Repository
+    (wichtig für die Prüfreihenfolge aus desk.check_queue)."""
+    monkeypatch.setenv("DESK_LOG_FILE", str(tmp_path / "events.jsonl"))

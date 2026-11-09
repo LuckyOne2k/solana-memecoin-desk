@@ -1,6 +1,7 @@
 
+from desk.check_queue import load_check_history
 from desk.config import ConfigError, load_config
-from desk.logging_utils import log_event
+from desk.logging_utils import log_event, log_file_path
 from desk.market_data import (
     MarketDataError,
     empty_market_cap_diagnostics,
@@ -162,10 +163,15 @@ def main():
 
     print("\n2. Sicherheitsscanner starten")
 
+    # Frühere Scans nur für die Prüfreihenfolge (gegen Starvation).
+    check_history = load_check_history(log_file_path())
+    print("Prüfreihenfolge:", check_history["source"])
+
     result = scan_pool_security(
         pools,
         config,
         max_checks=max_checks,
+        check_history=check_history,
     )
 
     scanned_pools = result["pools"]
@@ -200,6 +206,9 @@ def main():
                 "security_check_status": pool.get(
                     "security_check_status"
                 ),
+                "check_queue_position": pool.get("check_queue_position"),
+                "queue_reason": pool.get("queue_reason"),
+                "previous_rejection_at": pool.get("previous_rejection_at"),
                 "holder_check_status": pool.get(
                     "holder_check_status"
                 ),
@@ -236,6 +245,8 @@ def main():
         "full_holder_list_succeeded": result.get("full_holder_list_succeeded"),
         "full_holder_list_failed": result.get("full_holder_list_failed"),
         "holder_fallbacks": result.get("holder_fallbacks"),
+        "check_order_source": result.get("check_order_source"),
+        "deprioritized_tokens": result.get("deprioritized_tokens"),
         "pagination_complete": market_data["pagination_complete"],
         "market_cap_diagnostics": (
             scanned_pools[0].get("market_cap_diagnostics")

@@ -6,6 +6,9 @@ from desk.config import ConfigError
 from desk.market_data import MarketDataError
 
 
+
+HISTORY = {"source": "no_log", "last_rejected": {}, "scans_read": 0}
+
 def test_main_runs_market_data_and_security_scan(capsys, desk_config):
     market_data = {
         "results": [{"id": "POOL1"}],
@@ -44,12 +47,18 @@ def test_main_runs_market_data_and_security_scan(capsys, desk_config):
         return_value=scan_result,
     ) as mocked_scan, patch.object(
         app,
+        "load_check_history",
+        return_value=HISTORY,
+    ) as mocked_history, patch.object(
+        app,
         "log_event",
     ) as mocked_log:
 
         exit_code = app.main()
 
     assert exit_code == 0
+
+    mocked_history.assert_called_once_with(app.log_file_path())
 
     mocked_market.assert_called_once_with(
         min_age_hours=desk_config["scanner"]["pair_age_hours_min"],
@@ -63,6 +72,7 @@ def test_main_runs_market_data_and_security_scan(capsys, desk_config):
         market_data["results"],
         desk_config,
         max_checks=desk_config["scanner"]["max_security_checks_per_run"],
+        check_history=HISTORY,
     )
 
     assert mocked_log.call_count == 2
