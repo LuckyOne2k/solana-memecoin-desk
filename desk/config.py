@@ -35,6 +35,7 @@ SCHEMA = {
         "market_cap_usd_min": NUMBER,
         "market_cap_usd_max": NUMBER,
         "max_security_checks_per_run": COUNT,
+        "market_cap_allow_total_supply_estimate": FLAG,
     },
     "risk_filters": {
         "require_mint_authority_revoked": FLAG,
@@ -43,6 +44,10 @@ SCHEMA = {
         "reject_top10_share_above_pct": PERCENT,
         "reject_dev_share_above_pct": PERCENT,
         "lp_locked_min_pct": PERCENT,
+    },
+    "data_quality": {
+        "max_liquidity_deviation_pct": PERCENT,
+        "max_price_deviation_pct": PERCENT,
     },
     "paper_trading": {
         "max_position_pct": PERCENT,

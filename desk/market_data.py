@@ -5,6 +5,15 @@ from datetime import datetime, timezone
 
 import requests
 
+from desk.data_quality import positive_number
+from desk.token_classification import (
+    STABLECOIN,
+    STAKING_TOKEN,
+    UNCLEAR,
+    classify_token,
+    is_known_non_memecoin,
+)
+
 BASE_URL = "https://api.geckoterminal.com/api/v2"
 DEXPAPRIKA_URL = "https://api.dexpaprika.com"
 
@@ -241,12 +250,13 @@ def _resolve_token(tokens):
     )
 
 
-def fetch_token_market_caps(token_addresses, timeout=15, diagnostics=None):
+def fetch_token_market_data(token_addresses, timeout=15, diagnostics=None):
     """
-    Lädt Marktkapitalisierungen von GeckoTerminal.
+    Lädt Marktdaten je Token von GeckoTerminal.
 
-    diagnostics ist optional und wird nur zur Ursachenanalyse befüllt.
-    Der Rückgabewert bleibt aus Kompatibilitätsgründen unverändert.
+    Rückgabe: {adresse_klein: {"market_cap_usd", "price_usd", "fdv_usd"}}
+    Marktkapitalisierung (gemeldete Umlaufmenge) und FDV bleiben getrennt.
+    Ungültige Werte werden None. diagnostics ist optional.
     """
     addresses = list(dict.fromkeys(
         address.strip()
@@ -263,6 +273,7 @@ def fetch_token_market_caps(token_addresses, timeout=15, diagnostics=None):
         "tokens_with_null_market_cap": 0,
         "tokens_with_missing_market_cap_field": 0,
         "tokens_with_invalid_market_cap": 0,
+        "tokens_with_price": 0,
         "requested_tokens_not_returned": 0,
         "unrequested_token_objects_ignored": 0,
         "api_error": None,
@@ -365,27 +376,36 @@ def fetch_token_market_caps(token_addresses, timeout=15, diagnostics=None):
             returned_in_batch.add(normalized_address)
             stats["requested_tokens_returned"] += 1
 
+            price = positive_number(attributes.get("price_usd"))
+
+            if price is not None:
+                stats["tokens_with_price"] += 1
+
+            entry = {
+                "market_cap_usd": None,
+                "price_usd": price,
+                "fdv_usd": positive_number(attributes.get("fdv_usd")),
+            }
+            market_caps[normalized_address] = entry
+
             if "market_cap_usd" not in attributes:
                 stats["tokens_with_missing_market_cap_field"] += 1
-                market_caps[normalized_address] = None
                 continue
 
             raw_market_cap = attributes.get("market_cap_usd")
 
             if raw_market_cap is None:
                 stats["tokens_with_null_market_cap"] += 1
-                market_caps[normalized_address] = None
                 continue
 
-            parsed_market_cap = _as_number(raw_market_cap)
+            parsed_market_cap = positive_number(raw_market_cap)
 
             if parsed_market_cap is None:
                 stats["tokens_with_invalid_market_cap"] += 1
-                market_caps[normalized_address] = None
                 continue
 
             stats["tokens_with_market_cap"] += 1
-            market_caps[normalized_address] = parsed_market_cap
+            entry["market_cap_usd"] = parsed_market_cap
 
         stats["requested_tokens_not_returned"] += len(
             requested_addresses - returned_in_batch
@@ -407,9 +427,27 @@ SECURITY_CHECKS = (
     "mint_authority_revoked",
     "freeze_authority_revoked",
     "lp_burned_or_locked",
+    "liquidity_cross_check",
     "top10_share_pct",
     "dev_share_pct",
 )
+
+
+def _pair_has_no_memecoin(tokens):
+    """True, wenn alle Token des Paares bekannte Nicht-Memecoins sind."""
+    if not isinstance(tokens, list) or not tokens:
+        return False
+
+    ids = [
+        token.get("id")
+        for token in tokens
+        if isinstance(token, dict)
+    ]
+
+    return (
+        len(ids) == len(tokens)
+        and all(isinstance(i, str) and is_known_non_memecoin(i) for i in ids)
+    )
 
 
 def prepare_pool(
@@ -419,12 +457,17 @@ def prepare_pool(
     market_caps=None,
     market_data_error=None,
 ):
-    """Marktdaten-Vorprüfung eines Pools (ohne Sicherheitsprüfung)."""
+    """Marktdaten-Vorprüfung eines Pools (ohne Sicherheitsprüfung).
+
+    market_caps: Ergebnis von fetch_token_market_data
+    ({adresse_klein: {"market_cap_usd", "price_usd", "fdv_usd"}}).
+    """
     if not isinstance(pool, dict):
         raise ValueError("Pool must be a dictionary")
 
-    min_age_hours = config["scanner"]["pair_age_hours_min"]
-    max_age_hours = config["scanner"]["pair_age_hours_max"]
+    scanner = config["scanner"]
+    min_age_hours = scanner["pair_age_hours_min"]
+    max_age_hours = scanner["pair_age_hours_max"]
     min_liquidity_usd = config["risk_filters"]["reject_liquidity_below_usd"]
 
     now = now or datetime.now(timezone.utc)
@@ -465,19 +508,54 @@ def prepare_pool(
         missing.append("24h_activity_data")
 
     token = _resolve_token(pool.get("tokens"))
+    classification = None
+    classification_detail = None
 
     if token is None:
-        missing.append("unambiguous_base_token")
+        if _pair_has_no_memecoin(pool.get("tokens")):
+            reasons.append("excluded_no_memecoin_in_pair")
+        else:
+            missing.append("unambiguous_base_token")
+    else:
+        classification, classification_detail = classify_token(
+            token.get("id"),
+            token.get("symbol"),
+            token.get("name"),
+        )
+
+        if classification == STABLECOIN:
+            reasons.append("excluded_stablecoin")
+        elif classification == STAKING_TOKEN:
+            reasons.append("excluded_staking_token")
+        elif classification == UNCLEAR:
+            missing.append("token_classification")
 
     token_address = token.get("id") if token else None
-    fdv = _as_number(token.get("fdv")) if token else None
+    dexpaprika_fdv = _as_number(token.get("fdv")) if token else None
 
-    market_cap = None
+    token_market = None
 
     if isinstance(token_address, str) and isinstance(market_caps, dict):
-        market_cap = market_caps.get(token_address.strip().lower())
+        token_market = market_caps.get(token_address.strip().lower())
 
-    if market_cap is None:
+    if not isinstance(token_market, dict):
+        token_market = {}
+
+    reported_market_cap = token_market.get("market_cap_usd")
+
+    # Frühe Ablehnung nur, wenn eine gemeldete Marktkapitalisierung
+    # außerhalb des Bereichs liegt. Bestätigt wird erst in
+    # desk/security_scan.py mit Daten von der Blockchain.
+    if (
+        reported_market_cap is not None
+        and not (
+            scanner["market_cap_usd_min"]
+            <= reported_market_cap
+            <= scanner["market_cap_usd_max"]
+        )
+    ):
+        reasons.append("market_cap_out_of_range")
+    else:
         missing.append("market_cap_usd")
 
     missing.extend(SECURITY_CHECKS)
@@ -500,14 +578,19 @@ def prepare_pool(
         "token_address": token_address,
         "token_name": token.get("name") if token else None,
         "token_symbol": token.get("symbol") if token else None,
+        "token_classification": classification,
+        "token_classification_detail": classification_detail,
         "liquidity_usd": liquidity,
         "volume_usd_24h": volume,
         "transactions_24h": transactions,
-        "fdv_usd": fdv,
-        "market_cap_usd": market_cap,
-        "market_cap_source": (
+        # FDV und Marktkapitalisierung bleiben getrennt.
+        "fdv_usd_dexpaprika": dexpaprika_fdv,
+        "fdv_usd_geckoterminal": token_market.get("fdv_usd"),
+        "price_usd_geckoterminal": token_market.get("price_usd"),
+        "market_cap_usd_reported": reported_market_cap,
+        "market_cap_reported_source": (
             "geckoterminal"
-            if market_cap is not None
+            if reported_market_cap is not None
             else None
         ),
         "status": status,
@@ -531,6 +614,7 @@ def empty_market_cap_diagnostics(requested_unique_tokens=0):
         "tokens_with_null_market_cap": 0,
         "tokens_with_missing_market_cap_field": 0,
         "tokens_with_invalid_market_cap": 0,
+        "tokens_with_price": 0,
         "requested_tokens_not_returned": requested_unique_tokens,
         "unrequested_token_objects_ignored": 0,
         "api_error": None,
@@ -540,8 +624,8 @@ def empty_market_cap_diagnostics(requested_unique_tokens=0):
 def prepare_pools(pools, config, now=None):
     """Marktdaten-Vorprüfung für alle Pools.
 
-    Lädt einmal die Marktkapitalisierungen und prüft jeden Pool mit
-    prepare_pool. Sicherheitsprüfungen finden hier nicht statt.
+    Lädt einmal die Token-Marktdaten (GeckoTerminal) und prüft jeden
+    Pool mit prepare_pool. Sicherheitsprüfungen finden hier nicht statt.
     """
     pools = list(pools)
 
@@ -561,6 +645,10 @@ def prepare_pools(pools, config, now=None):
         if not isinstance(address, str) or not address.strip():
             continue
 
+        # Bekannte Nicht-Memecoins brauchen keine Marktdaten.
+        if is_known_non_memecoin(address.strip()):
+            continue
+
         normalized = address.strip().lower()
 
         if normalized not in unique_tokens:
@@ -577,7 +665,7 @@ def prepare_pools(pools, config, now=None):
 
     if token_addresses:
         try:
-            market_caps = fetch_token_market_caps(
+            market_caps = fetch_token_market_data(
                 token_addresses,
                 diagnostics=market_cap_diagnostics,
             )

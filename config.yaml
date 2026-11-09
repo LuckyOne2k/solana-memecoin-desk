@@ -8,10 +8,13 @@ timezone: Europe/Berlin
 scanner:
   pair_age_hours_min: 30
   pair_age_hours_max: 72
-  # Noch nicht im Scan angewendet (Marktkapitalisierung fehlt meist),
-  # nur in desk/rules.py. Siehe README, Abschnitt Projektstand.
   market_cap_usd_min: 300000
   market_cap_usd_max: 20000000
+  # Darf eine Schätzung (Preis x Gesamtmenge abzüglich nachweislich
+  # verbrannter Token) die Marktkapitalisierungs-Prüfung bestehen?
+  # Die Schätzung ist eine Obergrenze und wird im Protokoll als
+  # "estimate_total_supply" gekennzeichnet.
+  market_cap_allow_total_supply_estimate: true
   # Höchstzahl RugCheck-/Holder-Prüfungen pro Lauf (bisher fest im Code)
   max_security_checks_per_run: 10
 
@@ -24,6 +27,14 @@ risk_filters:
   # Ab diesem RugCheck-Wert gilt die Liquidität als gesperrt/verbrannt
   # (bisher fest im Code)
   lp_locked_min_pct: 99.99
+
+# Gegenprüfung zwischen Datenquellen. Größere Abweichungen machen die
+# jeweilige Prüfung "unklar" (keine Freigabe, keine Ablehnung).
+data_quality:
+  # DexPaprika-Pool-Liquidität gegen RugCheck-Pool-Liquidität
+  max_liquidity_deviation_pct: 15
+  # GeckoTerminal-Preis gegen RugCheck-Preis
+  max_price_deviation_pct: 10
 
 paper_trading:
   max_position_pct: 8

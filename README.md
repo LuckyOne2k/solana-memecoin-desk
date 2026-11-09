@@ -25,17 +25,56 @@ values stop the program; `mode` must be `paper`.
 ## Project status
 | Part | Status |
 |---|---|
-| Market data (DexPaprika, GeckoTerminal market cap) | active |
-| Security chain (`desk/security_scan.py`: RugCheck + Solana RPC holders) | active, single check chain |
-| `desk/rules.py` (full risk screen incl. market cap range) | kept, not wired yet (planned for phase 1) |
-| `desk/risk.py` (position size, stops) | kept, not wired yet (planned for paper broker, phase 2) |
-| `desk/debate.py` (formal debate check) | kept, not wired yet; may only veto, never approve |
+| Market data (DexPaprika pools, GeckoTerminal price / FDV / reported market cap) | active |
+| Check chain (`desk/security_scan.py`) | active, single check chain |
+| Token classification (`desk/token_classification.py`) | active: stablecoins and staking tokens excluded by verified mint address |
+| Liquidity cross-check (`desk/data_quality.py`) | active: DexPaprika vs. RugCheck for the same pool |
+| Holder distribution (`desk/holders.py`) | active: owner aggregation, pool/burn exclusion, confirmation rules |
+| Market cap (`desk/market_cap.py`) | active: reported vs. estimated, FDV separate |
+| `desk/rules.py`, `desk/risk.py`, `desk/debate.py` | kept, not wired yet |
 | Paper trading, strategy, AI agents, app | not implemented |
 
-Known limitations (to be fixed in phase 1): no pool currently reaches
-`ready_for_full_risk_screen`, because the top-10 and developer shares are
-never fully verified; GeckoTerminal rarely returns a market cap; the
-market cap range is not yet applied in the scan.
+## Check rules (phase 1)
+A pool only reaches `ready_for_full_risk_screen` when every check is
+confirmed. Missing, contradictory or invalid data never passes a check; it
+leaves the pool `incomplete`.
+
+- **Non-memecoins:** stablecoins and staking/yield tokens are excluded only by
+  exact mint address (list verified via GeckoTerminal on 2026-11-09). Tokens
+  that merely use such a symbol or name are marked `token_classification`
+  unclear (possible impersonation).
+- **Liquidity:** DexPaprika pool liquidity is compared with RugCheck's
+  liquidity for the same pool. Deviation above
+  `data_quality.max_liquidity_deviation_pct` → unclear. If both agree, the
+  lower value must reach `reject_liquidity_below_usd`.
+- **Holders:** the 20 largest token accounts (Solana RPC) are mapped to their
+  owners and aggregated per owner. Excluded are only pool accounts (RugCheck
+  pool vaults, market addresses, accounts labelled AMM, the DexPaprika pool
+  address) and provable burn owners (incinerator, system program). Exchange
+  and locker accounts are shown separately but still counted; unknown
+  accounts are always counted. Shares are relative to total supply minus
+  provable burns. The top-10 share is confirmed only if all accounts are
+  mapped, RugCheck labels are complete, and at least 10 counted owners are in
+  the sample (or the sample contains all accounts). Exceeding 25 % rejects
+  even when unconfirmed.
+- **Developer share:** creator from RugCheck. If the creator is not among the
+  20 largest accounts, the smallest sampled account is used as upper bound.
+- **Market cap:** price (GeckoTerminal, cross-checked with RugCheck within
+  `data_quality.max_price_deviation_pct`) times supply.
+  - `reported_circulating_supply`: market cap reported by GeckoTerminal
+    (preferred; marked unclear as implausible if it exceeds the value of
+    all non-burned tokens).
+  - `estimate_total_supply`: price × on-chain total supply minus provable
+    burns. This is an upper bound of the real market cap and is always
+    marked as estimate. Below the minimum → rejected; above the maximum →
+    unclear; in range → accepted only if
+    `scanner.market_cap_allow_total_supply_estimate` is true.
+  - FDV (DexPaprika, GeckoTerminal, on-chain) is logged separately and never
+    used as market cap.
+
+Known limitations: wallets of the same person cannot be linked; holdings of
+an owner outside the 20 largest accounts are not seen; tokens still on the
+pump.fun bonding curve have no RugCheck market data and stay `incomplete`.
 
 ## Install locally
 1. Python 3.11+

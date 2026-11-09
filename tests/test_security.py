@@ -262,3 +262,68 @@ def test_check_token_security_passes_threshold():
 
     assert result["mint"] == "TOKEN123"
     assert result["lp_burned_or_locked"] is True
+
+
+# --------------------------------------------------
+# Kennzeichnungen aus echten RugCheck-Antworten (09.11.2026)
+# --------------------------------------------------
+
+import json  # noqa: E402
+from pathlib import Path  # noqa: E402
+
+REAL = json.loads(
+    (Path(__file__).parent / "fixtures" / "real_samples_2026-11-09.json")
+    .read_text(encoding="utf-8")
+)
+
+
+def test_real_labels_and_market_liquidity_are_extracted():
+    case = REAL["HABIBI"]
+    result = analyze(case["rugcheck_report"], {"lpLockedPct": 100})
+    labels = result["holder_labels"]
+    pool = case["dexpaprika_pool"]["id"]
+
+    assert labels["labels_complete"] is True
+    assert pool in labels["pool_owner_addresses"]
+    assert "36QvFvbc4H3ghiJ2BhaC2f5nkzkDTokdrFYqPmaja9ht" in labels["pool_vault_accounts"]
+    assert round(result["market_liquidity_usd_by_pool"][pool]) == 1921
+    assert result["rugcheck_supply_raw"] == 977905989042610
+
+
+def test_real_report_without_markets_has_incomplete_labels():
+    result = analyze(REAL["KHELLY"]["rugcheck_report"], {})
+
+    assert result["holder_labels"]["labels_complete"] is False
+    assert result["market_liquidity_usd_by_pool"] == {}
+
+
+def test_malformed_markets_make_labels_incomplete():
+    report = {
+        "mint": "TOKEN123",
+        "markets": [{"pubkey": None}, "x", {"pubkey": "P", "mintA": "TOKEN123"}],
+        "knownAccounts": {"A": "not-a-dict"},
+    }
+
+    result = analyze(report, {})
+
+    assert result["holder_labels"]["labels_complete"] is False
+    assert result["holder_labels"]["invalid_label_rows"] == 4
+
+
+def test_exchange_label_is_read_only_when_explicit():
+    report = {
+        "mint": "TOKEN123",
+        "markets": [],
+        "knownAccounts": {
+            "EX1": {"name": "Some CEX", "type": "EXCHANGE"},
+            "AMM1": {"name": "Pool", "type": "AMM"},
+            "LOCK": {"name": "Locker", "type": "LOCKER"},
+            "OTHER": {"name": "Something", "type": "CREATOR"},
+        },
+    }
+
+    labels = analyze(report, {})["holder_labels"]
+
+    assert labels["exchange_addresses"] == ["EX1"]
+    assert labels["pool_owner_addresses"] == ["AMM1"]
+    assert labels["locker_addresses"] == ["LOCK"]

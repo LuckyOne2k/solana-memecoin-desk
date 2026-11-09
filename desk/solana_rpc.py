@@ -144,6 +144,7 @@ def analyze_largest_accounts(
     creator_balance = 0
     creator_found = False
     invalid_rows = 0
+    valid_accounts = []
 
     if len(largest_accounts) != len(parsed_accounts):
         invalid_rows += abs(
@@ -199,6 +200,20 @@ def analyze_largest_accounts(
             invalid_rows += 1
             continue
 
+        address = account.get("address")
+
+        if not isinstance(address, str) or not address.strip():
+            invalid_rows += 1
+            continue
+
+        valid_accounts.append(
+            {
+                "address": address,
+                "owner": owner,
+                "amount": amount,
+            }
+        )
+
         owner_balances[owner] = (
             owner_balances.get(owner, 0) + amount
         )
@@ -246,6 +261,14 @@ def analyze_largest_accounts(
         "creator_found_in_sample": creator_found,
         "top10_share_fully_verified": False,
         "data_scope": "largest_20_token_accounts_sample",
+        # Rohdaten für desk/holders.py (Zuordnung zu Pool, Burn, Holder)
+        "accounts": valid_accounts,
+        "supply_amount_raw": supply,
+        "min_sampled_amount_raw": (
+            min(row["amount"] for row in valid_accounts)
+            if valid_accounts
+            else None
+        ),
     }
 
 

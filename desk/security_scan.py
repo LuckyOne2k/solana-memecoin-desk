@@ -1,13 +1,22 @@
-"""Einzige Prüfkette für Token-Sicherheit und Holder-Verteilung.
+"""Einzige Prüfkette für Token-Sicherheit, Liquidität, Holder und
+Marktkapitalisierung.
 
-Ablauf pro Lauf:
-1. Marktdaten-Vorprüfung (desk.market_data.prepare_pools)
-2. RugCheck: Mint-/Freeze-Authority, LP-Sperre
-3. Solana-RPC: Holder-Stichprobe (nur wenn Schritt 2 nichts ablehnt)
+Ablauf pro Pool:
+1. Marktdaten-Vorprüfung (desk.market_data.prepare_pools), inkl.
+   Ausschluss von Stablecoins und Staking-Token
+2. RugCheck: Mint-/Freeze-Authority, LP-Sperre, Pool-Kennzeichnungen
+3. Liquidität: DexPaprika gegen RugCheck
+4. Solana-RPC: Holder-Stichprobe (nur ohne vorherige Ablehnung)
+5. Holder-Verteilung (desk.holders) und Marktkapitalisierung
+   (desk.market_cap)
 
-Alle Grenzwerte kommen aus config.yaml.
+Externe Daten werden je Token nur einmal abgefragt; bewertet wird je
+Pool. Alle Grenzwerte kommen aus config.yaml.
 """
 
+from desk.data_quality import CONFIRMED, REJECTED, check_liquidity
+from desk.holders import evaluate_holders
+from desk.market_cap import evaluate_market_cap
 from desk.market_data import prepare_pools
 from desk.security import (
     SecurityDataError,
@@ -19,34 +28,22 @@ from desk.solana_rpc import (
 )
 
 
-# Felder, die aus einem Prüfergebnis auf jeden Pool desselben Tokens
-# übertragen werden.
-_OUTCOME_FIELDS = (
-    "security",
-    "holder_snapshot",
-    "security_error",
-    "holder_error",
-    "mint_authority_revoked",
-    "freeze_authority_revoked",
-    "lp_burned_or_locked",
-    "top10_observed_share_lower_bound_pct",
-    "creator_observed_share_lower_bound_pct",
-)
-
-
-def _is_number(value):
-    return (
-        isinstance(value, (int, float))
-        and not isinstance(value, bool)
-    )
-
-
 def _status(item):
     if item["rejection_reasons"]:
         return "rejected"
     if item["missing_checks"]:
         return "incomplete"
     return "ready_for_full_risk_screen"
+
+
+def _reject(item, reason):
+    if reason not in item["rejection_reasons"]:
+        item["rejection_reasons"].append(reason)
+
+
+def _resolve(item, check):
+    if check in item["missing_checks"]:
+        item["missing_checks"].remove(check)
 
 
 def _evaluate_security(security, risk_filters):
@@ -88,42 +85,8 @@ def _evaluate_security(security, risk_filters):
     return rejections, resolved
 
 
-def _evaluate_holders(snapshot, risk_filters):
-    """Bewertet die Holder-Stichprobe.
-
-    Eine Stichprobe kann eine Überschreitung beweisen, aber keine
-    vollständige Verteilung bestätigen. Deshalb werden top10_share_pct
-    und dev_share_pct hier nie als geklärt markiert.
-    """
-    rejections = []
-
-    top10 = snapshot.get("top10_observed_owner_share_lower_bound_pct")
-    creator = snapshot.get("creator_share_lower_bound_pct")
-
-    if (
-        _is_number(top10)
-        and top10 > risk_filters["reject_top10_share_above_pct"]
-    ):
-        rejections.append("observed_top10_holder_share_above_limit")
-
-    if (
-        _is_number(creator)
-        and creator > risk_filters["reject_dev_share_above_pct"]
-    ):
-        rejections.append("observed_creator_share_above_limit")
-
-    return rejections
-
-
-def _check_token(mint, risk_filters, counters):
-    """Führt alle externen Prüfungen für ein Token genau einmal aus."""
-    outcome = {
-        "security_check_status": "error",
-        "holder_check_status": "not_checked",
-        "added_rejection_reasons": [],
-        "resolved_checks": [],
-    }
-
+def _fetch_security(mint, risk_filters, counters):
+    """RugCheck-Abfrage, genau einmal je Token."""
     counters["checks_attempted"] += 1
 
     try:
@@ -134,42 +97,25 @@ def _check_token(mint, risk_filters, counters):
 
     except SecurityDataError as error:
         counters["checks_failed"] += 1
-        outcome["security_error"] = str(error)
-        return outcome
+        return {"security_error": str(error)}
 
     if (
         not isinstance(security, dict)
         or security.get("mint") != mint
     ):
         counters["checks_failed"] += 1
-        outcome["security_error"] = (
-            "Security report does not match the requested token"
-        )
-        return outcome
+        return {
+            "security_error": (
+                "Security report does not match the requested token"
+            )
+        }
 
     counters["checks_succeeded"] += 1
+    return {"security": security}
 
-    outcome["security_check_status"] = "completed"
-    outcome["security"] = security
-    outcome["mint_authority_revoked"] = security.get(
-        "mint_authority_revoked"
-    )
-    outcome["freeze_authority_revoked"] = security.get(
-        "freeze_authority_revoked"
-    )
-    outcome["lp_burned_or_locked"] = security.get(
-        "lp_burned_or_locked"
-    )
 
-    rejections, resolved = _evaluate_security(security, risk_filters)
-
-    outcome["added_rejection_reasons"].extend(rejections)
-    outcome["resolved_checks"].extend(resolved)
-
-    if rejections:
-        outcome["holder_check_status"] = "skipped_security_rejection"
-        return outcome
-
+def _fetch_holders(mint, security, counters):
+    """Holder-Stichprobe von der Blockchain, genau einmal je Token."""
     counters["holder_checks_attempted"] += 1
 
     try:
@@ -180,67 +126,136 @@ def _check_token(mint, risk_filters, counters):
 
     except SolanaRpcError as error:
         counters["holder_checks_failed"] += 1
-        outcome["holder_check_status"] = "error"
-        outcome["holder_error"] = str(error)
-        return outcome
+        return {"holder_error": str(error)}
 
     if (
         not isinstance(snapshot, dict)
         or snapshot.get("mint") != mint
     ):
         counters["holder_checks_failed"] += 1
-        outcome["holder_check_status"] = "error"
-        outcome["holder_error"] = (
-            "Holder snapshot does not match the requested token"
-        )
-        return outcome
+        return {
+            "holder_error": (
+                "Holder snapshot does not match the requested token"
+            )
+        }
 
     counters["holder_checks_succeeded"] += 1
+    return {"holder_snapshot": snapshot}
 
-    outcome["holder_check_status"] = "completed"
-    outcome["holder_snapshot"] = snapshot
-    outcome["top10_observed_share_lower_bound_pct"] = snapshot.get(
-        "top10_observed_owner_share_lower_bound_pct"
+
+def _evaluate_item(item, data, config, counters):
+    risk_filters = config["risk_filters"]
+    mint = item["token_address"]
+
+    if "security_error" in data:
+        item["security_check_status"] = "error"
+        item["security_error"] = data["security_error"]
+        item["holder_check_status"] = "not_checked"
+        return
+
+    security = data["security"]
+
+    item["security_check_status"] = "completed"
+    item["security"] = security
+    item["mint_authority_revoked"] = security.get("mint_authority_revoked")
+    item["freeze_authority_revoked"] = security.get("freeze_authority_revoked")
+    item["lp_burned_or_locked"] = security.get("lp_burned_or_locked")
+
+    rejections, resolved = _evaluate_security(security, risk_filters)
+
+    for reason in rejections:
+        _reject(item, reason)
+
+    for check in resolved:
+        _resolve(item, check)
+
+    # Liquidität: DexPaprika gegen RugCheck (gleicher Pool)
+    market_liquidity = security.get("market_liquidity_usd_by_pool")
+
+    liquidity = check_liquidity(
+        dexpaprika_liquidity_usd=item.get("liquidity_usd"),
+        rugcheck_market_liquidity_usd=(
+            market_liquidity.get(item.get("pool_address"))
+            if isinstance(market_liquidity, dict)
+            else None
+        ),
+        min_liquidity_usd=risk_filters["reject_liquidity_below_usd"],
+        max_deviation_pct=config["data_quality"]["max_liquidity_deviation_pct"],
     )
-    outcome["creator_observed_share_lower_bound_pct"] = snapshot.get(
-        "creator_share_lower_bound_pct"
+    item["liquidity_check"] = liquidity
+
+    if liquidity["status"] == CONFIRMED:
+        _resolve(item, "liquidity_cross_check")
+    elif liquidity["status"] == REJECTED:
+        _resolve(item, "liquidity_cross_check")
+        _reject(item, "liquidity_below_minimum_cross_checked")
+
+    if item["rejection_reasons"]:
+        item["holder_check_status"] = "skipped_security_rejection"
+        return
+
+    if "holder_snapshot" not in data and "holder_error" not in data:
+        data.update(_fetch_holders(mint, security, counters))
+
+    if "holder_error" in data:
+        item["holder_check_status"] = "error"
+        item["holder_error"] = data["holder_error"]
+        return
+
+    snapshot = data["holder_snapshot"]
+
+    item["holder_check_status"] = "completed"
+    item["holder_snapshot"] = {
+        key: value
+        for key, value in snapshot.items()
+        if key != "accounts"
+    }
+
+    holders = evaluate_holders(
+        snapshot=snapshot,
+        security=security,
+        pool_address=item.get("pool_address"),
+        risk_filters=risk_filters,
     )
-    outcome["added_rejection_reasons"].extend(
-        _evaluate_holders(snapshot, risk_filters)
-    )
+    item["holder_evaluation"] = holders
 
-    return outcome
+    for reason in holders["rejection_reasons"]:
+        _reject(item, reason)
 
+    if holders["top10_status"] in ("confirmed", "rejected"):
+        _resolve(item, "top10_share_pct")
 
-def _apply_outcome(item, outcome):
-    for key in _OUTCOME_FIELDS:
-        if key in outcome:
-            item[key] = outcome[key]
+    if holders["dev_status"] in ("confirmed", "rejected"):
+        _resolve(item, "dev_share_pct")
 
-    item["security_check_status"] = outcome["security_check_status"]
-    item["holder_check_status"] = outcome["holder_check_status"]
-
-    item["rejection_reasons"] = list(
-        dict.fromkeys(
-            item.get("rejection_reasons", [])
-            + outcome["added_rejection_reasons"]
+    # Marktkapitalisierung
+    if "market_cap_usd" in item["missing_checks"]:
+        market_cap = evaluate_market_cap(
+            config=config,
+            reported_market_cap_usd=item.get("market_cap_usd_reported"),
+            geckoterminal_price_usd=item.get("price_usd_geckoterminal"),
+            rugcheck_price_usd=security.get("rugcheck_price_usd"),
+            total_supply_raw=snapshot.get("supply_amount_raw"),
+            supply_decimals=snapshot.get("supply_decimals"),
+            burned_amount_raw=holders.get("burned_amount_raw", 0),
         )
-    )
+        item["market_cap_evaluation"] = market_cap
+        item["market_cap_usd"] = market_cap["market_cap_usd"]
+        item["market_cap_basis"] = market_cap["basis"]
 
-    item["missing_checks"] = [
-        check
-        for check in item.get("missing_checks", [])
-        if check not in outcome["resolved_checks"]
-    ]
-
-    item["status"] = _status(item)
+        if market_cap["status"] == CONFIRMED:
+            _resolve(item, "market_cap_usd")
+        elif market_cap["status"] == REJECTED:
+            _resolve(item, "market_cap_usd")
+            _reject(item, market_cap["reason"])
 
 
 def scan_pool_security(pools, config, max_checks=None):
-    """Vorprüfung plus Sicherheits- und Holder-Prüfung aller Pools.
+    """Vorprüfung plus Sicherheits-, Liquiditäts-, Holder- und
+    Marktkapitalisierungs-Prüfung aller Pools.
 
-    max_checks begrenzt die externen Abfragen pro Lauf. Ohne Angabe gilt
-    scanner.max_security_checks_per_run aus config.yaml.
+    max_checks begrenzt die Zahl der geprüften Token pro Lauf. Ohne
+    Angabe gilt scanner.max_security_checks_per_run aus config.yaml.
     """
     if max_checks is None:
         max_checks = config["scanner"]["max_security_checks_per_run"]
@@ -264,7 +279,7 @@ def scan_pool_security(pools, config, max_checks=None):
         "holder_checks_failed": 0,
     }
 
-    outcomes_by_mint = {}
+    data_by_mint = {}
 
     for item in prepared:
         item["security_check_status"] = "not_checked"
@@ -283,19 +298,20 @@ def scan_pool_security(pools, config, max_checks=None):
             continue
 
         # Bereits geprüfte Token nicht erneut abfragen.
-        if mint not in outcomes_by_mint:
+        if mint not in data_by_mint:
             if counters["checks_attempted"] >= max_checks:
                 item["security_check_status"] = "skipped_run_limit"
                 item["holder_check_status"] = "skipped_run_limit"
                 continue
 
-            outcomes_by_mint[mint] = _check_token(
+            data_by_mint[mint] = _fetch_security(
                 mint,
                 risk_filters,
                 counters,
             )
 
-        _apply_outcome(item, outcomes_by_mint[mint])
+        _evaluate_item(item, data_by_mint[mint], config, counters)
+        item["status"] = _status(item)
 
     return {
         "pools": prepared,

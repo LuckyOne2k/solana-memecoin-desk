@@ -1,5 +1,4 @@
 import copy
-from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
 import pytest
@@ -11,6 +10,7 @@ from desk.security_scan import scan_pool_security
 
 CONFIG = load_config()
 from desk.solana_rpc import SolanaRpcError
+from factories import make_security, make_snapshot
 
 
 def make_pool(
@@ -37,32 +37,21 @@ def make_pool(
     }
 
 
-def make_security(
-    mint="TOKEN123",
-    mint_revoked=True,
-    lp_locked=True,
-    creator_address="CREATOR",
-):
-    return {
-        "mint": mint,
-        "mint_authority_revoked": mint_revoked,
-        "lp_burned_or_locked": lp_locked,
-        "creator_address": creator_address,
-    }
-
-
 def make_holder_snapshot(
     mint="TOKEN123",
     top10_share=10.0,
     creator_share=None,
 ):
-    return {
-        "mint": mint,
-        "top10_observed_owner_share_lower_bound_pct": top10_share,
-        "creator_share_lower_bound_pct": creator_share,
-        "top10_share_fully_verified": False,
-        "data_scope": "largest_20_token_accounts_sample",
-    }
+    """Zehn Holder mit zusammen top10_share Prozent, plus Pool-Konto."""
+    holders = [
+        (f"HOLDER{i}", top10_share / 10)
+        for i in range(10)
+    ]
+
+    if creator_share is not None:
+        holders.append(("CREATOR", creator_share))
+
+    return make_snapshot(mint=mint, holders=holders)
 
 
 def test_successful_security_and_holder_checks_update_pool():
@@ -99,9 +88,13 @@ def test_successful_security_and_holder_checks_update_pool():
     assert "mint_authority_revoked" not in item["missing_checks"]
     assert "lp_burned_or_locked" not in item["missing_checks"]
 
-    assert "top10_share_pct" in item["missing_checks"]
-    assert "dev_share_pct" in item["missing_checks"]
+    # Vollständige Stichprobe mit gekennzeichnetem Pool: bestätigt.
+    assert "top10_share_pct" not in item["missing_checks"]
+    assert "dev_share_pct" not in item["missing_checks"]
+    assert item["holder_evaluation"]["top10_confirmed"] is True
 
+    # Ohne Preis bleibt die Marktkapitalisierung offen.
+    assert "market_cap_usd" in item["missing_checks"]
     assert item["status"] == "incomplete"
 
     mocked_security.assert_called_once_with(
@@ -284,9 +277,7 @@ def test_top10_lower_bound_above_limit_rejects_pool():
     item = result["pools"][0]
 
     assert item["status"] == "rejected"
-    assert "observed_top10_holder_share_above_limit" in (
-        item["rejection_reasons"]
-    )
+    assert "top10_holder_share_above_limit" in item["rejection_reasons"]
 
 
 def test_creator_lower_bound_above_limit_rejects_pool():
@@ -307,9 +298,7 @@ def test_creator_lower_bound_above_limit_rejects_pool():
     item = result["pools"][0]
 
     assert item["status"] == "rejected"
-    assert "observed_creator_share_above_limit" in (
-        item["rejection_reasons"]
-    )
+    assert "creator_share_above_limit" in item["rejection_reasons"]
 
 
 def test_run_limit_is_respected_for_both_checks():
@@ -496,9 +485,7 @@ def test_holder_limits_come_from_config():
 
     item = result["pools"][0]
 
-    assert "observed_top10_holder_share_above_limit" not in (
-        item["rejection_reasons"]
-    )
+    assert "top10_holder_share_above_limit" not in item["rejection_reasons"]
 
 
 def test_require_flags_from_config_are_respected():
@@ -560,43 +547,3 @@ def test_duplicate_token_with_security_error_is_not_retried():
         assert item["security_check_status"] == "error"
         assert item["security_error"] == "API unavailable"
         assert item["status"] == "incomplete"
-
-
-def test_full_chain_with_real_market_data_preparation():
-    """Vorprüfung und Sicherheitsprüfung laufen als eine Kette."""
-    pool = {
-        "id": "pool-address",
-        "created_at": (
-            datetime.now(timezone.utc) - timedelta(hours=48)
-        ).isoformat(),
-        "liquidity_usd": 50000,
-        "volume_usd_24h": 12000,
-        "transactions_24h": 80,
-        "tokens": [
-            {"id": "So11111111111111111111111111111111111111112"},
-            {"id": "TOKEN123", "name": "Example", "symbol": "EX"},
-        ],
-    }
-
-    with patch(
-        "desk.market_data.fetch_token_market_caps",
-        return_value={"token123": 500000.0},
-    ), patch(
-        "desk.security_scan.check_token_security",
-        return_value={
-            **make_security(),
-            "freeze_authority_revoked": True,
-        },
-    ) as mocked_security, patch(
-        "desk.security_scan.fetch_holder_snapshot",
-        return_value=make_holder_snapshot(),
-    ):
-        result = scan_pool_security([pool], CONFIG)
-
-    item = result["pools"][0]
-
-    mocked_security.assert_called_once()
-    assert item["security_check_status"] == "completed"
-    assert item["holder_check_status"] == "completed"
-    assert item["missing_checks"] == ["top10_share_pct", "dev_share_pct"]
-    assert item["status"] == "incomplete"

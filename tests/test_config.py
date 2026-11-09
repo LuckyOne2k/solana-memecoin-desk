@@ -21,6 +21,7 @@ EXPECTED_THRESHOLDS = {
         "market_cap_usd_min": 300000,
         "market_cap_usd_max": 20000000,
         "max_security_checks_per_run": 10,
+        "market_cap_allow_total_supply_estimate": True,
     },
     "risk_filters": {
         "require_mint_authority_revoked": True,
@@ -29,6 +30,10 @@ EXPECTED_THRESHOLDS = {
         "reject_top10_share_above_pct": 25,
         "reject_dev_share_above_pct": 3,
         "lp_locked_min_pct": 99.99,
+    },
+    "data_quality": {
+        "max_liquidity_deviation_pct": 15,
+        "max_price_deviation_pct": 10,
     },
     "paper_trading": {
         "max_position_pct": 8,
@@ -129,6 +134,8 @@ def test_every_threshold_is_required(section, key):
         ("risk_filters", "require_mint_authority_revoked", "yes"),
         ("paper_trading", "max_position_pct", 150),
         ("debate", "bear_objections_required", 2.5),
+        ("data_quality", "max_liquidity_deviation_pct", 150),
+        ("scanner", "market_cap_allow_total_supply_estimate", "true"),
     ],
 )
 def test_invalid_values_are_rejected(section, key, value):
