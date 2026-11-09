@@ -309,3 +309,44 @@ def test_rpc_call_retries_minimum_context_slot_error():
     assert result == {"ok": True}
     assert mock_post.call_count == 3
     assert [call.args[0] for call in mock_sleep.call_args_list] == [1, 2]
+
+
+SECRET_URL = "https://rpc.example.invalid/?api-key=GEHEIM-12345"
+
+
+def test_rpc_http_error_does_not_leak_url_or_key():
+    response = make_rpc_response(401)
+    response.url = SECRET_URL
+
+    with patch(
+        "desk.solana_rpc.requests.post",
+        return_value=response,
+    ), patch("desk.solana_rpc.time.sleep"):
+        with pytest.raises(SolanaRpcError) as excinfo:
+            _rpc_call("getHealth", [], rpc_url=SECRET_URL)
+
+    message = str(excinfo.value)
+    assert "GEHEIM" not in message
+    assert "api-key" not in message
+    assert "HTTP 401" in message
+    assert excinfo.value.__cause__ is None
+    assert excinfo.value.__suppress_context__ is True
+
+
+def test_rpc_connection_error_does_not_leak_url_or_key():
+    error = requests.ConnectionError(
+        "HTTPSConnectionPool(host='rpc.example.invalid', port=443): "
+        "Max retries exceeded with url: /?api-key=GEHEIM-12345"
+    )
+
+    with patch(
+        "desk.solana_rpc.requests.post",
+        side_effect=error,
+    ), patch("desk.solana_rpc.time.sleep"):
+        with pytest.raises(SolanaRpcError) as excinfo:
+            _rpc_call("getHealth", [], rpc_url=SECRET_URL)
+
+    message = str(excinfo.value)
+    assert "GEHEIM" not in message
+    assert "api-key" not in message
+    assert message == "Solana RPC request failed: ConnectionError"
