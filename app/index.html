@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src https://raw.githubusercontent.com; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="theme-color" content="#0b0f19">
+  <title>Memecoin Desk</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img src="icon-192.png" alt="" width="32" height="32">
+      <div>
+        <h1>Memecoin Desk</h1>
+        <p class="sub">Solana · Paper-Trading</p>
+      </div>
+    </div>
+    <button id="refresh" class="refresh" type="button" aria-label="Aktualisieren">
+      <span class="refresh-icon" aria-hidden="true">↻</span>
+    </button>
+  </header>
+
+  <main id="main">
+    <section id="banners" aria-live="polite"></section>
+
+    <section class="status-card" id="status-card">
+      <div class="status-row">
+        <span id="status-pill" class="pill pill-neutral">Lädt …</span>
+        <span id="scan-age" class="age"></span>
+      </div>
+      <p id="scan-time" class="scan-time"></p>
+      <p id="status-text" class="status-text"></p>
+    </section>
+
+    <section id="dashboard" hidden>
+      <div class="kpis">
+        <div class="kpi kpi-ready">
+          <span class="kpi-label">Bereit</span>
+          <span class="kpi-value" id="kpi-ready">–</span>
+        </div>
+        <div class="kpi kpi-incomplete">
+          <span class="kpi-label">Unvollständig</span>
+          <span class="kpi-value" id="kpi-incomplete">–</span>
+        </div>
+        <div class="kpi kpi-rejected">
+          <span class="kpi-label">Abgelehnt</span>
+          <span class="kpi-value" id="kpi-rejected">–</span>
+        </div>
+      </div>
+      <div class="kpi-bar" id="kpi-bar" aria-hidden="true">
+        <span class="seg seg-ready"></span><span class="seg seg-incomplete"></span><span class="seg seg-rejected"></span>
+      </div>
+      <p class="kpi-meta" id="kpi-meta"></p>
+
+      <h2 class="section-title">Bereit für vollständige Risikoprüfung</h2>
+      <div id="ready-list" class="ready-list"></div>
+
+      <h2 class="section-title">Alle Pools</h2>
+      <div class="filters" role="tablist" id="filters">
+        <button type="button" class="chip active" data-filter="all">Alle</button>
+        <button type="button" class="chip" data-filter="ready_for_full_risk_screen">Bereit</button>
+        <button type="button" class="chip" data-filter="incomplete">Unvollständig</button>
+        <button type="button" class="chip" data-filter="rejected">Abgelehnt</button>
+      </div>
+      <div id="pool-list" class="pool-list"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    Paper-Trading · keine Kaufempfehlung · kein Live-Trading<br>
+    <span id="loaded-at"></span>
+  </footer>
+
+  <div id="sheet" class="sheet" hidden>
+    <div class="sheet-backdrop" data-close></div>
+    <div class="sheet-panel" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+      <div class="sheet-handle" aria-hidden="true"></div>
+      <div class="sheet-head">
+        <h3 id="sheet-title"></h3>
+        <button type="button" class="sheet-close" data-close aria-label="Schließen">✕</button>
+      </div>
+      <div id="sheet-body"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -193,6 +193,27 @@ pump.fun bonding curve have no RugCheck market data and stay `incomplete`.
   If the summary could not be generated, an old `latest.json` is removed.
 - The scan code runs without GitHub write credentials; the token is only
   used in the final step that pushes the log.
+- **App veröffentlichen** (`.github/workflows/pages.yml`): publishes the
+  folder `app/` to GitHub Pages after a merge to `main` (or manually).
+  Only Pages permissions, no write access to the repository.
+
+## Web app (read-only, Android)
+- Address: `https://luckyone2k.github.io/solana-memecoin-desk/`
+  (install on Android via the browser menu „Zum Startbildschirm hinzufügen“).
+- Plain HTML/CSS/JavaScript in `app/`, no build step, no dependencies.
+- Only data source: `latest.json` on `desk-data`
+  (`raw.githubusercontent.com`, may lag up to 5 minutes behind a scan).
+  No writes, no login, no wallet. Loads on open, on return to the app and
+  via the refresh button.
+- Shows scan status, scan time and age (yellow warning after 24 hours),
+  counts, ready tokens and a detail view per pool with reasons.
+- Any status other than `ok`, an HTTP error or a file that fails the
+  plausibility checks → clear message, no tokens shown.
+- Without a connection the last successfully loaded state may be shown,
+  always marked „Offline – Daten möglicherweise veraltet“. The service
+  worker stores only the app itself, never scan data.
+- One-time setup (repository owner): Settings → Pages → Source:
+  „GitHub Actions“.
 
 ## Safety
 - Never place API keys, seed phrases, private keys, or wallet secrets in repository files.
