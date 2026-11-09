@@ -27,7 +27,7 @@ jobs:
       - name: Abhängigkeiten installieren
         run: pip install -r requirements.txt
 
-      - name: Strukturtest getProgramAccountsV2
+      - name: Test letzte Seite (MAGGIE)
         env:
           SOLANA_RPC_URL: ${{ secrets.SOLANA_RPC_URL }}
-        run: python .github/helius_test/structure_test.py
+        run: python .github/helius_test/last_page_test.py
