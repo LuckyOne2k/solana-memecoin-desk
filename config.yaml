@@ -43,6 +43,22 @@ holders:
   # Höchster Abstand in Slots (150 ≈ 1 Minute)
   max_slot_span: 150
 
+# Eigene On-Chain-Spanne der Marktkapitalisierung (desk/circulating_bounds.py,
+# desk/market_cap.py). Untergrenze = frei übertragbare Bestände in technisch
+# bestätigten normalen Wallets (ohne Top-10, Pool, Creator, Burn, Börsen,
+# Locker; nur interne konservative Untergrenze, keine offizielle Umlaufmenge).
+# Obergrenze = Gesamtmenge - nachweislich verbrannt. Bestätigt nur, wenn
+# p_niedrig x Untergrenze >= Minimum und p_hoch x Obergrenze <= Maximum.
+market_cap_onchain_bounds:
+  # Standard aus: ohne ausdrückliche Freigabe keine Abfragen, keine Credits
+  allow_onchain_bounds: false
+  # Höchstzahl getMultipleAccounts-Aufrufe (je bis zu 100 Authorities)
+  # pro Token und Scan
+  max_account_calls_per_token: 10
+  # Höchster Abstand in Slots von der ersten Supply-Abfrage der
+  # Holder-Liste bis zur letzten Authority-Abfrage (150 ≈ 1 Minute)
+  max_slot_span: 150
+
 paper_trading:
   max_position_pct: 8
   initial_stop_loss_pct: 6

@@ -27,7 +27,22 @@ Entscheidungsregeln:
     der beiden Preisquellen).
 - Widersprüchliche Preise machen die Prüfung immer unklar, auch wenn
   ein gemeldeter Wert vorliegt.
+
+Eigene On-Chain-Spanne (evaluate_onchain_bounds, nur mit Schalter
+market_cap_onchain_bounds.allow_onchain_bounds, Standard aus):
+- Untergrenze = niedriger Preis x Wallet-Untergrenze L
+  (desk.circulating_bounds; interne konservative Untergrenze, keine
+  offizielle Umlaufmenge), Obergrenze = hoher Preis x (Gesamtmenge -
+  nachweislich verbrannt).
+- Bestätigt nur, wenn Untergrenze >= Minimum und Obergrenze <= Maximum.
+  Abgelehnt, wenn Obergrenze < Minimum oder Untergrenze > Maximum.
+  Sonst unklar. Es entsteht nie ein Punktwert (market_cap_usd bleibt
+  None).
+- Vergleiche exakt (Fraction), Preise als gelieferte Dezimalwerte.
 """
+
+import math
+from fractions import Fraction
 
 from desk.data_quality import (
     CONFIRMED,
@@ -204,3 +219,160 @@ def evaluate_market_cap(
         return {**result, "status": CONFIRMED, "reason": "reported_in_range"}
 
     return {**result, "status": REJECTED, "reason": "market_cap_out_of_range"}
+
+
+# ---------------------------------------------------------------------
+# Eigene On-Chain-Spanne (nur mit scanner-Schalter
+# market_cap_onchain_bounds.allow_onchain_bounds, Standard: aus)
+# ---------------------------------------------------------------------
+
+ONCHAIN_BOUNDS = "onchain_bounds"
+
+
+def _exact(value):
+    """Zahl -> Fraction (exakte Vergleiche an den Grenzen); sonst None."""
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+
+    if value != value or value in (float("inf"), float("-inf")):
+        return None
+
+    # Dezimalwert so, wie die Quelle ihn geliefert hat (kürzeste
+    # Darstellung), nicht die binäre Näherung: 0.001 bleibt 1/1000.
+    return Fraction(repr(value)) if isinstance(value, float) else Fraction(value)
+
+
+def onchain_target_amount_raw(*, config, price_low_usd, price_high_usd,
+                              upper_amount_raw, decimals):
+    """Rohmenge der Wallet-Untergrenze, ab der die Entscheidung feststeht.
+
+    - Obergrenze (hoher Preis x U) <= Maximum: Ziel ist das Minimum
+      (p_low x L >= Minimum -> bestätigt).
+    - Sonst ist keine Bestätigung möglich; Ziel ist der Nachweis
+      p_low x L > Maximum (-> abgelehnt).
+    None bei ungültigen Eingaben.
+    """
+    low = _exact(price_low_usd)
+    high = _exact(price_high_usd)
+
+    if (
+        low is None
+        or high is None
+        or low <= 0
+        or high < low
+        or not isinstance(upper_amount_raw, int)
+        or isinstance(upper_amount_raw, bool)
+        or upper_amount_raw <= 0
+        or not isinstance(decimals, int)
+        or isinstance(decimals, bool)
+        or not 0 <= decimals <= 18
+    ):
+        return None
+
+    scale = 10 ** decimals
+    minimum = Fraction(config["scanner"]["market_cap_usd_min"])
+    maximum = Fraction(config["scanner"]["market_cap_usd_max"])
+
+    if high * upper_amount_raw / scale <= maximum:
+        # kleinste Menge L mit low x L / scale >= minimum
+        return max(1, math.ceil(minimum * scale / low))
+
+    # kleinste Menge L mit low x L / scale > maximum
+    return math.floor(maximum * scale / low) + 1
+
+
+def evaluate_onchain_bounds(
+    *,
+    config,
+    price_low_usd,
+    price_high_usd,
+    lower_amount_raw,
+    upper_amount_raw,
+    decimals,
+):
+    """Entscheidung aus belegter Spanne [p_low x L, p_high x U].
+
+    L = Wallet-Untergrenze (desk.circulating_bounds), U = Gesamtmenge
+    minus nachweislich verbrannt. Nie ein Punktwert:
+    market_cap_usd bleibt None.
+
+    - p_high x U < Minimum            -> rejected
+    - p_low x L > Maximum             -> rejected
+    - p_low x L >= Minimum und
+      p_high x U <= Maximum           -> confirmed
+    - sonst                           -> unclear
+    """
+    scanner = config["scanner"]
+    minimum = Fraction(scanner["market_cap_usd_min"])
+    maximum = Fraction(scanner["market_cap_usd_max"])
+
+    low = _exact(price_low_usd)
+    high = _exact(price_high_usd)
+
+    result = {
+        "basis": ONCHAIN_BOUNDS,
+        "price_low_usd": price_low_usd,
+        "price_high_usd": price_high_usd,
+        "lower_amount_raw": lower_amount_raw,
+        "upper_amount_raw": upper_amount_raw,
+        "market_cap_lower_bound_usd": None,
+        "market_cap_upper_bound_usd": None,
+        "range_usd": [scanner["market_cap_usd_min"], scanner["market_cap_usd_max"]],
+    }
+
+    valid = (
+        low is not None
+        and high is not None
+        and 0 < low <= high
+        and isinstance(lower_amount_raw, int)
+        and not isinstance(lower_amount_raw, bool)
+        and isinstance(upper_amount_raw, int)
+        and not isinstance(upper_amount_raw, bool)
+        and lower_amount_raw >= 0
+        and upper_amount_raw > 0
+        and isinstance(decimals, int)
+        and not isinstance(decimals, bool)
+        and 0 <= decimals <= 18
+    )
+
+    if not valid:
+        return {**result, "status": UNCLEAR, "reason": "onchain_bounds_input_invalid"}
+
+    if lower_amount_raw > upper_amount_raw:
+        return {
+            **result,
+            "status": UNCLEAR,
+            "reason": "onchain_lower_bound_exceeds_upper_bound",
+        }
+
+    scale = 10 ** decimals
+    lower_usd = low * lower_amount_raw / scale
+    upper_usd = high * upper_amount_raw / scale
+
+    result["market_cap_lower_bound_usd"] = float(lower_usd)
+    result["market_cap_upper_bound_usd"] = float(upper_usd)
+
+    if upper_usd < minimum:
+        return {**result, "status": REJECTED, "reason": "market_cap_below_minimum"}
+
+    if lower_usd > maximum:
+        return {
+            **result,
+            "status": REJECTED,
+            "reason": "market_cap_above_maximum_onchain_lower_bound",
+        }
+
+    if lower_usd >= minimum and upper_usd <= maximum:
+        return {**result, "status": CONFIRMED, "reason": "onchain_bounds_in_range"}
+
+    return {
+        **result,
+        "status": UNCLEAR,
+        # Obergrenze über dem Maximum: Bestätigung unmöglich, egal wie
+        # groß die Untergrenze ist.
+        "reason": (
+            "onchain_upper_bound_above_maximum"
+            if upper_usd > maximum
+            else "onchain_lower_bound_below_minimum"
+        ),
+    }

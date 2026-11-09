@@ -10,6 +10,41 @@ from desk.market_data import (
 from desk.security_scan import scan_pool_security
 
 
+def _onchain_details(pool):
+    """Eigene On-Chain-Spanne, kompakt. Die Wallet-Untergrenze ist eine
+    interne konservative Untergrenze, keine offizielle Umlaufmenge."""
+    bounds = pool.get("market_cap_onchain_bounds")
+
+    if not isinstance(bounds, dict):
+        return None
+
+    lower = bounds.get("wallet_lower_bound") or {}
+    decision = bounds.get("decision") or {}
+
+    return {
+        "status": bounds.get("status"),
+        "reason": bounds.get("reason") or lower.get("reason"),
+        "note": lower.get("note"),
+        "decision_status": decision.get("status"),
+        "decision_reason": decision.get("reason"),
+        "market_cap_lower_bound_usd": decision.get("market_cap_lower_bound_usd"),
+        "market_cap_upper_bound_usd": decision.get("market_cap_upper_bound_usd"),
+        "price_low_usd": decision.get("price_low_usd"),
+        "price_high_usd": decision.get("price_high_usd"),
+        "wallet_lower_bound_raw": lower.get("wallet_lower_bound_raw"),
+        "target_amount_raw": lower.get("target_amount_raw"),
+        "target_reached": lower.get("target_reached"),
+        "account_calls": lower.get("account_calls"),
+        "max_account_calls": lower.get("max_account_calls"),
+        "authorities_queried": lower.get("authorities_queried"),
+        "unqueried_candidates": lower.get("unqueried_candidates"),
+        "classified": lower.get("classified"),
+        "excluded_authorities": lower.get("excluded_authorities"),
+        "frozen_accounts": lower.get("frozen_accounts"),
+        "slot_span": lower.get("slot_span"),
+    }
+
+
 def _check_details(pool):
     """Kompakte, nachvollziehbare Prüfdetails für das Protokoll."""
     liquidity = pool.get("liquidity_check") or {}
@@ -87,6 +122,7 @@ def _check_details(pool):
             "price_used_usd": market_cap.get("price_used_usd"),
             "price_used_source": market_cap.get("price_used_source"),
             "price_used_basis": market_cap.get("price_used_basis"),
+            "onchain_bounds": _onchain_details(pool),
         },
         "fdv_usd_dexpaprika": pool.get("fdv_usd_dexpaprika"),
         "fdv_usd_geckoterminal": pool.get("fdv_usd_geckoterminal"),
@@ -245,6 +281,10 @@ def main():
         "full_holder_list_succeeded": result.get("full_holder_list_succeeded"),
         "full_holder_list_failed": result.get("full_holder_list_failed"),
         "holder_fallbacks": result.get("holder_fallbacks"),
+        "onchain_bounds_attempted": result.get("onchain_bounds_attempted"),
+        "onchain_bounds_failed": result.get("onchain_bounds_failed"),
+        "authority_account_calls": result.get("authority_account_calls"),
+        "frozen_account_checks": result.get("frozen_account_checks"),
         "check_order_source": result.get("check_order_source"),
         "deprioritized_tokens": result.get("deprioritized_tokens"),
         "pagination_complete": market_data["pagination_complete"],

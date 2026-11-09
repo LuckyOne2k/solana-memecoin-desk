@@ -44,7 +44,8 @@
 | `desk/solana_rpc.py` | `fetch_mint_info` (Token-Programm, Token-2022-Erweiterungen), `fetch_full_holder_list` (alle Konten, Helius), Rückfall: 20 größte Token-Konten + Gesamtmenge |
 | `desk/data_quality.py` | Liquiditäts- und Preisvergleich zwischen Quellen |
 | `desk/holders.py` | Top-10-/Entwickler-Anteil mit Unter-/Obergrenze; Bestätigung nur mit vollständiger Liste |
-| `desk/market_cap.py` | Marktkapitalisierung, Obergrenze, FDV |
+| `desk/market_cap.py` | Marktkapitalisierung, Obergrenze, FDV, Entscheidung der On-Chain-Spanne |
+| `desk/circulating_bounds.py` | Wallet-Untergrenze: Authorities aggregieren, ausschließen, per getMultipleAccounts klassifizieren (Schalter, Standard aus) |
 | `desk/security_scan.py` | einzige Prüfkette, Bewertung je Pool |
 | `desk/check_queue.py` | faire Prüfreihenfolge: zuletzt abgelehnte Token nach hinten (nur Reihenfolge, nie Ergebnis) |
 | `desk/rules.py`, `risk.py`, `debate.py` | behalten, noch nicht angeschlossen |
@@ -58,6 +59,7 @@
 - Token-2022: Pflichtprüfungen `permanent_delegate_absent` und `token_extensions_safe`. Permanent Delegate, unbekannte, nicht lesbare oder nicht ausdrücklich als unbedenklich eingestufte Erweiterungen (unbedenklich nur Metadaten/Gruppe) → unklar, nie bereit; noch keine Ablehnung.
 - Prüfreihenfolge: höchstens 10 Token je Lauf; Token, deren letzte abgeschlossene Sicherheitsprüfung abgelehnt wurde, rücken nach hinten (älteste Ablehnung zuerst). Jeder Token wird frisch geprüft; Protokoll fehlt/beschädigt → bisherige Reihenfolge.
 - Der Config-Schlüssel `market_cap_allow_total_supply_estimate` ist verboten und stoppt das Programm.
+- On-Chain-Spanne (`market_cap_onchain_bounds`, Standard `allow_onchain_bounds: false`): nur wenn allein die Marktkapitalisierung offen ist. L = Bestände in technisch bestätigten normalen Wallets (interne konservative Untergrenze, nie als offizielle Umlaufmenge ausgeben), ohne Top-10, Pool, Creator, Burn, Börsen, Locker, PDAs, eingefrorene Konten; Authorities ohne SOL-Konto zählen nicht. U = Gesamtmenge − Burns. Bestätigt nur bei p_niedrig × L ≥ 300k und p_hoch × U ≤ 20 Mio.; p_niedrig × L > 20 Mio. → abgelehnt; sonst unklar. Höchstens 10 getMultipleAccounts-Aufrufe je Token und Scan, größte zuerst; Fehler, Slot-Abweichung oder Limit → unklar.
 
 ## Infrastruktur
 - `.github/workflows/tests.yml`: Tests bei jedem PR und auf `main`, nur lesend.
@@ -85,6 +87,9 @@
 - 2026-11-09 – Scan #46 (Commit `588eace`): Rotation wirkt, Helius 7/7 vollständige Listen, 0 Rückfälle; 0 bereit. GeckoTerminal-Abruf mit HTTP 403 abgelehnt (kein zweiter Preis, keine gemeldete Marktkapitalisierung). TTP: alles bestätigt außer Marktkapitalisierung.
 - 2026-11-09 – PR „GeckoTerminal stabilisieren“: begrenzte Wiederholungen (Netzwerk/429/5xx höchstens 3 Versuche, 403 höchstens 2, sonst keine), Statuscode/Versuche/Grund in `market_cap_diagnostics`, keine alten Preise als Ersatz, Pflicht zu zwei Preisen unverändert. Tests: 711 bestanden. Eigene Marktkapitalisierungs-Spanne (PR 2) noch nicht freigegeben, Vorschlag wird überarbeitet.
 
+- 2026-11-09 – PR #14 gemergt; Scan #47: GeckoTerminal wieder 2/2 HTTP 200, 0 Wiederholungen; TTP, BRUH, USOE: alles bestätigt außer Marktkapitalisierung. Helius-Verbrauch laut Dashboard bis dahin 225 Credits.
+- 2026-11-09 – PR 2 „On-Chain-Spanne der Marktkapitalisierung“ freigegeben und umgesetzt (Schalter standardmäßig aus): Definition L = frei übertragbare Bestände in bestätigten normalen Wallets (nur interne Untergrenze); „null“-Authorities zählen nicht; max. 10 getMultipleAccounts à 100 je Token, größte zuerst; Top-10 ausgeschlossen; jede Lücke → unvollständig; kein Credit-Messtest (Verbrauch im Dashboard prüfen). Zusätzlich (konservativ): eingefrorene Token-Konten per 1 getProgramAccountsV2-Aufruf abgezogen. Tests: 920 bestanden.
+
 ## Offene Probleme
 - Praktisch wird kaum ein Token „bereit“: GeckoTerminal meldet die Umlaufmenge nur für etwa 5 % der Token (keine nachvollziehbare Alternative, Nutzer entscheidet).
 - Holder-Bewertung gilt nur für ihren Zeitpunkt (Beispiel USAR); vor simulierten Käufen später neu prüfen.
@@ -94,4 +99,4 @@
 - Offene Fragen: Repo öffentlich oder privat? Was ist im 20-€-Budget schon enthalten?
 
 ## Nächster Schritt
-PR „GeckoTerminal stabilisieren“ prüfen und mergen (Nutzer), danach Scan und Auswertung mit `scan-auswertung`. Überarbeiteten Vorschlag zur Marktkapitalisierungs-Spanne prüfen (Freigabe offen). Danach Entscheidung über Löschung des Test-Branches und über Ablehnungsregeln für Permanent Delegate/riskante Erweiterungen. Prüfregeln (25 % / 3 %) und Umlaufmengenregel unverändert.
+PR 2 (On-Chain-Spanne) prüfen und mergen (Nutzer). Danach Schalter `allow_onchain_bounds` nur nach ausdrücklicher Freigabe auf `true` setzen, Scan starten, mit `scan-auswertung` auswerten und Credits im Helius-Dashboard kontrollieren (Stand vorher: ca. 245). Später: Löschung des Test-Branches, Ablehnungsregeln für Permanent Delegate/riskante Erweiterungen. Prüfregeln (25 % / 3 %, 300k–20 Mio. $) unverändert.

@@ -54,6 +54,11 @@ SCHEMA = {
         "max_pages": POSITIVE_COUNT,
         "max_slot_span": POSITIVE_COUNT,
     },
+    "market_cap_onchain_bounds": {
+        "allow_onchain_bounds": FLAG,
+        "max_account_calls_per_token": POSITIVE_COUNT,
+        "max_slot_span": POSITIVE_COUNT,
+    },
     "paper_trading": {
         "max_position_pct": PERCENT,
         "initial_stop_loss_pct": PERCENT,

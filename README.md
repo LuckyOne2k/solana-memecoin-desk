@@ -32,6 +32,7 @@ values stop the program; `mode` must be `paper`.
 | Holder distribution (`desk/holders.py`) | active: full holder list via Helius (`fetch_full_holder_list`), top-20 sample only as fallback (can never confirm) |
 | Token-2022 extensions | active: permanent delegate and any extension not classified safe keep the pool `incomplete` |
 | Market cap (`desk/market_cap.py`) | active: passes only with reported circulating supply; upper bound can only reject; FDV separate |
+| On-chain market cap range (`desk/circulating_bounds.py`) | implemented, **off by default** (`market_cap_onchain_bounds.allow_onchain_bounds: false`) |
 | `desk/rules.py`, `desk/risk.py`, `desk/debate.py` | kept, not wired yet |
 | Paper trading, strategy, AI agents, app | not implemented |
 
@@ -115,6 +116,39 @@ leaves the pool `incomplete`.
     status and reason are logged in `market_cap_diagnostics`
     (`request_attempts`, `retries`, `last_http_status`, `error_reason`,
     `request_log`).
+- **On-chain market cap range (optional, off by default):** only when the
+  switch `market_cap_onchain_bounds.allow_onchain_bounds` is `true` and the
+  market cap is the *only* open check (all other checks confirmed, mint
+  and freeze authority revoked, no permanent delegate, only safe Token-2022
+  extensions, full holder list, two agreeing prices).
+  - Lower amount L = tokens held in technically confirmed normal wallets.
+    This is an **internal conservative lower bound**, never an official or
+    actual circulating supply. Token accounts are first aggregated per
+    token authority (bytes 32–63 of the account data, never the technical
+    account owner, which is always the token program). Excluded from L:
+    the 10 largest authorities, pool vaults and pool addresses (RugCheck
+    and all DexPaprika pools of the token), burn addresses, creator,
+    exchange and locker labels, off-curve authorities (PDAs, no RPC call)
+    and frozen token accounts (one `getProgramAccountsV2` call with a
+    state filter). The remaining authorities are checked largest first
+    with `getMultipleAccounts` (up to 100 per call, at most
+    `max_account_calls_per_token` = 10 calls per token and scan,
+    `minContextSlot` = end of the holder list). Only an account owned by
+    the System Program, not executable, with 0 data bytes and SOL > 0
+    counts as a wallet. Authorities without an account (`null`), program
+    or token accounts, executables and system accounts with data are not
+    counted (unknown).
+  - Upper amount U = on-chain supply − provable burns (as before).
+  - Decision: high price × U < minimum → rejected; low price × L > maximum
+    → rejected; low price × L ≥ minimum and high price × U ≤ maximum →
+    confirmed (`basis: onchain_bounds`, no point value, `market_cap_usd`
+    stays empty); otherwise unclear. Exact comparisons.
+  - Any RPC error, invalid response, slot going backwards, slot span from
+    the holder list to the last query above `max_slot_span` (150), or the
+    call limit reached before the decision → unclear (`incomplete`).
+  - Cost: 1 credit for the frozen check plus at most 10 `getMultipleAccounts`
+    calls per token; queries stop early once the decision is certain and
+    are skipped when the target cannot be reached.
 
 Known limitations: wallets of the same person cannot be linked; holdings of
 an owner outside the 20 largest accounts are not seen; tokens still on the

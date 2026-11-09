@@ -48,6 +48,11 @@ EXPECTED_THRESHOLDS = {
         "max_pages": 30,
         "max_slot_span": 150,
     },
+    "market_cap_onchain_bounds": {
+        "allow_onchain_bounds": False,
+        "max_account_calls_per_token": 10,
+        "max_slot_span": 150,
+    },
 }
 
 
@@ -233,3 +238,41 @@ def test_holder_limits_accept_positive_integers():
     config["holders"]["max_slot_span"] = 1
 
     validate_config(config)
+
+
+def test_missing_onchain_bounds_section_is_rejected():
+    config = load_config()
+    del config["market_cap_onchain_bounds"]
+
+    with pytest.raises(ConfigError, match="market_cap_onchain_bounds"):
+        validate_config(config)
+
+
+@pytest.mark.parametrize(
+    "key", ["allow_onchain_bounds", "max_account_calls_per_token", "max_slot_span"]
+)
+def test_missing_onchain_bounds_key_is_rejected(key):
+    config = load_config()
+    del config["market_cap_onchain_bounds"][key]
+
+    with pytest.raises(ConfigError, match=f"market_cap_onchain_bounds.{key}"):
+        validate_config(config)
+
+
+@pytest.mark.parametrize("value", [1, 0, "false", "true", None])
+def test_onchain_bounds_switch_must_be_boolean(value):
+    config = load_config()
+    config["market_cap_onchain_bounds"]["allow_onchain_bounds"] = value
+
+    with pytest.raises(ConfigError, match="allow_onchain_bounds"):
+        validate_config(config)
+
+
+@pytest.mark.parametrize("key", ["max_account_calls_per_token", "max_slot_span"])
+@pytest.mark.parametrize("value", [0, -1, True, 1.5, "10", None])
+def test_invalid_onchain_bounds_limits_are_rejected(key, value):
+    config = load_config()
+    config["market_cap_onchain_bounds"][key] = value
+
+    with pytest.raises(ConfigError, match=f"market_cap_onchain_bounds.{key}"):
+        validate_config(config)
