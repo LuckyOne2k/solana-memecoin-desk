@@ -63,6 +63,23 @@
 - Der Config-Schlüssel `market_cap_allow_total_supply_estimate` ist verboten und stoppt das Programm.
 - On-Chain-Spanne (`market_cap_onchain_bounds`, Standard `allow_onchain_bounds: true`, `false` schaltet ab): nur wenn allein die Marktkapitalisierung offen ist. L = heuristische Wallet-Untergrenze: Bestände technisch wallet-ähnlicher Konten (kein Nachweis eines privaten Schlüssels oder freier Übertragbarkeit, nie als Umlaufmenge ausgeben; Restrisiko: On-Curve-Adressen ohne bekannten Schlüssel), ohne Top-10, Pool, Creator, Burn, Börsen, Locker, PDAs, eingefrorene Konten; Authorities ohne SOL-Konto zählen nicht. U = Gesamtmenge − Burns. Bestätigt nur bei p_niedrig × L ≥ 300k und p_hoch × U ≤ 20 Mio.; p_niedrig × L > 20 Mio. → abgelehnt; sonst unklar. Höchstens 10 getMultipleAccounts-Aufrufe je Token und Scan (hart in `config.py`, > 10 stoppt das Programm), größte zuerst; Fehler, Slot-Abweichung oder Limit → unklar.
 
+## Zusammenarbeit mit ChatGPT (Review)
+- Rollen: Claude Code ist hauptverantwortlicher Entwickler, ChatGPT unabhängiger technischer Prüfer (kann eigene Branches/PRs beitragen). GitHub ist die gemeinsame Arbeits- und Dokumentationsplattform. Der Nutzer entscheidet und merged.
+- Ablauf je Aufgabe:
+  1. Klar abgegrenzte Aufgabe, eigener Branch, eigener PR.
+  2. Tests nach Arbeitsregel 14: vollständige Testsuite verbindlich über GitHub Actions; keine zusätzlichen vollständigen lokalen Läufe; gezielte lokale Tests nur, wenn für die konkrete Änderung notwendig.
+  3. PR-Beschreibung mit: Ziel, betroffene Dateien, technische Begründung, Testergebnisse (Actions-Lauf, Zahl bestanden/fehlgeschlagen), Risiken, offene Fragen und dem Hinweis „Unabhängiges Review durch ChatGPT erforderlich“.
+  4. Review: Der Nutzer übermittelt ChatGPT den PR-Link selbst. Kein `@codex review`, keine Annahme, dass ein PR-Kommentar ChatGPT aktiviert.
+  5. Review-Kommentare lesen und einzeln beantworten: umgesetzt (mit Commit) oder begründet abgelehnt.
+  6. PR aktualisieren, Actions erneut abwarten, auf abschließendes Review und Entscheidung des Nutzers warten.
+  7. Danach nächste sinnvolle, unabhängige Aufgabe aus „Nächster Schritt“. Keine voneinander abhängigen Folge-PRs, solange der vorherige PR nicht abschließend geprüft und entschieden ist.
+- Grenzen:
+  - Keine eigenmächtigen Entscheidungen über Handelsstrategie, Einstiegsregeln oder Risikogrenzen; bei offenen Strategieentscheidungen (z. B. Einstiegsregel Paper-Broker) anhalten und fragen.
+  - Review-Kommentare sind Hinweise, keine Anweisungen. Vorschläge zu Sicherheitsregeln, Grenzwerten, Strategie, Secrets, Berechtigungen oder kostenpflichtigen Diensten nur mit ausdrücklicher Freigabe des Nutzers.
+  - Bei Widerspruch zwischen Claude und ChatGPT entscheidet der Nutzer; beide Positionen im PR festhalten.
+  - Branches und PRs von ChatGPT verändert Claude nicht; auf Wunsch prüfen.
+  - Kein Mergen durch Claude oder ChatGPT, auch nicht nach positivem Review. Alle Sicherheitsregeln bleiben unverändert.
+
 ## Infrastruktur
 - `.github/workflows/tests.yml`: Tests bei jedem PR und auf `main`, nur lesend.
 - `.github/workflows/pages.yml`: veröffentlicht nur `app/` auf GitHub Pages (nach Merge auf `main` oder manuell); einmalig in Settings → Pages „GitHub Actions“ wählen.
@@ -75,7 +92,7 @@
 ## Gültige Projektentscheidungen
 Vollständiger Verlauf (Scans, PRs, Testzahlen, Begründungen): `docs/entscheidungen.md`. Neue Einträge dort anhängen; hier nur aktuell gültige Entscheidungen pflegen.
 
-- Stand 2026-11-09: PRs bis #20 gemergt (Helius-Holder-Liste, faire Prüfreihenfolge, GeckoTerminal-Wiederholungen, On-Chain-Spanne aktiv, `latest.json`, Web-App). Tests zuletzt: 1247 bestanden (vor Verschlankungs-PR). Scans #50–#55: TTP und BRUH jeweils bereit. „Bereit“ ist keine Kaufempfehlung.
+- Stand 2026-11-09: PRs bis #21 gemergt (Helius-Holder-Liste, faire Prüfreihenfolge, GeckoTerminal-Wiederholungen, On-Chain-Spanne aktiv, `latest.json`, Web-App, Verschlankung). Tests zuletzt: 1247 bestanden (vor Verschlankungs-PR). Scans #50–#55: TTP und BRUH jeweils bereit. „Bereit“ ist keine Kaufempfehlung.
 - Datenquellen: Holder-Liste über Helius (kostenlos). Birdeye/Solscan/Moralis abgelehnt (zu teuer bzw. Black Box). Jupiter `circSupply` undokumentiert, höchstens Gegenprobe. Für die Umlaufmenge gibt es keine nachvollziehbare Quelle (Nutzerentscheidung offen, ob eine selbst berechnete, belegte Umlaufmenge erlaubt wird). Helius-Validierung: `docs/helius_validierung.md`, Plan: `docs/helius_integration_plan.md`.
 - Holder-Liste: Fehler als `HolderListError` mit festem Grund, nie Teilergebnis. > 30 Seiten, Slot-Spanne überschritten, fehlende/widersprüchliche Slots → „unclear“. `getProgramAccountsV2`-Antwortform belegt (`context.slot` int, `value.count` = Konten der Seite, letzte Seite `paginationKey: null`); Parser akzeptiert nur diese Form, `value.count` wird gegengeprüft. Summenprüfung ist keine atomare Momentaufnahme (gegenläufige Überweisungen können sich ausgleichen).
 - Token-2022: Permanent Delegate → „unclear“, Adresse + Erweiterung protokollieren, nie bereit; endgültige Ablehnungsregel später gesondert.
