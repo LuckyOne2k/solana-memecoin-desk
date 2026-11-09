@@ -71,19 +71,16 @@
 - 2026-11-09 – Live-Scan nach Phase 1: 58 Pools, 0 bereit; Liquiditätsvergleich 10/10 bestätigt, Holder-RPC 8/8 erfolgreich, aber Top-10, Entwickler-Anteil und Marktkapitalisierung bei allen geprüften Token unklar.
 - 2026-11-09 – Datenquellen-Recherche: Holder-Liste über Helius (kostenlos) gewählt; Birdeye/Solscan/Moralis zu teuer bzw. Black Box; Jupiter `circSupply` undokumentiert, höchstens Gegenprobe. Für die Umlaufmenge gibt es keine nachvollziehbare Quelle (Entscheidung des Nutzers offen, ob eine selbst berechnete, belegte Umlaufmenge erlaubt wird).
 - 2026-11-09 – Helius validiert (nur Test-Branch, ca. 204 Credits): `getProgramAccountsV2` und DAS `getTokenAccounts` liefern für Token-2022 (NAOF, PAD, USAR) und klassische SPL-Token (MAGGIE, TAOLF) alle Konten mit Eigentümer; Summe = Mint-Supply exakt; V2 liefert zusätzlich leere Konten. USAR-Widerspruch: Verteilung hat sich durch Kurssturz (−99,999 %, Pool hält danach 99,65 %) geändert; alte Methode liefert auf gleicher Datenbasis korrekte Werte.
-- 2026-11-09 – PR #7 gemergt: API-Key nicht mehr in RPC-Fehlermeldungen. Aufräum-PR: Testdateien von `main` entfernt (PR #8 war versehentlich gemergt), kein stilles Zurückfallen auf die öffentliche RPC.
+- 2026-11-09 – PR #7 gemergt: API-Key nicht mehr in RPC-Fehlermeldungen. PR #9 gemergt: Testdateien von `main` entfernt (PR #8 war versehentlich gemergt), kein stilles Zurückfallen auf die öffentliche RPC.
+- 2026-11-09 – PR #1 geschlossen (keine eigenständigen Änderungen). Testergebnisse dauerhaft in `docs/helius_validierung.md`, Umsetzungsplan in `docs/helius_integration_plan.md`. Helius-Integration grundsätzlich freigegeben; Umsetzung erst nach Freigabe des Plans.
 
 ## Offene Probleme
 - Praktisch wird kein Token „bereit“: Die 20 größten Konten erfassen oft unter 50 % der Menge (Abhilfe: vollständige Holder-Liste über Helius, noch nicht eingebaut), GeckoTerminal meldet die Umlaufmenge nur für etwa 5 % der Token (keine nachvollziehbare Alternative, Nutzer entscheidet).
 - Holder-Bewertung gilt nur für ihren Zeitpunkt (Beispiel USAR); vor simulierten Käufen später neu prüfen.
 - Wallets derselben Person nicht erkennbar; Bonding-Curve-Token und Pools ohne SOL/USDC/USDT bleiben unvollständig.
 - Nur 10 Token pro Lauf; Scan nur manuell.
-- Offener PR #1 („Add files via upload“, Branch `desk/__init__.py`): leerer Commit, veraltete Erstfassung ohne eigenständige Änderungen, gemeinsame Geschichte mit `main` fehlt. Schließen ohne Verlust möglich, Nutzer entscheidet.
-- Test-Branch `claude/helius-verbindungstest` (enthält die Testskripte) noch vorhanden, Nutzer entscheidet über Löschung.
+- Test-Branch `claude/helius-verbindungstest` (enthält die Testskripte) bleibt vorerst (Commit `5214857`), Löschung nach Abschluss der Integration; Ergebnisse stehen in `docs/helius_validierung.md`.
 - Offene Fragen: Repo öffentlich oder privat? Was ist im 20-€-Budget schon enthalten?
 
 ## Nächster Schritt
-Vollständige Holder-Liste einbauen (Freigabe des Nutzers nötig):
-- `getProgramAccountsV2` mit Mint-Filter (klassisch zusätzlich `dataSize 165`, Token-2022 ohne), nur Owner + Menge, leere Konten verwerfen.
-- Pflicht, sonst „unvollständig“: alle Seiten geladen, jedes Konto mit Bestand hat Eigentümer, Summe = Mint-Supply exakt, Obergrenze z. B. 30 Seiten.
-- Supply und Liste direkt nacheinander abfragen, Slot protokollieren. Prüfregeln (25 % / 3 %) unverändert.
+Freigabe des Plans `docs/helius_integration_plan.md` (offene Punkte: Config-Werte `max_pages`/`max_slot_span`, Rückfall auf Stichprobe, Permanent Delegate). Danach PR A (Abruf + Pflichtprüfungen + Tests), dann PR B (Einbindung). Prüfregeln (25 % / 3 %) und Umlaufmengenregel unverändert.
