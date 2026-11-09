@@ -1,0 +1,37 @@
+name: Tests
+
+# Führt nur die automatischen Tests aus (keine Netzwerkabfragen, keine
+# Secrets, kein Schreibzugriff). Läuft bei Pull Requests und auf main.
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Repository herunterladen
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Python einrichten
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+
+      - name: Abhängigkeiten installieren
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Automatische Tests ausführen
+        run: python -m pytest -v

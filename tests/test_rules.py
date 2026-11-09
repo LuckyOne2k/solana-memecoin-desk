@@ -81,4 +81,35 @@ def test_known_holder_values_within_limits_are_accepted():
 
     assert result.accepted is True
     assert result.reasons == []
-    
+
+
+def test_rules_work_with_project_config(desk_config):
+    candidate = Candidate(
+        pair_age_hours=48,
+        market_cap_usd=1000000,
+        mint_authority_revoked=True,
+        lp_burned_or_locked=True,
+        liquidity_usd=100000,
+        top10_share_pct=20,
+        dev_share_pct=1,
+    )
+
+    assert screen_candidate(candidate, desk_config).accepted is True
+
+
+def test_rules_market_cap_range_comes_from_config(desk_config):
+    candidate = Candidate(
+        pair_age_hours=48,
+        market_cap_usd=250000,
+        mint_authority_revoked=True,
+        lp_burned_or_locked=True,
+        liquidity_usd=100000,
+        top10_share_pct=20,
+        dev_share_pct=1,
+    )
+
+    result = screen_candidate(candidate, desk_config)
+
+    assert result.accepted is False
+    assert "market_cap_out_of_range" in result.reasons
+

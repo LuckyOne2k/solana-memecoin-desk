@@ -2,10 +2,11 @@
 from unittest.mock import patch
 
 from desk import __main__ as app
+from desk.config import ConfigError
 from desk.market_data import MarketDataError
 
 
-def test_main_runs_market_data_and_security_scan(capsys):
+def test_main_runs_market_data_and_security_scan(capsys, desk_config):
     market_data = {
         "results": [{"id": "POOL1"}],
         "pagination_complete": True,
@@ -50,11 +51,18 @@ def test_main_runs_market_data_and_security_scan(capsys):
 
     assert exit_code == 0
 
-    mocked_market.assert_called_once_with()
+    mocked_market.assert_called_once_with(
+        min_age_hours=desk_config["scanner"]["pair_age_hours_min"],
+        max_age_hours=desk_config["scanner"]["pair_age_hours_max"],
+        min_liquidity_usd=(
+            desk_config["risk_filters"]["reject_liquidity_below_usd"]
+        ),
+    )
 
     mocked_scan.assert_called_once_with(
         market_data["results"],
-        max_checks=10,
+        desk_config,
+        max_checks=desk_config["scanner"]["max_security_checks_per_run"],
     )
 
     assert mocked_log.call_count == 2
@@ -90,4 +98,32 @@ def test_main_handles_market_data_error(capsys):
     output = capsys.readouterr().out
 
     assert "API unavailable" in output
-  
+
+
+def test_main_stops_on_invalid_config(capsys):
+    with patch.object(
+        app,
+        "load_config",
+        side_effect=ConfigError("mode muss 'paper' sein"),
+    ), patch.object(
+        app,
+        "fetch_pools_by_age",
+    ) as mocked_market, patch.object(
+        app,
+        "scan_pool_security",
+    ) as mocked_scan, patch.object(
+        app,
+        "log_event",
+    ) as mocked_log:
+
+        exit_code = app.main()
+
+    assert exit_code == 2
+
+    mocked_market.assert_not_called()
+    mocked_scan.assert_not_called()
+
+    mocked_log.assert_called_once()
+    assert mocked_log.call_args.args[0] == "config_error"
+
+    assert "Fehler in der Konfiguration" in capsys.readouterr().out

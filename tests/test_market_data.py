@@ -5,8 +5,13 @@ from unittest.mock import Mock, patch
 import pytest
 import requests
 
+import copy
+
+from desk.config import load_config
 from desk.market_data import (
+    SECURITY_CHECKS,
     MarketDataError,
+    fetch_pools_by_age,
     fetch_new_pools,
     fetch_token_market_caps,
     prepare_pool,
@@ -15,6 +20,7 @@ from desk.market_data import (
 
 QUOTE_SOL = "So11111111111111111111111111111111111111112"
 NOW = datetime(2026, 11, 3, 12, 0, tzinfo=timezone.utc)
+CONFIG = load_config()
 
 
 def make_pool(**overrides):
@@ -88,7 +94,7 @@ def test_fetch_new_pools_rejects_invalid_page():
 # --------------------------------------------------
 
 def test_prepare_pool_marks_missing_security_checks():
-    result = prepare_pool(make_pool(), now=NOW)
+    result = prepare_pool(make_pool(), CONFIG, now=NOW)
 
     assert result["pair_age_hours"] == 48
     assert result["token_address"] == "TokenMintAddress123"
@@ -105,7 +111,7 @@ def test_prepare_pool_rejects_low_liquidity_and_zero_activity():
         transactions_24h=0,
     )
 
-    result = prepare_pool(pool, now=NOW)
+    result = prepare_pool(pool, CONFIG, now=NOW)
 
     assert result["status"] == "rejected"
     assert "liquidity_below_minimum" in result["rejection_reasons"]
@@ -120,7 +126,7 @@ def test_prepare_pool_does_not_guess_unknown_token_pair():
         ]
     )
 
-    result = prepare_pool(pool, now=NOW)
+    result = prepare_pool(pool, CONFIG, now=NOW)
 
     assert result["token_address"] is None
     assert "unambiguous_base_token" in result["missing_checks"]
@@ -212,6 +218,7 @@ def test_prepare_pools_fetches_and_assigns_market_caps():
     ):
         results = prepare_pools(
             [make_pool()],
+            CONFIG,
             now=NOW,
         )
 
@@ -227,6 +234,7 @@ def test_prepare_pools_handles_missing_market_cap():
     ):
         results = prepare_pools(
             [make_pool()],
+            CONFIG,
             now=NOW,
         )
 
@@ -242,6 +250,7 @@ def test_prepare_pools_handles_geckoterminal_errors_safely():
     ):
         results = prepare_pools(
             [make_pool()],
+            CONFIG,
             now=NOW,
         )
 
@@ -251,105 +260,132 @@ def test_prepare_pools_handles_geckoterminal_errors_safely():
     assert "market_data_error" in results[0]
     assert results[0]["status"] == "incomplete"
 
+
 # --------------------------------------------------
-# RugCheck-Integration
+# Konfiguration und einheitliche Prüfkette
 # --------------------------------------------------
 
-def make_security_data(**overrides):
-    security = {
-        "mint_authority_revoked": True,
-        "freeze_authority_revoked": True,
-        "lp_burned_or_locked": True,
-        "lp_locked_pct": 100,
-        "creator_share_sampled_pct": 5,
-        "top10_share_sampled_pct": 30,
-        "owner_attribution_complete": True,
-        "top10_share_fully_verified": False,
-    }
-    security.update(overrides)
-    return security
-
-
-def test_prepare_pool_uses_confirmed_rugcheck_data():
+def test_prepare_pool_marks_all_security_checks_as_open():
     result = prepare_pool(
         make_pool(),
+        CONFIG,
         now=NOW,
         market_caps={"tokenmintaddress123": 150000},
-        security_data=make_security_data(),
     )
 
-    assert "mint_authority_revoked" not in result["missing_checks"]
-    assert "freeze_authority_revoked" not in result["missing_checks"]
-    assert "lp_burned_or_locked" not in result["missing_checks"]
-    assert result["security_data"] is not None
+    for check in SECURITY_CHECKS:
+        assert check in result["missing_checks"]
 
-
-def test_prepare_pool_rejects_active_authorities():
-    result = prepare_pool(
-        make_pool(),
-        now=NOW,
-        security_data=make_security_data(
-            mint_authority_revoked=False,
-            freeze_authority_revoked=False,
-        ),
-    )
-
-    assert result["status"] == "rejected"
-    assert "mint_authority_active" in result["rejection_reasons"]
-    assert "freeze_authority_active" in result["rejection_reasons"]
-
-
-def test_prepare_pool_keeps_unknown_security_data_incomplete():
-    result = prepare_pool(
-        make_pool(),
-        now=NOW,
-        security_data=make_security_data(
-            mint_authority_revoked=None,
-            freeze_authority_revoked=None,
-            lp_burned_or_locked=None,
-        ),
-    )
-
+    assert "security_data" not in result
     assert result["status"] == "incomplete"
-    assert "mint_authority_revoked" in result["missing_checks"]
-    assert "freeze_authority_revoked" in result["missing_checks"]
-    assert "lp_burned_or_locked" in result["missing_checks"]
 
 
-def test_prepare_pool_does_not_treat_sampled_top10_as_verified():
-    result = prepare_pool(
-        make_pool(),
-        now=NOW,
-        security_data=make_security_data(
-            top10_share_sampled_pct=30,
-            top10_share_fully_verified=False,
-        ),
-    )
+def test_prepare_pool_uses_liquidity_threshold_from_config():
+    config = copy.deepcopy(CONFIG)
+    config["risk_filters"]["reject_liquidity_below_usd"] = 60000
 
-    assert "top10_share_pct" in result["missing_checks"]
+    strict = prepare_pool(make_pool(liquidity_usd=50000), config, now=NOW)
+    default = prepare_pool(make_pool(liquidity_usd=50000), CONFIG, now=NOW)
+
+    assert "liquidity_below_minimum" in strict["rejection_reasons"]
+    assert "liquidity_below_minimum" not in default["rejection_reasons"]
 
 
-def test_prepare_pools_limits_rugcheck_requests_to_ten():
-    pools = []
+def test_prepare_pool_uses_age_window_from_config():
+    config = copy.deepcopy(CONFIG)
+    config["scanner"]["pair_age_hours_min"] = 50
 
-    for index in range(12):
-        pool = make_pool()
-        pool["tokens"][1]["id"] = f"TokenMintAddress{index}"
-        pools.append(pool)
+    result = prepare_pool(make_pool(), config, now=NOW)
+
+    assert "pair_age_out_of_range" in result["rejection_reasons"]
+
+
+def test_market_data_module_no_longer_runs_security_checks():
+    import desk.market_data as market_data
+
+    assert not hasattr(market_data, "check_token_security")
+
+
+def test_fetch_pools_by_age_uses_given_thresholds():
+    response = Mock()
+    response.raise_for_status.return_value = None
+    response.json.return_value = {
+        "results": [{"id": "pool-1"}],
+        "has_next_page": False,
+    }
 
     with patch(
-        "desk.market_data.fetch_token_market_caps",
-        return_value={},
+        "desk.market_data.time.time",
+        return_value=1_000_000,
     ), patch(
-        "desk.market_data.check_token_security",
-        return_value=make_security_data(),
-    ) as mocked_security:
-        results = prepare_pools(
-            pools,
-            security_checks_enabled=True,
-            max_security_checks=10,
-            now=NOW,
+        "desk.market_data.requests.get",
+        return_value=response,
+    ) as mocked_get:
+        result = fetch_pools_by_age(
+            min_age_hours=30,
+            max_age_hours=72,
+            min_liquidity_usd=40000,
         )
 
-    assert len(results) == 12
-    assert mocked_security.call_count == 10
+    params = mocked_get.call_args.kwargs["params"]
+
+    assert params["created_after"] == 1_000_000 - 72 * 3600
+    assert params["created_before"] == 1_000_000 - 30 * 3600
+    assert params["liquidity_usd_min"] == 40000
+    assert result["liquidity_filter_usd"] == 40000
+    assert len(result["results"]) == 1
+
+
+def test_fetch_pools_by_age_keeps_time_window_across_pages():
+    first = Mock()
+    first.raise_for_status.return_value = None
+    first.json.return_value = {
+        "results": [{"id": "pool-1"}],
+        "has_next_page": True,
+        "next_cursor": "cursor-2",
+    }
+
+    second = Mock()
+    second.raise_for_status.return_value = None
+    second.json.return_value = {
+        "results": [{"id": "pool-2"}],
+        "has_next_page": False,
+    }
+
+    with patch(
+        "desk.market_data.time.time",
+        side_effect=[1_000_000, 1_000_500, 1_001_000],
+    ), patch(
+        "desk.market_data.time.sleep",
+    ), patch(
+        "desk.market_data.requests.get",
+        side_effect=[first, second],
+    ) as mocked_get:
+        result = fetch_pools_by_age(
+            min_age_hours=30,
+            max_age_hours=72,
+            min_liquidity_usd=40000,
+        )
+
+    windows = [
+        (
+            call.kwargs["params"]["created_after"],
+            call.kwargs["params"]["created_before"],
+        )
+        for call in mocked_get.call_args_list
+    ]
+
+    assert windows[0] == windows[1]
+    assert mocked_get.call_args_list[1].kwargs["params"]["cursor"] == (
+        "cursor-2"
+    )
+    assert len(result["results"]) == 2
+
+
+def test_fetch_pools_by_age_rejects_inverted_window():
+    with pytest.raises(ValueError):
+        fetch_pools_by_age(
+            min_age_hours=80,
+            max_age_hours=72,
+            min_liquidity_usd=40000,
+        )

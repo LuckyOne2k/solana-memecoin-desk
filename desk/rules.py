@@ -1,3 +1,12 @@
+"""Vollständige Risikoprüfung eines Kandidaten (finale Prüfstufe).
+
+Status: noch nicht angeschlossen. Gedacht für Pools, die die Prüfkette
+in desk/security_scan.py mit "ready_for_full_risk_screen" verlassen.
+Das ist derzeit nicht möglich, weil der Top-10- und Entwickler-Anteil
+nie vollständig bestätigt werden (siehe README, Projektstand).
+Alle Grenzwerte kommen aus config.yaml.
+"""
+
 
 from dataclasses import dataclass
 from typing import Optional
