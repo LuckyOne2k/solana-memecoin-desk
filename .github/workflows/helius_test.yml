@@ -24,7 +24,10 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Verbindungstest
+      - name: Abhängigkeiten installieren
+        run: pip install -r requirements.txt
+
+      - name: Validierungstest
         env:
           SOLANA_RPC_URL: ${{ secrets.SOLANA_RPC_URL }}
-        run: python .github/helius_test/connection_test.py
+        run: python .github/helius_test/validation_test.py
