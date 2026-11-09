@@ -1,124 +1,199 @@
 # Umsetzungsplan: vollständige Holder-Liste über Helius
 
-Stand: Plan, noch nicht umgesetzt. Grundlage: `docs/helius_validierung.md`.
+Stand: 2026-11-09, Plan vom Nutzer freigegeben (Entscheidungen siehe
+unten), noch nicht umgesetzt. Grundlage: `docs/helius_validierung.md`.
+
+## Entscheidungen des Nutzers (2026-11-09)
+- Freigegeben: `holders.max_pages: 30`, `holders.max_slot_span: 150`.
+- Freigegeben: Rückfall auf die Top-20-Stichprobe, wenn die vollständige
+  Abfrage fehlschlägt. Die Stichprobe darf nur ablehnen oder „unclear“
+  liefern, nie bestätigen.
+- Mehr als 30 Seiten oder Slot-Spanne überschritten → „unclear“.
+- Ein Teilergebnis wird nie als vollständige Holder-Liste behandelt.
+- Permanent Delegate (Token-2022): erkannt → „unclear“, Adresse und
+  Erweiterung protokollieren, keine Freigabe für Paper-Trading. Eine
+  endgültige Ablehnungsregel wird später gesondert entschieden.
+- Slot jeder Seite erfassen und prüfen; fehlende oder widersprüchliche
+  Slots → „unclear“.
 
 ## Unverändert
-- Prüfregeln Top-10 (25 %) und Entwickler-Anteil (3 %), Sicherheitsprüfungen,
-  Umlaufmengenregel, Grenzwerte in `config.yaml`, `mode: paper`.
-- Pool-/Burn-Zuordnung und Bewertung in `desk/holders.py` (Logik bleibt;
-  mit vollständiger Liste ist die nicht erfasste Menge 0, Unter- und
-  Obergrenze fallen zusammen).
+- Prüfregeln Top-10 (25 %) und Entwickler-Anteil (3 %), alle
+  Sicherheitsprüfungen, Umlaufmengenregel, bestehende Grenzwerte,
+  `mode: paper`.
+- Pool-/Burn-Zuordnung und Bewertungslogik in `desk/holders.py`.
 - Keine neuen Abhängigkeiten, keine kostenpflichtigen Dienste
   (Helius Free: 1 Mio. Credits/Monat).
 
-## 1. Datenabruf (neu, `desk/solana_rpc.py`)
-Neue Funktion `fetch_full_holder_list(mint, creator_address=None)`:
+## 1. Datenabruf (PR A, `desk/solana_rpc.py`)
 
-1. **Programm ermitteln:** `getAccountInfo(mint, base64, finalized)`.
-   Owner muss SPL Token oder Token-2022 sein, sonst Fehler.
-2. **Supply vorher:** `getTokenSupply(mint, finalized)` → Menge + Slot S1.
-3. **Liste:** `getProgramAccountsV2(programm, …)`, `commitment finalized`,
-   `withContext true`, `minContextSlot S1`, `limit 1000`,
-   `encoding base64`, `dataSlice {offset 32, length 40}`.
+### 1.1 Mint-Prüfung: `fetch_mint_info(mint)`
+- `getAccountInfo(mint, {encoding: jsonParsed, commitment: finalized})`.
+- Owner-Programm muss SPL Token (`Tokenkeg…`) oder Token-2022
+  (`TokenzQd…`) sein, sonst Fehler.
+- Liefert `token_program`, `decimals`, Slot und die Liste der
+  Erweiterungen (nur Token-2022).
+- Permanent Delegate: Erweiterung `permanentDelegate` vorhanden →
+  `permanent_delegate` = Adresse (oder `null`, wenn die Erweiterung
+  vorhanden, aber ohne Adresse ist; zählt trotzdem als erkannt).
+- Erweiterungsliste fehlt oder ist nicht lesbar bei Token-2022 →
+  Status „unbekannt“ (zählt als unclear, nicht als „kein Delegate“).
+
+### 1.2 Vollständige Liste: `fetch_full_holder_list(mint, mint_info, max_pages, max_slot_span)`
+1. **Supply vorher:** `getTokenSupply(mint, finalized)` → Menge A1,
+   Slot S1.
+2. **Seiten:** `getProgramAccountsV2(programm, …)` mit
+   `commitment finalized`, `withContext true`, `minContextSlot S1`,
+   `limit 1000`, `encoding base64`, `dataSlice {offset 32, length 40}`.
    - Filter klassisch: `memcmp {offset 0, bytes mint}` + `dataSize 165`.
    - Filter Token-2022: nur `memcmp` (Konten mit Erweiterungen sind
      größer als 165 Byte).
-   - Seiten über `paginationKey`, bis keiner mehr kommt.
-   - Obergrenze `holders.max_pages` (Vorschlag 30 = 30.000 Konten);
-     wird sie erreicht → Fehler „zu viele Konten“, kein Teilergebnis.
-4. **Supply nachher:** zweite `getTokenSupply` → S2. Weicht die Menge ab
-   → Fehler (Mint/Burn während der Abfrage).
-5. **Dekodieren:** je Konto 40 Byte: Owner (32 Byte → base58, eigener
-   kleiner Encoder ohne neue Abhängigkeit), Menge (u64 LE). Falsche
-   Länge oder fehlende Daten → Fehler.
-6. **Leere Konten verwerfen** (Menge 0).
+   - Weiter über `paginationKey`, bis keiner mehr kommt.
+   - Seite 31 wäre nötig → Abbruch „too_many_pages“.
+3. **Supply nachher:** `getTokenSupply` mit `minContextSlot` = höchster
+   Seiten-Slot → Menge A2, Slot S2.
+4. **Dekodieren:** je Konto genau 40 Byte: Owner (32 Byte → base58,
+   eigener Encoder ohne neue Abhängigkeit), Menge (u64 little-endian).
+5. **Leere Konten verwerfen** (Menge 0).
 
-Rückgabe im bisherigen Snapshot-Format (`accounts`, `supply_amount_raw`,
-`supply_decimals`, `sample_owner_mapping_complete`, `mint`), dazu
+### 1.3 Pflichtprüfungen
+Jede Verletzung → `SolanaRpcError` mit festem Grund. Es wird nie ein
+Teilergebnis zurückgegeben.
+
+| Prüfung | Fehlergrund |
+|---|---|
+| letzte Seite ohne `paginationKey`, höchstens 30 Seiten | `too_many_pages`, `pagination_incomplete` |
+| jede Seite hat einen ganzzahligen Slot (`context.slot`) | `page_slot_missing` |
+| jeder Seiten-Slot ≥ S1 | `page_slot_before_supply` |
+| Seiten-Slots nicht fallend | `page_slot_inconsistent` |
+| S2 ≥ höchster Seiten-Slot | `supply_slot_inconsistent` |
+| S2 − S1 ≤ `max_slot_span` (150 ≈ 1 Minute) | `slot_span_exceeded` |
+| A1 = A2 | `supply_changed` |
+| jedes Konto: 40 Byte, Owner vorhanden, gültige Menge | `invalid_account_data` |
+| Summe aller Bestände = A1 exakt | `supply_sum_mismatch` |
+
+Hinweis (nicht belegt): Ob Helius bei `getProgramAccountsV2` mit
+`withContext` je Seite einen Slot liefert, ist in den bisherigen Tests
+nicht ausdrücklich geprüft worden. Fehlt er, greift `page_slot_missing`:
+Alles bleibt dann „unclear“ und ist im ersten Scan sofort sichtbar.
+
+### 1.4 Grenzen der Summenprüfung
+- Die Seiten werden nacheinander gelesen. Das Ergebnis ist **keine
+  atomare Momentaufnahme** eines einzigen Slots.
+- Wandern Token zwischen einer schon gelesenen und einer noch nicht
+  gelesenen Seite, stimmt die Summe nicht mehr → „unclear“.
+- **Gegenläufige Überweisungen gleicher Höhe können sich rechnerisch
+  ausgleichen.** Die Summe passt dann, obwohl einzelne Bestände aus
+  verschiedenen Zeitpunkten stammen. Dieses Restrisiko wird durch die
+  Slot-Spanne begrenzt, nicht ausgeschlossen.
+- Eine Holder-Bewertung gilt nur für ihren Zeitpunkt (siehe USAR).
+
+### 1.5 Rückgabe
+Bisheriges Snapshot-Format (`mint`, `accounts`, `supply_amount_raw`,
+`supply_decimals`, `sample_owner_mapping_complete`), dazu:
 `data_scope: "full_token_account_list"`, `token_program`, `pages`,
 `accounts_total`, `accounts_nonzero`, `slot_supply_before`,
-`slot_list_min`, `slot_list_max`, `slot_supply_after`.
+`page_slots`, `slot_supply_after`, `slot_span`.
 
-## 2. Pflichtprüfungen (sonst „unclear“)
-Jede Verletzung → `SolanaRpcError` mit festem Grund, kein Teilergebnis:
-- alle Seiten geladen (letzte Seite ohne `paginationKey`), Obergrenze
-  nicht erreicht;
-- jedes Konto mit Bestand hat Owner (32 Byte) und gültige Menge;
-- jedes Konto gehört zum abgefragten Mint (durch Filter garantiert; der
-  Filter wird in Tests geprüft);
-- **Summe aller Bestände = Mint-Supply exakt**, und Supply vorher =
-  Supply nachher;
-- Slots protokolliert; Spanne über Grenzwert `holders.max_slot_span`
-  (Vorschlag 150 ≈ 1 min) → Fehler.
-
-Warum die Summenprüfung Änderungen während der Pagination erkennt:
-Wandern Token zwischen einer schon gelesenen und einer noch nicht
-gelesenen Seite, ist die Summe zu hoch oder zu niedrig. Restrisiko: zwei
-gegenläufige Überweisungen gleicher Höhe heben sich auf. Abmilderung:
-Slot-Spanne begrenzen und protokollieren.
-
-## 3. Token-2022-Sonderfälle
+## 2. Token-2022-Sonderfälle
 | Fall | Wirkung | Behandlung |
 |---|---|---|
-| Konten > 165 Byte (Erweiterungen) | `dataSize` würde sie ausschließen | kein `dataSize` bei Token-2022 |
-| Transfer-Fee (einbehaltene Gebühren) | liegen nicht in `amount` → Summe < Supply | Summenprüfung schlägt fehl → unclear (Grund `supply_sum_mismatch`) |
+| Konten > 165 Byte (Erweiterungen) | `dataSize` würde sie ausschließen | kein `dataSize` |
+| Permanent Delegate | Delegate kann Token aus jeder Wallet bewegen | **unclear**, Adresse + Erweiterung protokolliert |
+| Erweiterungen nicht lesbar | Delegate unbekannt | unclear |
+| Transfer-Fee (einbehaltene Gebühren) | nicht in `amount` → Summe < Supply | `supply_sum_mismatch` → unclear |
 | Confidential Transfer | verschlüsselte Bestände → Summe < Supply | unclear |
-| Permanent Delegate | Token jederzeit verschiebbar | wird erkannt und protokolliert (`token2022_extensions`); Bewertung unverändert, da Regeländerung nur mit Zustimmung |
-| Interest-bearing / Scaled UI Amount | Anzeige skaliert, Rohmengen nicht | nur Rohmengen verwenden |
-| Non-transferable | keine Wirkung auf Summe | keine |
-| Mint-Konto selbst | Layout beginnt mit COption-Tag, kann den Mint-Filter praktisch nicht treffen | Dekodierprüfung fängt Fehllängen ab |
+| Interest-bearing / Scaled UI Amount | nur Anzeige skaliert | nur Rohmengen verwenden |
+| Mint-Konto selbst | beginnt mit COption-Tag, trifft den Mint-Filter praktisch nicht | Dekodierprüfung fängt Fehllängen ab |
 
-Erweiterungen werden einmal aus `getAccountInfo(mint, jsonParsed)`
-gelesen (gleicher Aufruf wie Programm-Ermittlung).
+Alle erkannten Erweiterungen werden protokolliert
+(`token2022_extensions`).
 
-## 4. Einbindung (`desk/security_scan.py`)
-- `_fetch_holders` ruft zuerst `fetch_full_holder_list`.
-- Schlägt sie fehl, Rückfall auf die bisherige Top-20-Stichprobe
-  (`fetch_holder_snapshot`); Fehlergrund wird als
-  `full_holder_list_error` protokolliert. Die Stichprobe kann wie bisher
-  nur ablehnen oder unclear liefern, also kein Risiko.
-- `desk/holders.py`: Bewertungslogik unverändert. Bei vollständiger
-  Liste ist die nicht erfasste Menge 0, damit gilt Obergrenze =
-  Untergrenze. Nur `data_scope` wird aus dem Snapshot übernommen statt
-  fest „sample“.
-- Marktkapitalisierung: nutzt weiter `supply_amount_raw`; keine Änderung.
+## 3. Einbindung (PR B)
 
-## 5. Konfiguration (`config.yaml`, Zustimmung nötig)
-Neuer Abschnitt, keine Lockerung bestehender Werte:
+### 3.1 `desk/security_scan.py`
+- Je Token einmal `fetch_mint_info`, dann `fetch_full_holder_list`.
+- Schlägt die vollständige Liste fehl → Rückfall auf
+  `fetch_holder_snapshot` (Top-20). Protokolliert werden
+  `holder_source: "sample_fallback"` und `full_holder_list_error`
+  (fester Grund, nie URL oder Key).
+- Neue Pflichtprüfung `permanent_delegate_absent` in `missing_checks`:
+  - geklärt nur bei klassischem SPL-Token oder Token-2022 mit lesbarer
+    Erweiterungsliste ohne Permanent Delegate;
+  - erkannt → bleibt offen, Grund `permanent_delegate_present`,
+    `permanent_delegate` (Adresse) und Erweiterung im Protokoll;
+  - Mint-Abfrage fehlgeschlagen oder Erweiterungen unbekannt → bleibt
+    offen.
+  - Folge: Status höchstens `incomplete`, nie
+    `ready_for_full_risk_screen`. Keine Ablehnung (spätere
+    Entscheidung).
+
+### 3.2 `desk/holders.py`
+- Bewertungslogik unverändert.
+- Neu: Bestätigen (`confirmed`) nur, wenn
+  `data_scope == "full_token_account_list"` **und** die nicht erfasste
+  Menge 0 ist. Bei der Stichprobe oder beim Rückfall sind nur
+  `rejected` oder `unclear` möglich, auch wenn die Obergrenze unter dem
+  Limit liegt (Grund `sample_cannot_confirm`).
+- Das ist strenger als bisher: Heute könnte eine Stichprobe mit
+  vollständiger Abdeckung bestätigen. Das entspricht der Bedingung des
+  Nutzers.
+- `data_scope` und `is_complete_distribution` kommen aus dem Snapshot,
+  nicht mehr fest „sample“.
+
+### 3.3 Marktkapitalisierung
+Nutzt weiter `supply_amount_raw`, keine Änderung.
+
+## 4. Konfiguration (freigegeben)
 ```yaml
 holders:
-  source: helius_full_list   # Rückfall: Top-20-Stichprobe
   max_pages: 30
   max_slot_span: 150
 ```
-`desk/config.py` prüft Typ und Bereich (positive Ganzzahlen).
+`desk/config.py`: Abschnitt Pflicht, beide Werte positive Ganzzahlen
+(kein bool), sonst Programmstopp. Werte dürfen nicht stillschweigend
+ersetzt werden.
 
-## 6. Tests (alle ohne Netzwerk, gemockt)
-- Pagination: 1, 3 und 30 Seiten; 31. Seite → Fehler.
-- Summe exakt / zu hoch / zu niedrig; Supply vorher ≠ nachher.
-- Leere Konten gefiltert; mehrere Konten je Owner aggregiert.
-- Dekodierung: bekannter Owner/Menge, falsche Länge, fehlende Daten.
-- Klassisch mit `dataSize 165`, Token-2022 ohne; fremdes Programm → Fehler.
-- Slot-Spanne über Grenze → Fehler.
-- Rückfall auf Stichprobe bei Fehler; Fehler ohne URL/Key in Meldungen.
-- `holders.py`: vollständige Liste → bestätigt bei ≤ 25 % / ≤ 3 %,
-  abgelehnt darüber; Pool/Burn weiter herausgerechnet.
-- Alle bestehenden Tests unverändert grün.
+## 5. Tests (ohne Netzwerk, gemockt)
+PR A:
+- Pagination: 1, 3 und 30 Seiten ok; 31. Seite → `too_many_pages`.
+- Slots: fehlend, kein int, < S1, fallend, S2 < Seiten-Slot, Spanne 151
+  → jeweils Fehler; Spanne 150 → ok.
+- Supply: A1 ≠ A2; Summe zu hoch, zu niedrig, exakt.
+- Leere Konten gefiltert; mehrere Konten je Owner bleiben einzeln
+  erhalten (Aggregation in `holders.py`).
+- Dekodierung: bekannter Owner/Menge, falsche Länge, fehlende Daten,
+  base58-Encoder gegen bekannte Adressen.
+- Filter: klassisch mit `dataSize 165`, Token-2022 ohne; fremdes
+  Programm → Fehler.
+- Mint-Info: Permanent Delegate erkannt (mit/ohne Adresse),
+  Erweiterungen fehlen → unbekannt, klassischer Token → keine.
+- Fehlermeldungen enthalten nie URL/Key.
 
-## 7. Verbrauch
+PR B:
+- Vollständige Liste → bestätigt bei ≤ 25 % / ≤ 3 %, abgelehnt darüber.
+- Stichprobe und Rückfall: nie `confirmed`, Ablehnung weiter möglich.
+- Rückfall wird bei jedem Fehlergrund aus 1.3 genutzt und protokolliert.
+- Permanent Delegate → Status `incomplete`, nie bereit, keine Ablehnung.
+- Config: fehlender Abschnitt, 0, negativ, bool → Programmstopp.
+- Alle bestehenden Tests grün; angepasst werden nur Tests, die bisher
+  eine Bestätigung durch die Stichprobe erwarten (im PR einzeln
+  aufgeführt).
+
+## 6. Verbrauch
 Je Token: 1 `getAccountInfo` + 2 `getTokenSupply` + Seiten (meist 1–5)
-≈ 4–8 Credits. 10 Token je Lauf ≈ 80 Credits; selbst stündlich
-≈ 58.000 Credits/Monat (≈ 6 % des Freikontingents).
+≈ 4–8 Credits; Rückfall + 3 Credits. 10 Token je Lauf ≈ 80–110 Credits;
+selbst stündlich ≈ 80.000 Credits/Monat (≈ 8 % des Freikontingents).
 
-## 8. Ablauf
-1. PR A: Abruf + Pflichtprüfungen + Tests (ohne Einbindung).
-2. PR B: Einbindung, Config-Abschnitt, Rückfall, Tests, README/CLAUDE.md.
+## 7. Ablauf
+1. PR A: Mint-Info, vollständige Liste, Pflichtprüfungen, Tests. Noch
+   nicht eingebunden, Scan-Verhalten unverändert.
+2. PR B: Einbindung, Config-Abschnitt, Rückfall, Permanent-Delegate-
+   Prüfung, Stichprobe darf nicht bestätigen, README/CLAUDE.md.
 3. Ein manueller Scan über GitHub Actions; Auswertung mit
    `scan-auswertung`, Credits im Helius-Dashboard prüfen.
-4. Danach entscheidet der Nutzer über die Löschung des Test-Branches.
+4. Danach Entscheidung über die Löschung des Test-Branches.
 
-## Offene Entscheidungen des Nutzers
-- Neue Config-Werte (`max_pages` 30, `max_slot_span` 150) freigeben?
-- Rückfall auf Top-20-Stichprobe behalten (Vorschlag: ja)?
-- Permanent Delegate nur protokollieren (Vorschlag) oder später als
-  eigene Ablehnungsregel (Regeländerung)?
+## Später gesondert zu entscheiden
+- Endgültige Ablehnungsregel für Permanent Delegate.
+- Weitere riskante Token-2022-Erweiterungen (z. B. Transfer Hook, der
+  Verkäufe blockieren könnte): werden protokolliert, aber nicht bewertet.

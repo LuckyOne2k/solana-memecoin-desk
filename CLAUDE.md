@@ -73,6 +73,7 @@
 - 2026-11-09 – Helius validiert (nur Test-Branch, ca. 204 Credits): `getProgramAccountsV2` und DAS `getTokenAccounts` liefern für Token-2022 (NAOF, PAD, USAR) und klassische SPL-Token (MAGGIE, TAOLF) alle Konten mit Eigentümer; Summe = Mint-Supply exakt; V2 liefert zusätzlich leere Konten. USAR-Widerspruch: Verteilung hat sich durch Kurssturz (−99,999 %, Pool hält danach 99,65 %) geändert; alte Methode liefert auf gleicher Datenbasis korrekte Werte.
 - 2026-11-09 – PR #7 gemergt: API-Key nicht mehr in RPC-Fehlermeldungen. PR #9 gemergt: Testdateien von `main` entfernt (PR #8 war versehentlich gemergt), kein stilles Zurückfallen auf die öffentliche RPC.
 - 2026-11-09 – PR #1 geschlossen (keine eigenständigen Änderungen). Testergebnisse dauerhaft in `docs/helius_validierung.md`, Umsetzungsplan in `docs/helius_integration_plan.md`. Helius-Integration grundsätzlich freigegeben; Umsetzung erst nach Freigabe des Plans.
+- 2026-11-09 – Plan-Entscheidungen: `holders.max_pages: 30` und `holders.max_slot_span: 150` freigegeben; Rückfall auf Top-20-Stichprobe erlaubt, Stichprobe darf aber nur ablehnen oder „unclear“ liefern, nie bestätigen; > 30 Seiten, Slot-Spanne überschritten, fehlende/widersprüchliche Slots → „unclear“; kein Teilergebnis gilt als vollständige Liste. Permanent Delegate (Token-2022) → „unclear“, Adresse + Erweiterung protokollieren, nie bereit; endgültige Ablehnungsregel später gesondert. Summenprüfung ist keine atomare Momentaufnahme (gegenläufige Überweisungen können sich ausgleichen).
 
 ## Offene Probleme
 - Praktisch wird kein Token „bereit“: Die 20 größten Konten erfassen oft unter 50 % der Menge (Abhilfe: vollständige Holder-Liste über Helius, noch nicht eingebaut), GeckoTerminal meldet die Umlaufmenge nur für etwa 5 % der Token (keine nachvollziehbare Alternative, Nutzer entscheidet).
@@ -83,4 +84,4 @@
 - Offene Fragen: Repo öffentlich oder privat? Was ist im 20-€-Budget schon enthalten?
 
 ## Nächster Schritt
-Freigabe des Plans `docs/helius_integration_plan.md` (offene Punkte: Config-Werte `max_pages`/`max_slot_span`, Rückfall auf Stichprobe, Permanent Delegate). Danach PR A (Abruf + Pflichtprüfungen + Tests), dann PR B (Einbindung). Prüfregeln (25 % / 3 %) und Umlaufmengenregel unverändert.
+Umsetzung nach `docs/helius_integration_plan.md` in zwei getrennten PRs: PR A (Mint-Info, vollständige Liste, Pflichtprüfungen inkl. Slots, Tests; noch nicht eingebunden), dann PR B (Einbindung, Config `holders`, Rückfall, Permanent-Delegate-Prüfung, Stichprobe darf nicht bestätigen). Prüfregeln (25 % / 3 %) und Umlaufmengenregel unverändert. Nutzer merged selbst.
