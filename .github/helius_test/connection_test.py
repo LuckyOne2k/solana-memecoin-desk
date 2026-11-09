@@ -81,13 +81,13 @@ def rpc(method, params):
     body = json.dumps(
         {"jsonrpc": "2.0", "id": 1, "method": method, "params": params}
     ).encode()
-    request = urllib.request.Request(
-        URL,
-        data=body,
-        headers={"Content-Type": "application/json"},
-    )
     started = time.monotonic()
     try:
+        request = urllib.request.Request(
+            URL,
+            data=body,
+            headers={"Content-Type": "application/json"},
+        )
         with urllib.request.urlopen(request, timeout=60) as response:
             status = response.status
             raw = response.read()
@@ -115,6 +115,22 @@ def section(title):
     say("=" * 70)
     say(title)
     say("=" * 70)
+
+
+def secret_shape():
+    """Nur Strukturmerkmale, nie Inhalt."""
+    section("0) Aufbau des Secrets (ohne Inhalt)")
+    raw = os.environ.get("SOLANA_RPC_URL", "")
+    say("Länge:", len(raw))
+    say("Leerzeichen/Zeilenumbruch am Rand:", raw != raw.strip())
+    say("Anführungszeichen enthalten:", '"' in raw or "'" in raw)
+    say("Beginnt mit https://:", raw.strip().startswith("https://"))
+    say("Beginnt mit http://:", raw.strip().startswith("http://"))
+    say("Enthält '://':", "://" in raw)
+    say("Enthält 'helius':", "helius" in raw.lower())
+    say("Enthält 'api-key=':", "api-key=" in raw)
+    say("Nur Buchstaben/Ziffern/Bindestrich:",
+        bool(raw.strip()) and all(c.isalnum() or c == "-" for c in raw.strip()))
 
 
 def connection_check():
@@ -299,6 +315,7 @@ def main():
         say("FEHLER: SOLANA_RPC_URL ist nicht gesetzt.")
         return 1
     _init_redaction()
+    secret_shape()
     if not connection_check():
         say("Verbindung fehlgeschlagen, Token-Test übersprungen.")
         return 1
