@@ -240,7 +240,12 @@ def _evaluate_item(item, data, config, counters):
             burned_amount_raw=holders.get("burned_amount_raw", 0),
         )
         item["market_cap_evaluation"] = market_cap
+        # Nur ein bestätigter oder bewiesener Wert; die Obergrenze steht
+        # getrennt in market_cap_upper_bound_usd.
         item["market_cap_usd"] = market_cap["market_cap_usd"]
+        item["market_cap_upper_bound_usd"] = market_cap[
+            "market_cap_upper_bound_usd"
+        ]
         item["market_cap_basis"] = market_cap["basis"]
 
         if market_cap["status"] == CONFIRMED:

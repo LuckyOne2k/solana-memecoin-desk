@@ -10,11 +10,9 @@ scanner:
   pair_age_hours_max: 72
   market_cap_usd_min: 300000
   market_cap_usd_max: 20000000
-  # Darf eine Schätzung (Preis x Gesamtmenge abzüglich nachweislich
-  # verbrannter Token) die Marktkapitalisierungs-Prüfung bestehen?
-  # Die Schätzung ist eine Obergrenze und wird im Protokoll als
-  # "estimate_total_supply" gekennzeichnet.
-  market_cap_allow_total_supply_estimate: true
+  # Bestehen nur mit gemeldeter Umlaufmenge. Die Schätzung aus der
+  # Gesamtmenge ist eine Obergrenze und kann nur eine Ablehnung
+  # begründen (siehe desk/market_cap.py).
   # Höchstzahl RugCheck-/Holder-Prüfungen pro Lauf (bisher fest im Code)
   max_security_checks_per_run: 10
 

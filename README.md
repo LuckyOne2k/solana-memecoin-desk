@@ -30,7 +30,7 @@ values stop the program; `mode` must be `paper`.
 | Token classification (`desk/token_classification.py`) | active: stablecoins and staking tokens excluded by verified mint address |
 | Liquidity cross-check (`desk/data_quality.py`) | active: DexPaprika vs. RugCheck for the same pool |
 | Holder distribution (`desk/holders.py`) | active: owner aggregation, pool/burn exclusion, confirmation rules |
-| Market cap (`desk/market_cap.py`) | active: reported vs. estimated, FDV separate |
+| Market cap (`desk/market_cap.py`) | active: passes only with reported circulating supply; upper bound can only reject; FDV separate |
 | `desk/rules.py`, `desk/risk.py`, `desk/debate.py` | kept, not wired yet |
 | Paper trading, strategy, AI agents, app | not implemented |
 
@@ -47,30 +47,35 @@ leaves the pool `incomplete`.
   liquidity for the same pool. Deviation above
   `data_quality.max_liquidity_deviation_pct` → unclear. If both agree, the
   lower value must reach `reject_liquidity_below_usd`.
-- **Holders:** the 20 largest token accounts (Solana RPC) are mapped to their
-  owners and aggregated per owner. Excluded are only pool accounts (RugCheck
-  pool vaults, market addresses, accounts labelled AMM, the DexPaprika pool
-  address) and provable burn owners (incinerator, system program). Exchange
-  and locker accounts are shown separately but still counted; unknown
-  accounts are always counted. Shares are relative to total supply minus
-  provable burns. The top-10 share is confirmed only if all accounts are
-  mapped, RugCheck labels are complete, and at least 10 counted owners are in
-  the sample (or the sample contains all accounts). Exceeding 25 % rejects
-  even when unconfirmed.
-- **Developer share:** creator from RugCheck. If the creator is not among the
-  20 largest accounts, the smallest sampled account is used as upper bound.
-- **Market cap:** price (GeckoTerminal, cross-checked with RugCheck within
-  `data_quality.max_price_deviation_pct`) times supply.
-  - `reported_circulating_supply`: market cap reported by GeckoTerminal
-    (preferred; marked unclear as implausible if it exceeds the value of
-    all non-burned tokens).
-  - `estimate_total_supply`: price × on-chain total supply minus provable
-    burns. This is an upper bound of the real market cap and is always
-    marked as estimate. Below the minimum → rejected; above the maximum →
-    unclear; in range → accepted only if
-    `scanner.market_cap_allow_total_supply_estimate` is true.
-  - FDV (DexPaprika, GeckoTerminal, on-chain) is logged separately and never
-    used as market cap.
+- **Holders:** the largest token accounts (up to 20, Solana RPC) are a
+  *sample*, never reported as the full owner distribution. Accounts are
+  mapped to their owners and aggregated per owner. Excluded are only pool
+  accounts (RugCheck pool vaults, market addresses, accounts labelled AMM,
+  the DexPaprika pool address) and provable burn owners (incinerator,
+  system program). Exchange and locker accounts are shown separately but
+  still counted; unknown accounts are always counted.
+  The unseen amount (total supply minus all sampled accounts) is exact,
+  because the total supply comes from the chain. Shares are relative to total
+  supply minus provable burns:
+  - top-10 lower bound = 10 largest counted owners in the sample,
+  - top-10 upper bound = lower bound + entire unseen amount (worst case: all
+    unseen tokens belong to top-10 owners, e.g. via further accounts).
+  Lower bound above 25 % → rejected. Upper bound at most 25 % with complete
+  owner mapping and complete RugCheck labels → confirmed. Otherwise the check
+  stays `incomplete`.
+- **Developer share:** creator from RugCheck. Lower bound = creator holdings in
+  the sample, upper bound = lower bound + unseen amount. Same decision rule
+  with the 3 % limit.
+- **Market cap:** price from GeckoTerminal, cross-checked with RugCheck
+  (`data_quality.max_price_deviation_pct`). Conflicting or missing prices
+  always leave the check unclear, even if a market cap is reported.
+  - Upper bound = price × (on-chain total supply − provable burns). It can
+    only reject (upper bound below the minimum); it never passes the check.
+  - Passing requires the market cap reported by GeckoTerminal
+    (`reported_circulating_supply`), two agreeing price sources, the on-chain
+    supply, and a reported value not above the upper bound.
+  - FDV (DexPaprika, GeckoTerminal, on-chain) and the upper bound are logged
+    separately and never used as market cap.
 
 Known limitations: wallets of the same person cannot be linked; holdings of
 an owner outside the 20 largest accounts are not seen; tokens still on the

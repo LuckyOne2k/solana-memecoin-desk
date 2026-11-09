@@ -1,10 +1,11 @@
-"""Holder-Verteilung: Zuordnung, Aggregation und Bestätigung.
+"""Holder-Verteilung: Zuordnung, Aggregation und belegbare Grenzen.
 
-Datengrundlage: die 20 größten Token-Konten von der Blockchain
+Datengrundlage: die bis zu 20 größten Token-Konten von der Blockchain
 (desk/solana_rpc.py), ergänzt um Kennzeichnungen aus RugCheck
-(desk/security.py).
+(desk/security.py). Das ist eine STICHPROBE, keine vollständige
+Eigentümerverteilung, und wird nie als solche ausgegeben.
 
-Regeln:
+Zuordnung:
 - Token-Konten werden ihrem Eigentümer (owner) zugeordnet und je
   Eigentümer zusammengezählt.
 - Herausgerechnet werden nur
@@ -13,23 +14,33 @@ Regeln:
     DexPaprika-Pool) bzw. von RugCheck als AMM gekennzeichnet;
   * Burn-Konten: Eigentümer ist eine Adresse, von der Token
     nachweislich nicht mehr bewegt werden können.
-- Börsenkonten werden nur bei ausdrücklicher Kennzeichnung erkannt,
-  gesondert ausgewiesen, aber weiterhin mitgezählt (vorsichtig).
-- Unbekannte Konten werden immer mitgezählt.
-- Anteile beziehen sich auf die Gesamtmenge abzüglich nachweislich
-  verbrannter Token. Pool-Bestände bleiben im Nenner (übliche
-  Konvention); der Anteil am Bestand außerhalb der Pools wird
-  zusätzlich zur Information ausgewiesen.
+- Börsen- und Locker-Konten werden nur bei ausdrücklicher
+  Kennzeichnung erkannt, gesondert ausgewiesen und weiterhin
+  mitgezählt. Unbekannte Konten werden immer mitgezählt.
 
-Bestätigt ist der Top-10-Anteil nur, wenn
-- alle Konten der Stichprobe gültig einem Eigentümer zugeordnet sind,
-- die RugCheck-Kennzeichnungen vollständig gelesen wurden und
-- mindestens 10 mitgezählte Eigentümer in der Stichprobe stehen oder
-  die Stichprobe alle Konten umfasst (weniger als 20 Konten).
+Grenzen statt Annahmen:
+- Nicht erfasste Menge U = Gesamtmenge - Summe aller erfassten Konten
+  (exakt, weil die Gesamtmenge von der Blockchain kommt). Konten mit
+  ungültiger Zuordnung zählen zu U.
+- Anteile beziehen sich auf N = Gesamtmenge - nachweislich verbrannt.
+- Top-10-Untergrenze = größte 10 mitgezählte Eigentümer der
+  Stichprobe / N. Die echten Bestände sind mindestens so groß.
+- Top-10-Obergrenze = (größte 10 der Stichprobe + U) / N. Schlimmster
+  Fall: alle nicht erfassten Token gehören den Top-10-Eigentümern
+  (z. B. über weitere Konten desselben Eigentümers).
+- Creator analog: Untergrenze = erfasster Bestand, Obergrenze =
+  erfasster Bestand + U.
 
-Bekannte Grenze: Hält ein Eigentümer außerhalb der 20 größten Konten
-weitere Konten, sind diese nicht enthalten. Verschiedene Wallets
-derselben Person können nicht erkannt werden.
+Entscheidung:
+- Untergrenze über dem Limit -> abgelehnt (bewiesen).
+- Obergrenze höchstens am Limit, vollständige Zuordnung und
+  vollständige RugCheck-Kennzeichnung -> bestätigt (bewiesen, ohne
+  Annahme über nicht erfasste Konten).
+- Sonst -> unklar; die Prüfung bleibt unvollständig.
+
+Verbleibende Vertrauensannahme: Konten, die als Pool oder Burn erkannt
+werden, gehören tatsächlich keinem Holder. Verschiedene Wallets
+derselben Person sind nicht erkennbar.
 """
 
 
@@ -41,7 +52,6 @@ BURN_OWNERS = {
     "11111111111111111111111111111111": "system_program",
 }
 
-FULL_SAMPLE_SIZE = 20
 TOP_N = 10
 
 POOL = "pool"
@@ -51,9 +61,17 @@ EXCHANGE = "exchange"
 LOCKER = "locker"
 UNKNOWN = "unknown"
 
+CONFIRMED = "confirmed"
+REJECTED = "rejected"
+UNCLEAR = "unclear"
+
 
 def _pct(amount, base):
     return round(amount / base * 100, 6) if base > 0 else None
+
+
+def _valid_int(value):
+    return isinstance(value, int) and not isinstance(value, bool)
 
 
 def _labels(security):
@@ -96,6 +114,23 @@ def classify_account(row, labels, pool_address, creator_address):
     return UNKNOWN
 
 
+def _valid_rows(accounts):
+    """Nur vollständige Zeilen; alles andere zählt als nicht erfasst."""
+    rows = []
+
+    for row in accounts:
+        if (
+            isinstance(row, dict)
+            and isinstance(row.get("address"), str)
+            and isinstance(row.get("owner"), str)
+            and _valid_int(row.get("amount"))
+            and row["amount"] >= 0
+        ):
+            rows.append(row)
+
+    return rows
+
+
 def evaluate_holders(*, snapshot, security, pool_address, risk_filters):
     top10_limit = risk_filters["reject_top10_share_above_pct"]
     dev_limit = risk_filters["reject_dev_share_above_pct"]
@@ -107,46 +142,48 @@ def evaluate_holders(*, snapshot, security, pool_address, risk_filters):
         else None
     )
 
-    accounts = snapshot.get("accounts")
-    supply = snapshot.get("supply_amount_raw")
-    returned = snapshot.get("largest_accounts_returned")
+    accounts = snapshot.get("accounts") if isinstance(snapshot, dict) else None
+    supply = snapshot.get("supply_amount_raw") if isinstance(snapshot, dict) else None
 
     result = {
-        "top10_status": "unclear",
-        "dev_status": "unclear",
+        "data_scope": "largest_token_accounts_sample",
+        "is_complete_distribution": False,
+        "top10_status": UNCLEAR,
+        "dev_status": UNCLEAR,
         "rejection_reasons": [],
         "unconfirmed_reasons": [],
     }
 
     if (
         not isinstance(accounts, list)
-        or not isinstance(supply, int)
-        or isinstance(supply, bool)
+        or not _valid_int(supply)
         or supply <= 0
-        or not isinstance(returned, int)
     ):
         result["unconfirmed_reasons"].append("holder_snapshot_incomplete")
         return result
 
-    sample_complete = snapshot.get("sample_owner_mapping_complete") is True
+    rows = _valid_rows(accounts)
 
-    if not sample_complete:
+    if len(rows) != len(accounts):
+        result["unconfirmed_reasons"].append("invalid_account_rows")
+
+    mapping_complete = (
+        snapshot.get("sample_owner_mapping_complete") is True
+        and len(rows) == len(accounts)
+    )
+
+    if not mapping_complete:
         result["unconfirmed_reasons"].append("owner_mapping_incomplete")
 
     if labels is None:
         result["unconfirmed_reasons"].append("pool_labels_missing")
-        labels = {
-            "pool_vault_accounts": [],
-            "pool_owner_addresses": [],
-            "exchange_addresses": [],
-            "locker_addresses": [],
-            "labels_complete": False,
-        }
+        labels = {"labels_complete": False}
     elif labels.get("labels_complete") is not True:
         result["unconfirmed_reasons"].append("pool_labels_incomplete")
 
+    labels_complete = labels.get("labels_complete") is True
+
     labels = {
-        **labels,
         "pool_vault_accounts": set(labels.get("pool_vault_accounts") or []),
         "pool_owner_addresses": set(labels.get("pool_owner_addresses") or []),
         "exchange_addresses": set(labels.get("exchange_addresses") or []),
@@ -157,7 +194,7 @@ def evaluate_holders(*, snapshot, security, pool_address, risk_filters):
     burn_amount = 0
     owners = {}
 
-    for row in accounts:
+    for row in rows:
         category = classify_account(row, labels, pool_address, creator)
 
         if category == POOL:
@@ -170,10 +207,18 @@ def evaluate_holders(*, snapshot, security, pool_address, risk_filters):
 
         entry = owners.setdefault(
             row["owner"],
-            {"owner": row["owner"], "amount": 0, "category": category},
+            {"owner": row["owner"], "amount": 0, "accounts": 0, "category": category},
         )
         entry["amount"] += row["amount"]
+        entry["accounts"] += 1
 
+    sampled_total = sum(row["amount"] for row in rows)
+
+    if sampled_total > supply:
+        result["unconfirmed_reasons"].append("sample_exceeds_supply")
+        return result
+
+    unseen = supply - sampled_total
     effective_supply = supply - burn_amount
 
     if effective_supply <= 0:
@@ -185,45 +230,32 @@ def evaluate_holders(*, snapshot, security, pool_address, risk_filters):
         key=lambda entry: entry["amount"],
         reverse=True,
     )
-
     top = ranked[:TOP_N]
     top_amount = sum(entry["amount"] for entry in top)
-    non_pool_supply = effective_supply - pool_amount
 
-    full_holder_set = returned < FULL_SAMPLE_SIZE
-    enough_owners = len(ranked) >= TOP_N or full_holder_set
-
-    if not enough_owners:
-        result["unconfirmed_reasons"].append("fewer_than_10_counted_owners_in_sample")
-
-    top10_confirmed = (
-        sample_complete
-        and labels["labels_complete"] is True
-        and enough_owners
-    )
-
-    top10_pct = _pct(top_amount, effective_supply)
+    top10_lower = _pct(top_amount, effective_supply)
+    top10_upper = _pct(top_amount + unseen, effective_supply)
 
     result.update(
         {
+            "is_complete_distribution": unseen == 0 and mapping_complete,
             "total_supply_raw": supply,
+            "sampled_amount_raw": sampled_total,
+            "unseen_amount_raw": unseen,
+            "unseen_share_pct": _pct(unseen, effective_supply),
             "burned_amount_raw": burn_amount,
             "pool_amount_raw": pool_amount,
             "pool_share_pct": _pct(pool_amount, effective_supply),
             "counted_owners_in_sample": len(ranked),
-            "accounts_in_sample": returned,
-            "top10_share_pct": top10_pct,
-            "top10_share_of_non_pool_supply_pct": (
-                _pct(top_amount, non_pool_supply)
-                if non_pool_supply > 0
-                else None
-            ),
-            "top10_confirmed": top10_confirmed,
-            "top_holders": [
+            "accounts_in_sample": len(rows),
+            "top10_share_lower_bound_pct": top10_lower,
+            "top10_share_upper_bound_pct": top10_upper,
+            "top_holders_in_sample": [
                 {
                     "owner": entry["owner"],
                     "category": entry["category"],
-                    "share_pct": _pct(entry["amount"], effective_supply),
+                    "accounts_in_sample": entry["accounts"],
+                    "share_lower_bound_pct": _pct(entry["amount"], effective_supply),
                 }
                 for entry in top
             ],
@@ -233,68 +265,38 @@ def evaluate_holders(*, snapshot, security, pool_address, risk_filters):
         }
     )
 
-    # Top-10: Ein Überschreiten ist auch mit unvollständiger Stichprobe
-    # bewiesen (die mitgezählten Bestände existieren). Ein Einhalten nur
-    # mit bestätigter Stichprobe.
-    if top10_pct > top10_limit:
-        result["top10_status"] = "rejected"
-        result["rejection_reasons"].append(
-            "top10_holder_share_above_limit"
-            if top10_confirmed
-            else "observed_top10_holder_share_above_limit"
-        )
-    elif top10_confirmed:
-        result["top10_status"] = "confirmed"
+    can_confirm = mapping_complete and labels_complete
+
+    # Top-10
+    if top10_lower > top10_limit:
+        result["top10_status"] = REJECTED
+        result["rejection_reasons"].append("top10_holder_share_above_limit")
+    elif top10_upper <= top10_limit and can_confirm:
+        result["top10_status"] = CONFIRMED
+    elif top10_upper > top10_limit:
+        result["unconfirmed_reasons"].append("top10_upper_bound_above_limit")
 
     # Entwickler-Anteil
     if not creator:
         result["unconfirmed_reasons"].append("creator_unknown")
-        result["dev_share_pct"] = None
         return result
 
     creator_entry = owners.get(creator)
+    creator_amount = creator_entry["amount"] if creator_entry else 0
 
-    if creator_entry is not None:
-        dev_pct = _pct(creator_entry["amount"], effective_supply)
-        result["dev_share_pct"] = dev_pct
-        result["dev_share_basis"] = "creator_in_sample"
+    dev_lower = _pct(creator_amount, effective_supply)
+    dev_upper = _pct(creator_amount + unseen, effective_supply)
 
-        if dev_pct > dev_limit:
-            result["dev_status"] = "rejected"
-            result["rejection_reasons"].append("creator_share_above_limit")
-        elif sample_complete:
-            result["dev_status"] = "confirmed"
+    result["dev_share_lower_bound_pct"] = dev_lower
+    result["dev_share_upper_bound_pct"] = dev_upper
+    result["creator_found_in_sample"] = creator_entry is not None
 
-        return result
-
-    if not sample_complete:
-        result["dev_share_pct"] = None
-        return result
-
-    if full_holder_set:
-        result["dev_share_pct"] = 0.0
-        result["dev_share_basis"] = "creator_not_in_complete_holder_set"
-        result["dev_status"] = "confirmed"
-        return result
-
-    # Creator nicht unter den 20 größten Konten: Ein einzelnes Konto
-    # außerhalb der Stichprobe ist höchstens so groß wie das kleinste
-    # Konto in der Stichprobe.
-    min_sampled = snapshot.get("min_sampled_amount_raw")
-
-    if not isinstance(min_sampled, int) or isinstance(min_sampled, bool):
-        result["dev_share_pct"] = None
-        result["unconfirmed_reasons"].append("sample_minimum_unknown")
-        return result
-
-    upper_bound = _pct(min_sampled, effective_supply)
-    result["dev_share_pct"] = None
-    result["dev_share_upper_bound_pct"] = upper_bound
-    result["dev_share_basis"] = "creator_below_smallest_sampled_account"
-
-    if upper_bound <= dev_limit:
-        result["dev_status"] = "confirmed"
-    else:
-        result["unconfirmed_reasons"].append("creator_share_upper_bound_above_limit")
+    if dev_lower > dev_limit:
+        result["dev_status"] = REJECTED
+        result["rejection_reasons"].append("creator_share_above_limit")
+    elif dev_upper <= dev_limit and can_confirm:
+        result["dev_status"] = CONFIRMED
+    elif dev_upper > dev_limit:
+        result["unconfirmed_reasons"].append("dev_upper_bound_above_limit")
 
     return result

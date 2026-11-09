@@ -3,15 +3,25 @@
 Begriffe:
 - Gesamtmenge (total supply): direkt von der Blockchain (getTokenSupply).
 - Nachweislich verbrannt: Token auf Burn-Adressen (desk/holders.py).
-- Bestätigte Umlaufmenge: nur, wenn eine Quelle sie ausdrücklich meldet.
-  Derzeit ist das die von GeckoTerminal gemeldete Marktkapitalisierung
-  (Basis: von CoinGecko gemeldete Umlaufmenge). Sie wird als
-  "reported_circulating_supply" gekennzeichnet.
-- Schätzung: Preis x (Gesamtmenge - nachweislich verbrannt). Weil die
-  Umlaufmenge nie größer als diese Menge ist, ist die Schätzung eine
-  OBERGRENZE der echten Marktkapitalisierung.
+- Gemeldete Umlaufmenge: Die von GeckoTerminal gemeldete
+  Marktkapitalisierung (Basis: von CoinGecko gemeldete Umlaufmenge),
+  gekennzeichnet als "reported_circulating_supply".
+- Obergrenze (Schätzung): Preis x (Gesamtmenge - nachweislich verbrannt).
+  Die Umlaufmenge ist nie größer als diese Menge, deshalb ist der Wert
+  eine OBERGRENZE der echten Marktkapitalisierung.
 - FDV (Preis x Gesamtmenge) wird getrennt ausgewiesen und nie als
   Marktkapitalisierung verwendet.
+
+Entscheidungsregeln:
+- Eine Obergrenze kann nur eine Ablehnung begründen (Obergrenze unter
+  dem Minimum). Sie führt NIE zum Bestehen der Prüfung.
+- Bestehen ist nur mit gemeldeter Umlaufmenge möglich, und nur wenn
+  * zwei unabhängige Preisquellen (GeckoTerminal, RugCheck) vorliegen
+    und übereinstimmen,
+  * die Gesamtmenge von der Blockchain vorliegt und
+  * der gemeldete Wert nicht über der Obergrenze liegt.
+- Widersprüchliche Preise machen die Prüfung immer unklar, auch wenn
+  ein gemeldeter Wert vorliegt.
 """
 
 from desk.data_quality import (
@@ -24,7 +34,10 @@ from desk.data_quality import (
 
 
 REPORTED = "reported_circulating_supply"
-ESTIMATE = "estimate_total_supply"
+UPPER_BOUND = "upper_bound_total_supply"
+
+# Grund im Protokoll, wenn zwei übereinstimmende Preisquellen vorliegen
+TWO_SOURCES_AGREE = "price_sources_agree"
 
 
 def _supply_ui(amount_raw, decimals):
@@ -57,13 +70,14 @@ def evaluate_market_cap(
 ):
     """Bewertet die Marktkapitalisierung.
 
-    Gibt ein Ergebnis mit status "confirmed", "unclear" oder "rejected"
-    zurück. "confirmed" bedeutet: Bereichsprüfung bestanden.
+    status:
+    - "confirmed": Bereichsprüfung mit gemeldeter Umlaufmenge bestanden
+    - "rejected": nachweislich außerhalb des Bereichs
+    - "unclear": keine sichere Aussage möglich
     """
     scanner = config["scanner"]
     minimum = scanner["market_cap_usd_min"]
     maximum = scanner["market_cap_usd_max"]
-    allow_estimate = scanner["market_cap_allow_total_supply_estimate"]
     max_price_deviation = config["data_quality"]["max_price_deviation_pct"]
 
     price = check_price(
@@ -75,7 +89,12 @@ def evaluate_market_cap(
     reported = positive_number(reported_market_cap_usd)
     total_supply = _supply_ui(total_supply_raw, supply_decimals)
 
-    burned = burned_amount_raw if isinstance(burned_amount_raw, int) else None
+    burned = (
+        burned_amount_raw
+        if isinstance(burned_amount_raw, int)
+        and not isinstance(burned_amount_raw, bool)
+        else None
+    )
     supply_after_burns = None
 
     if (
@@ -88,83 +107,91 @@ def evaluate_market_cap(
             supply_decimals,
         )
 
-    price_used = price["price_used_usd"]
+    price_used = (
+        price["price_used_usd"]
+        if price["status"] == CONFIRMED
+        else None
+    )
+
+    upper_bound = (
+        price_used * supply_after_burns
+        if price_used is not None and supply_after_burns is not None
+        else None
+    )
 
     result = {
         "price": price,
         "total_supply": total_supply,
         "supply_after_provable_burns": supply_after_burns,
+        # Getrennt ausgewiesen, nie als Marktkapitalisierung verwendet
         "fdv_onchain_usd": (
             price_used * total_supply
             if price_used is not None and total_supply is not None
             else None
         ),
+        # Für die Risikoeinschätzung: höchstens so groß kann die
+        # Marktkapitalisierung sein.
+        "market_cap_upper_bound_usd": upper_bound,
         "reported_market_cap_usd": reported,
-        "estimated_market_cap_upper_bound_usd": (
-            price_used * supply_after_burns
-            if price_used is not None and supply_after_burns is not None
-            else None
-        ),
+        # Nur gesetzt, wenn ein gemeldeter Wert die Prüfung trägt
         "market_cap_usd": None,
         "basis": None,
-        "is_estimate": None,
         "range_usd": [minimum, maximum],
     }
 
-    estimate = result["estimated_market_cap_upper_bound_usd"]
-
-    # 1. Gemeldete Umlaufmenge (bevorzugt)
-    if reported is not None:
-        # Plausibilität: Die Marktkapitalisierung kann nicht über dem
-        # Wert aller nicht verbrannten Token liegen.
-        if (
-            estimate is not None
-            and reported > estimate * (1 + max_price_deviation / 100)
-        ):
-            return {
-                **result,
-                "status": UNCLEAR,
-                "reason": "reported_market_cap_exceeds_supply_value",
-            }
-
-        result.update(
-            market_cap_usd=reported,
-            basis=REPORTED,
-            is_estimate=False,
-        )
-
-        if minimum <= reported <= maximum:
-            return {**result, "status": CONFIRMED, "reason": "reported_in_range"}
-
-        return {**result, "status": REJECTED, "reason": "market_cap_out_of_range"}
-
-    # 2. Schätzung aus der Gesamtmenge
+    # 1. Widersprüchliche oder fehlende Preise: nie bestehen, nie
+    #    ablehnen. Gilt auch, wenn ein gemeldeter Wert vorliegt.
     if price["status"] != CONFIRMED:
         return {**result, "status": UNCLEAR, "reason": price["reason"]}
 
-    if estimate is None:
-        return {**result, "status": UNCLEAR, "reason": "supply_unavailable"}
+    # 2. Obergrenze unter dem Minimum: nachweislich zu klein.
+    if upper_bound is not None and upper_bound < minimum:
+        return {
+            **result,
+            "basis": UPPER_BOUND,
+            "status": REJECTED,
+            "reason": "market_cap_below_minimum",
+        }
 
-    result.update(
-        market_cap_usd=estimate,
-        basis=ESTIMATE,
-        is_estimate=True,
-    )
+    # 3. Ohne gemeldete Umlaufmenge keine Bestätigung.
+    if reported is None:
+        return {
+            **result,
+            "basis": UPPER_BOUND if upper_bound is not None else None,
+            "status": UNCLEAR,
+            "reason": (
+                "circulating_supply_not_confirmed"
+                if upper_bound is not None
+                else "supply_unavailable"
+            ),
+        }
 
-    # Die Schätzung ist eine Obergrenze: Liegt sie unter dem Minimum,
-    # liegt auch die echte Marktkapitalisierung darunter.
-    if estimate < minimum:
-        return {**result, "status": REJECTED, "reason": "market_cap_below_minimum"}
-
-    # Über dem Maximum beweist eine Obergrenze nichts.
-    if estimate > maximum:
+    # 4. Gemeldeter Wert: nur mit zwei übereinstimmenden Preisquellen
+    #    und Plausibilitätsprüfung gegen die Obergrenze.
+    if price["reason"] != TWO_SOURCES_AGREE:
         return {
             **result,
             "status": UNCLEAR,
-            "reason": "estimate_above_maximum_not_proven",
+            "reason": "reported_market_cap_needs_two_price_sources",
         }
 
-    if not allow_estimate:
-        return {**result, "status": UNCLEAR, "reason": "estimate_not_accepted"}
+    if upper_bound is None:
+        return {
+            **result,
+            "status": UNCLEAR,
+            "reason": "reported_market_cap_not_verifiable_without_supply",
+        }
 
-    return {**result, "status": CONFIRMED, "reason": "estimate_in_range"}
+    if reported > upper_bound * (1 + max_price_deviation / 100):
+        return {
+            **result,
+            "status": UNCLEAR,
+            "reason": "reported_market_cap_exceeds_supply_value",
+        }
+
+    result.update(market_cap_usd=reported, basis=REPORTED)
+
+    if minimum <= reported <= maximum:
+        return {**result, "status": CONFIRMED, "reason": "reported_in_range"}
+
+    return {**result, "status": REJECTED, "reason": "market_cap_out_of_range"}

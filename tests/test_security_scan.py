@@ -88,10 +88,10 @@ def test_successful_security_and_holder_checks_update_pool():
     assert "mint_authority_revoked" not in item["missing_checks"]
     assert "lp_burned_or_locked" not in item["missing_checks"]
 
-    # Vollständige Stichprobe mit gekennzeichnetem Pool: bestätigt.
+    # Vollständig erfasste Verteilung mit gekennzeichnetem Pool: bestätigt.
     assert "top10_share_pct" not in item["missing_checks"]
     assert "dev_share_pct" not in item["missing_checks"]
-    assert item["holder_evaluation"]["top10_confirmed"] is True
+    assert item["holder_evaluation"]["top10_status"] == "confirmed"
 
     # Ohne Preis bleibt die Marktkapitalisierung offen.
     assert "market_cap_usd" in item["missing_checks"]

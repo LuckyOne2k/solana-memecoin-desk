@@ -1,16 +1,14 @@
-import copy
-
 import pytest
 
 from desk.config import load_config
-from desk.market_cap import ESTIMATE, REPORTED, evaluate_market_cap
+from desk.market_cap import REPORTED, UPPER_BOUND, evaluate_market_cap
 
 
 CONFIG = load_config()
 SUPPLY = 1_000_000_000_000_000  # 1 Mrd. Token, 6 Dezimalstellen
 
 
-def evaluate(config=CONFIG, **kwargs):
+def evaluate(**kwargs):
     values = {
         "geckoterminal_price_usd": 0.0005,
         "rugcheck_price_usd": 0.0005,
@@ -19,85 +17,156 @@ def evaluate(config=CONFIG, **kwargs):
         "burned_amount_raw": 0,
     }
     values.update(kwargs)
-    return evaluate_market_cap(config=config, **values)
+    return evaluate_market_cap(config=CONFIG, **values)
 
 
-def test_estimate_in_range_is_confirmed_and_marked():
+# --------------------------------------------------
+# Obergrenze aus der Gesamtmenge: nie Bestehen
+# --------------------------------------------------
+
+def test_upper_bound_in_range_never_confirms():
+    # Obergrenze 500.000 $ im Zielbereich, aber keine Umlaufmenge
     result = evaluate()
 
-    assert result["status"] == "confirmed"
-    assert result["basis"] == ESTIMATE
-    assert result["is_estimate"] is True
-    assert result["market_cap_usd"] == pytest.approx(500000)
+    assert result["status"] == "unclear"
+    assert result["reason"] == "circulating_supply_not_confirmed"
+    assert result["market_cap_usd"] is None
+    assert result["market_cap_upper_bound_usd"] == pytest.approx(500000)
+    assert result["basis"] == UPPER_BOUND
 
 
-def test_fdv_is_reported_separately():
+def test_upper_bound_exactly_at_minimum_stays_unclear():
+    # 0,0003 $ x 1 Mrd. = 300.000 $ -> nicht unter dem Minimum
+    result = evaluate(geckoterminal_price_usd=0.0003, rugcheck_price_usd=0.0003)
+
+    assert result["status"] == "unclear"
+
+
+def test_upper_bound_below_minimum_rejects():
+    result = evaluate(geckoterminal_price_usd=0.000299, rugcheck_price_usd=0.000299)
+
+    assert result["status"] == "rejected"
+    assert result["reason"] == "market_cap_below_minimum"
+
+
+def test_upper_bound_above_maximum_stays_unclear():
+    result = evaluate(geckoterminal_price_usd=0.03, rugcheck_price_usd=0.03)
+
+    assert result["status"] == "unclear"
+    assert result["reason"] == "circulating_supply_not_confirmed"
+
+
+def test_upper_bound_with_single_price_can_reject():
+    # Ablehnung ist auch mit nur einer Preisquelle zulässig
+    result = evaluate(geckoterminal_price_usd=0.0001, rugcheck_price_usd=None)
+
+    assert result["status"] == "rejected"
+
+
+def test_fdv_and_upper_bound_are_reported_separately():
     result = evaluate(burned_amount_raw=SUPPLY // 10)
 
-    # FDV: gesamte Menge; Marktkapitalisierung: ohne verbrannte Token
     assert result["fdv_onchain_usd"] == pytest.approx(500000)
-    assert result["market_cap_usd"] == pytest.approx(450000)
+    assert result["market_cap_upper_bound_usd"] == pytest.approx(450000)
     assert result["total_supply"] == pytest.approx(1e9)
     assert result["supply_after_provable_burns"] == pytest.approx(9e8)
 
 
-def test_reported_market_cap_has_priority():
+# --------------------------------------------------
+# Gemeldete Umlaufmenge
+# --------------------------------------------------
+
+def test_reported_market_cap_with_agreeing_prices_confirms():
     result = evaluate(reported_market_cap_usd=400000)
 
-    assert result["basis"] == REPORTED
-    assert result["is_estimate"] is False
-    assert result["market_cap_usd"] == 400000
     assert result["status"] == "confirmed"
-
-
-def test_reported_market_cap_above_supply_value_is_unclear():
-    # Gemeldete Marktkapitalisierung größer als der Wert aller Token
-    result = evaluate(reported_market_cap_usd=900000)
-
-    assert result["status"] == "unclear"
-    assert result["reason"] == "reported_market_cap_exceeds_supply_value"
+    assert result["basis"] == REPORTED
+    assert result["market_cap_usd"] == 400000
 
 
 def test_reported_market_cap_out_of_range_rejects():
     result = evaluate(
         reported_market_cap_usd=250000,
-        geckoterminal_price_usd=None,
-        rugcheck_price_usd=None,
+        geckoterminal_price_usd=0.0003,
+        rugcheck_price_usd=0.0003,
     )
 
     assert result["status"] == "rejected"
     assert result["reason"] == "market_cap_out_of_range"
 
 
-def test_estimate_below_minimum_rejects_because_it_is_upper_bound():
-    result = evaluate(geckoterminal_price_usd=0.0002, rugcheck_price_usd=0.0002)
-
-    assert result["status"] == "rejected"
-    assert result["reason"] == "market_cap_below_minimum"
-
-
-def test_estimate_above_maximum_is_not_proof():
-    result = evaluate(geckoterminal_price_usd=0.03, rugcheck_price_usd=0.03)
+def test_reported_market_cap_above_supply_value_is_unclear():
+    result = evaluate(reported_market_cap_usd=900000)
 
     assert result["status"] == "unclear"
-    assert result["reason"] == "estimate_above_maximum_not_proven"
+    assert result["reason"] == "reported_market_cap_exceeds_supply_value"
 
 
-def test_estimate_can_be_disabled():
-    config = copy.deepcopy(CONFIG)
-    config["scanner"]["market_cap_allow_total_supply_estimate"] = False
+# --------------------------------------------------
+# Preisabweichung: kann nicht durch gemeldeten Wert umgangen werden
+# --------------------------------------------------
 
-    result = evaluate(config=config)
+def test_conflicting_prices_block_reported_market_cap():
+    result = evaluate(reported_market_cap_usd=400000, rugcheck_price_usd=0.0009)
 
     assert result["status"] == "unclear"
-    assert result["reason"] == "estimate_not_accepted"
+    assert result["reason"] == "price_sources_disagree"
+    assert result["market_cap_usd"] is None
 
+
+def test_conflicting_prices_block_rejection_too():
+    # Auch eine Ablehnung braucht einen belastbaren Preis
+    result = evaluate(geckoterminal_price_usd=0.0001, rugcheck_price_usd=0.0005)
+
+    assert result["status"] == "unclear"
+    assert result["reason"] == "price_sources_disagree"
+
+
+def test_price_deviation_exactly_at_limit_is_accepted():
+    # 10 % Abweichung, bezogen auf den größeren Wert
+    result = evaluate(
+        reported_market_cap_usd=400000,
+        geckoterminal_price_usd=0.0005,
+        rugcheck_price_usd=0.00045,
+    )
+
+    assert result["price"]["deviation_pct"] == pytest.approx(10)
+    assert result["status"] == "confirmed"
+
+
+def test_price_deviation_just_above_limit_is_unclear():
+    result = evaluate(
+        reported_market_cap_usd=400000,
+        geckoterminal_price_usd=0.0005,
+        rugcheck_price_usd=0.000449,
+    )
+
+    assert result["status"] == "unclear"
+
+
+def test_reported_market_cap_needs_two_price_sources():
+    result = evaluate(reported_market_cap_usd=400000, rugcheck_price_usd=None)
+
+    assert result["status"] == "unclear"
+    assert result["reason"] == "reported_market_cap_needs_two_price_sources"
+
+
+def test_reported_market_cap_without_supply_is_not_verifiable():
+    result = evaluate(reported_market_cap_usd=400000, total_supply_raw=None)
+
+    assert result["status"] == "unclear"
+    assert result["reason"] == "reported_market_cap_not_verifiable_without_supply"
+
+
+# --------------------------------------------------
+# Fehlende und fehlerhafte Daten
+# --------------------------------------------------
 
 @pytest.mark.parametrize(
     "kwargs, reason",
     [
         ({"geckoterminal_price_usd": None, "rugcheck_price_usd": None}, "no_price_available"),
-        ({"rugcheck_price_usd": 0.0009}, "price_sources_disagree"),
+        ({"geckoterminal_price_usd": "abc", "rugcheck_price_usd": -1}, "no_price_available"),
         ({"total_supply_raw": None}, "supply_unavailable"),
         ({"total_supply_raw": 0}, "supply_unavailable"),
         ({"total_supply_raw": "1000"}, "supply_unavailable"),
@@ -105,6 +174,7 @@ def test_estimate_can_be_disabled():
         ({"supply_decimals": 40}, "supply_unavailable"),
         ({"burned_amount_raw": SUPPLY}, "supply_unavailable"),
         ({"burned_amount_raw": -5}, "supply_unavailable"),
+        ({"burned_amount_raw": True}, "supply_unavailable"),
     ],
 )
 def test_insufficient_data_stays_unclear(kwargs, reason):
@@ -113,10 +183,3 @@ def test_insufficient_data_stays_unclear(kwargs, reason):
     assert result["status"] == "unclear"
     assert result["reason"] == reason
     assert result["market_cap_usd"] is None
-
-
-def test_single_price_source_is_enough_for_estimate():
-    result = evaluate(rugcheck_price_usd=None)
-
-    assert result["status"] == "confirmed"
-    assert result["price"]["reason"] == "single_source"

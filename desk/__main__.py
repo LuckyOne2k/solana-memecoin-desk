@@ -31,19 +31,25 @@ def _check_details(pool):
             "deviation_pct": liquidity.get("deviation_pct"),
         },
         "holders": {
+            "data_scope": holders.get("data_scope"),
+            "is_complete_distribution": holders.get("is_complete_distribution"),
             "top10_status": holders.get("top10_status"),
-            "top10_share_pct": holders.get("top10_share_pct"),
-            "top10_confirmed": holders.get("top10_confirmed"),
-            "top10_share_of_non_pool_supply_pct": holders.get(
-                "top10_share_of_non_pool_supply_pct"
+            "top10_share_lower_bound_pct": holders.get(
+                "top10_share_lower_bound_pct"
             ),
+            "top10_share_upper_bound_pct": holders.get(
+                "top10_share_upper_bound_pct"
+            ),
+            "unseen_share_pct": holders.get("unseen_share_pct"),
             "pool_share_pct": holders.get("pool_share_pct"),
             "burned_amount_raw": holders.get("burned_amount_raw"),
             "counted_owners_in_sample": holders.get(
                 "counted_owners_in_sample"
             ),
             "dev_status": holders.get("dev_status"),
-            "dev_share_pct": holders.get("dev_share_pct"),
+            "dev_share_lower_bound_pct": holders.get(
+                "dev_share_lower_bound_pct"
+            ),
             "dev_share_upper_bound_pct": holders.get(
                 "dev_share_upper_bound_pct"
             ),
@@ -52,13 +58,16 @@ def _check_details(pool):
         "market_cap": {
             "status": market_cap.get("status"),
             "reason": market_cap.get("reason"),
-            "market_cap_usd": market_cap.get("market_cap_usd"),
             "basis": market_cap.get("basis"),
-            "is_estimate": market_cap.get("is_estimate"),
+            "market_cap_usd": market_cap.get("market_cap_usd"),
+            "market_cap_upper_bound_usd": market_cap.get(
+                "market_cap_upper_bound_usd"
+            ),
             "reported_market_cap_usd": pool.get("market_cap_usd_reported"),
             "fdv_onchain_usd": market_cap.get("fdv_onchain_usd"),
             "price_status": price.get("status"),
             "price_reason": price.get("reason"),
+            "price_deviation_pct": price.get("deviation_pct"),
             "price_used_usd": price.get("price_used_usd"),
         },
         "fdv_usd_dexpaprika": pool.get("fdv_usd_dexpaprika"),

@@ -30,7 +30,10 @@ def deviation_pct(first, second):
     if larger <= 0:
         return 0.0
 
-    return abs(first - second) / larger * 100
+    # Auf 6 Nachkommastellen gerundet, damit Rechenrauschen bei
+    # Gleitkommazahlen (z. B. 10,000000000000002 %) keinen Grenzwert
+    # verschiebt.
+    return round(abs(first - second) / larger * 100, 6)
 
 
 def check_liquidity(

@@ -56,7 +56,7 @@ def make_security(
 def make_snapshot(
     mint="TOKEN123",
     holders=None,
-    pool_pct=40.0,
+    pool_pct=None,
     burn_pct=0.0,
     returned=None,
     supply=SUPPLY_RAW,
@@ -65,12 +65,19 @@ def make_snapshot(
 ):
     """holders: Liste von (owner, Anteil in %). Jedes Konto ist eine Zeile.
 
-    returned: Anzahl der von der Blockchain gelieferten Konten.
-    Standard: Anzahl der Zeilen (unter 20 = vollständige Holder-Menge).
+    pool_pct=None: Das Pool-Konto erhält den Rest der Gesamtmenge, die
+    Stichprobe erfasst also alles (vollständige Verteilung).
+    Ein fester pool_pct lässt den Rest als nicht erfasste Menge.
     """
     holders = holders if holders is not None else [
         (f"HOLDER{i}", 1.0) for i in range(10)
     ]
+
+    if pool_pct is None:
+        extra_pct = sum(
+            row["amount"] for row in extra_rows
+        ) / supply * 100
+        pool_pct = 100.0 - burn_pct - extra_pct - sum(p for _, p in holders)
 
     rows = []
 
@@ -94,6 +101,13 @@ def make_snapshot(
         )
 
     rows.extend(extra_rows)
+
+    # Rundungsreste dem Pool-Konto zuschlagen, damit eine vollständige
+    # Verteilung exakt der Gesamtmenge entspricht.
+    if rows and rows[0]["address"] == POOL_VAULT:
+        difference = supply - sum(row["amount"] for row in rows)
+        if 0 < abs(difference) < 10 and pool_pct and pool_pct > 0:
+            rows[0]["amount"] += difference
     rows.sort(key=lambda row: row["amount"], reverse=True)
 
     return {

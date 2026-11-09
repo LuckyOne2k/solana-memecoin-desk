@@ -35,7 +35,6 @@ SCHEMA = {
         "market_cap_usd_min": NUMBER,
         "market_cap_usd_max": NUMBER,
         "max_security_checks_per_run": COUNT,
-        "market_cap_allow_total_supply_estimate": FLAG,
     },
     "risk_filters": {
         "require_mint_authority_revoked": FLAG,
@@ -110,6 +109,15 @@ def validate_config(config):
             _check_value(section, key, kind, values[key])
 
     scanner = config["scanner"]
+
+    # Entfernter Schalter: Eine Schätzung aus der Gesamtmenge darf die
+    # Marktkapitalisierungs-Prüfung nie bestehen. Ein noch vorhandener
+    # Eintrag würde eine Lockerung vortäuschen.
+    if "market_cap_allow_total_supply_estimate" in scanner:
+        raise ConfigError(
+            "scanner.market_cap_allow_total_supply_estimate wird nicht "
+            "mehr unterstützt: Eine Schätzung kann die Prüfung nie bestehen"
+        )
 
     if scanner["pair_age_hours_min"] > scanner["pair_age_hours_max"]:
         raise ConfigError(

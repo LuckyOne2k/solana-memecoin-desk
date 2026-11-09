@@ -1,7 +1,6 @@
 """Ganze Prüfkette: Vorprüfung -> RugCheck -> Liquidität -> Holder ->
 Marktkapitalisierung. Externe Abfragen sind durch Testdaten ersetzt."""
 
-import copy
 from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
@@ -96,7 +95,9 @@ def run(
 # --------------------------------------------------
 
 def test_fully_confirmed_token_is_ready():
-    item = run()
+    # Gemeldete Marktkapitalisierung, zwei übereinstimmende Preise,
+    # vollständig erfasste Holder-Verteilung.
+    item = run(market_data=good_market_data(market_cap=450000.0))
 
     assert item["rejection_reasons"] == []
     assert item["missing_checks"] == []
@@ -108,30 +109,45 @@ def test_fully_confirmed_token_is_ready():
 
     market_cap = item["market_cap_evaluation"]
     assert market_cap["status"] == "confirmed"
-    assert market_cap["basis"] == "estimate_total_supply"
-    assert market_cap["is_estimate"] is True
-    assert round(market_cap["market_cap_usd"]) == 500000
+    assert market_cap["basis"] == "reported_circulating_supply"
+    assert market_cap["market_cap_usd"] == 450000.0
+    assert round(market_cap["market_cap_upper_bound_usd"]) == 500000
 
 
-def test_reported_market_cap_is_preferred_over_estimate():
-    item = run(market_data=good_market_data(market_cap=450000.0))
+def test_upper_bound_alone_never_makes_token_ready():
+    # Alles bestätigt, aber keine gemeldete Umlaufmenge
+    item = run()
 
     market_cap = item["market_cap_evaluation"]
 
-    assert market_cap["basis"] == "reported_circulating_supply"
-    assert market_cap["is_estimate"] is False
-    assert market_cap["market_cap_usd"] == 450000.0
-    assert item["status"] == "ready_for_full_risk_screen"
+    assert market_cap["status"] == "unclear"
+    assert market_cap["reason"] == "circulating_supply_not_confirmed"
+    assert item["market_cap_usd"] is None
+    assert round(item["market_cap_upper_bound_usd"]) == 500000
+    assert item["missing_checks"] == ["market_cap_usd"]
+    assert item["status"] == "incomplete"
 
 
-def test_estimate_not_accepted_when_disabled_in_config():
-    config = copy.deepcopy(CONFIG)
-    config["scanner"]["market_cap_allow_total_supply_estimate"] = False
+def test_price_conflict_is_not_bypassed_by_reported_market_cap():
+    item = run(
+        market_data=good_market_data(market_cap=450000.0),
+        security=good_security(price=0.0009),
+    )
 
-    item = run(config=config)
-
+    assert item["market_cap_evaluation"]["reason"] == "price_sources_disagree"
     assert "market_cap_usd" in item["missing_checks"]
-    assert item["market_cap_evaluation"]["reason"] == "estimate_not_accepted"
+    assert item["status"] == "incomplete"
+
+
+def test_sample_with_unseen_supply_keeps_holders_open():
+    item = run(
+        market_data=good_market_data(market_cap=450000.0),
+        snapshot=make_snapshot(mint=MINT, pool_pct=40.0, returned=20),
+    )
+
+    assert "top10_share_pct" in item["missing_checks"]
+    assert "dev_share_pct" in item["missing_checks"]
+    assert item["holder_evaluation"]["is_complete_distribution"] is False
     assert item["status"] == "incomplete"
 
 
@@ -224,7 +240,7 @@ def test_large_unknown_holder_is_counted_and_rejects():
 
 def test_unlabelled_pool_account_is_not_excluded():
     # Pool-Konto ohne Kennzeichnung: wird wie ein Holder gezählt
-    snapshot = make_snapshot(mint=MINT, pool_pct=40.0)
+    snapshot = make_snapshot(mint=MINT)
     labels = make_labels(pool_vaults=(), pool_owners=())
 
     item = run(
@@ -239,7 +255,7 @@ def test_unlabelled_pool_account_is_not_excluded():
 def test_incomplete_labels_keep_top10_unconfirmed():
     item = run(security=good_security(labels=make_labels(complete=False)))
 
-    assert item["holder_evaluation"]["top10_confirmed"] is False
+    assert item["holder_evaluation"]["top10_status"] == "unclear"
     assert "top10_share_pct" in item["missing_checks"]
     assert item["status"] == "incomplete"
 
@@ -291,7 +307,7 @@ def test_missing_prices_keep_market_cap_open():
     assert item["status"] == "incomplete"
 
 
-def test_estimate_below_minimum_rejects():
+def test_upper_bound_below_minimum_rejects():
     item = run(
         market_data=good_market_data(price=0.0001),
         security=good_security(price=0.0001),

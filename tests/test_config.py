@@ -21,7 +21,6 @@ EXPECTED_THRESHOLDS = {
         "market_cap_usd_min": 300000,
         "market_cap_usd_max": 20000000,
         "max_security_checks_per_run": 10,
-        "market_cap_allow_total_supply_estimate": True,
     },
     "risk_filters": {
         "require_mint_authority_revoked": True,
@@ -135,7 +134,6 @@ def test_every_threshold_is_required(section, key):
         ("paper_trading", "max_position_pct", 150),
         ("debate", "bear_objections_required", 2.5),
         ("data_quality", "max_liquidity_deviation_pct", 150),
-        ("scanner", "market_cap_allow_total_supply_estimate", "true"),
     ],
 )
 def test_invalid_values_are_rejected(section, key, value):
@@ -194,3 +192,14 @@ def test_validate_does_not_need_optional_sections():
     config.pop("timezone", None)
 
     validate_config(config)
+
+
+@pytest.mark.parametrize("value", [True, False])
+def test_removed_estimate_switch_is_rejected(value):
+    # Eine Schätzung darf nie bestehen; der Schalter darf nicht wieder
+    # auftauchen und eine Lockerung vortäuschen.
+    config = load_config()
+    config["scanner"]["market_cap_allow_total_supply_estimate"] = value
+
+    with pytest.raises(ConfigError):
+        validate_config(config)
