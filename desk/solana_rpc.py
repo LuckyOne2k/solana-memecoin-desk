@@ -871,3 +871,251 @@ def fetch_full_holder_list(
         "slot_supply_after": slot_after,
         "slot_span": slot_span,
     }
+
+
+# ---------------------------------------------------------------------
+# Klassifizierung von Token-Authorities (On-Chain-Untergrenze der
+# Umlaufmenge, desk/circulating_bounds.py)
+# ---------------------------------------------------------------------
+
+SYSTEM_PROGRAM_ID = "11111111111111111111111111111111"
+# getMultipleAccounts nimmt höchstens 100 Adressen je Aufruf.
+MAX_ACCOUNTS_PER_CALL = 100
+# Token-Konto: Status-Byte (0 uninitialisiert, 1 aktiv, 2 eingefroren)
+# liegt bei klassischen und Token-2022-Konten an derselben Stelle.
+ACCOUNT_STATE_OFFSET = 108
+# base58 von b"\x02" (Status "eingefroren")
+FROZEN_STATE_B58 = "3"
+
+# Ed25519 (Curve25519 in Edwards-Form), wie curve25519-dalek
+# CompressedEdwardsY::decompress, das Solana für is_on_curve nutzt.
+_ED_P = 2 ** 255 - 19
+_ED_D = (-121665 * pow(121666, _ED_P - 2, _ED_P)) % _ED_P
+_ED_SQRT_M1 = pow(2, (_ED_P - 1) // 4, _ED_P)
+
+
+class OnchainBoundsError(SolanaRpcError):
+    """Authority- oder Frozen-Abfrage nicht belegbar; fester Grund ohne
+    URL, Key oder Rohdaten. Es gibt nie ein Teilergebnis."""
+
+    def __init__(self, reason):
+        super().__init__(f"On-chain bounds rejected: {reason}")
+        self.reason = reason
+
+
+def _b58decode(text):
+    """base58 -> bytes; None bei ungültigem Zeichen."""
+    if not isinstance(text, str) or not text:
+        return None
+
+    number = 0
+
+    for char in text:
+        index = _B58_ALPHABET.find(char)
+
+        if index < 0:
+            return None
+
+        number = number * 58 + index
+
+    body = number.to_bytes((number.bit_length() + 7) // 8, "big") if number else b""
+    leading = len(text) - len(text.lstrip("1"))
+    return b"\0" * leading + body
+
+
+def is_on_curve(address):
+    """True, wenn die 32-Byte-Adresse ein gültiger Ed25519-Punkt ist
+    (kann einen privaten Schlüssel haben), False bei Off-Curve-Adressen
+    (PDA: nur ein Programm kann signieren).
+
+    ValueError bei einer Adresse, die keine 32 Byte ergibt.
+    """
+    raw = _b58decode(address)
+
+    if raw is None or len(raw) != 32:
+        raise ValueError("address is not a 32-byte base58 value")
+
+    # Oberstes Bit ist das Vorzeichen von x; y ohne Kanonizitätsprüfung
+    # (wie dalek).
+    y = (int.from_bytes(raw, "little") & ((1 << 255) - 1)) % _ED_P
+    u = (y * y - 1) % _ED_P
+    v = (_ED_D * y * y + 1) % _ED_P
+    x2 = u * pow(v, _ED_P - 2, _ED_P) % _ED_P
+
+    # p = 5 mod 8: Wurzelkandidat x2^((p+3)/8), ggf. mal sqrt(-1)
+    x = pow(x2, (_ED_P + 3) // 8, _ED_P)
+
+    if (x * x - x2) % _ED_P == 0:
+        return True
+
+    x = x * _ED_SQRT_M1 % _ED_P
+    return (x * x - x2) % _ED_P == 0
+
+
+def _bounds_call(method, params, rpc_url):
+    try:
+        return _rpc_call(method, params, rpc_url=rpc_url)
+    except SolanaRpcError:
+        raise OnchainBoundsError("rpc_error") from None
+
+
+def _min_slot(value):
+    if not _is_int(value) or value < 0:
+        raise ValueError("min_slot must be a non-negative integer")
+
+
+def _account_info(item):
+    """Ein Eintrag aus getMultipleAccounts -> kompakte Angaben.
+
+    None bleibt None (Konto existiert nicht / ohne SOL). Jede andere
+    unerwartete Form -> Fehler.
+    """
+    if item is None:
+        return None
+
+    if not isinstance(item, dict):
+        raise OnchainBoundsError("authority_account_invalid")
+
+    owner = item.get("owner")
+    executable = item.get("executable")
+    lamports = item.get("lamports")
+    data = item.get("data")
+
+    if (
+        not isinstance(owner, str)
+        or not owner
+        or not isinstance(executable, bool)
+        or not _is_int(lamports)
+        or lamports < 0
+        or not isinstance(data, list)
+        or len(data) != 2
+        or data[1] != "base64"
+        or not isinstance(data[0], str)
+    ):
+        raise OnchainBoundsError("authority_account_invalid")
+
+    try:
+        raw = base64.b64decode(data[0], validate=True)
+    except (binascii.Error, ValueError):
+        raise OnchainBoundsError("authority_account_invalid") from None
+
+    return {
+        "owner": owner,
+        "executable": executable,
+        "lamports": lamports,
+        "data_length": len(raw),
+    }
+
+
+def fetch_authority_accounts(addresses, *, min_slot, rpc_url=None):
+    """Kontodaten der Authority-Adressen (EIN getMultipleAccounts-Aufruf).
+
+    Gibt {"slot", "accounts"} zurück; accounts hat dieselbe Reihenfolge
+    und Länge wie addresses. Fehlende, unvollständige oder zu alte
+    Antworten -> OnchainBoundsError.
+    """
+    if (
+        not isinstance(addresses, list)
+        or not 1 <= len(addresses) <= MAX_ACCOUNTS_PER_CALL
+        or not all(isinstance(a, str) and a for a in addresses)
+    ):
+        raise ValueError("addresses must be a list of 1 to 100 addresses")
+
+    _min_slot(min_slot)
+
+    result = _bounds_call(
+        "getMultipleAccounts",
+        [
+            addresses,
+            {
+                "encoding": "base64",
+                "commitment": "finalized",
+                "minContextSlot": min_slot,
+            },
+        ],
+        rpc_url,
+    )
+
+    slot = _context_slot(result)
+
+    if slot is None:
+        raise OnchainBoundsError("authority_slot_missing")
+
+    if slot < min_slot:
+        raise OnchainBoundsError("authority_slot_before_holder_list")
+
+    value = result.get("value")
+
+    if not isinstance(value, list) or len(value) != len(addresses):
+        raise OnchainBoundsError("authority_response_invalid")
+
+    return {"slot": slot, "accounts": [_account_info(item) for item in value]}
+
+
+def fetch_frozen_token_accounts(mint, token_program, *, min_slot, rpc_url=None):
+    """Adressen aller eingefrorenen Token-Konten des Mints (ein
+    getProgramAccountsV2-Aufruf, Filter auf Status-Byte = 2).
+
+    Mehr als eine Seite oder ungültige Antwort -> OnchainBoundsError.
+    """
+    if not isinstance(mint, str) or not mint.strip():
+        raise ValueError("A token mint address is required")
+
+    if token_program not in (TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID):
+        raise OnchainBoundsError("unsupported_token_program")
+
+    _min_slot(min_slot)
+
+    filters = [
+        {"memcmp": {"offset": 0, "bytes": mint}},
+        {"memcmp": {"offset": ACCOUNT_STATE_OFFSET, "bytes": FROZEN_STATE_B58}},
+    ]
+
+    if token_program == TOKEN_PROGRAM_ID:
+        filters.append({"dataSize": CLASSIC_ACCOUNT_SIZE})
+
+    result = _bounds_call(
+        "getProgramAccountsV2",
+        [
+            token_program,
+            {
+                "encoding": "base64",
+                "commitment": "finalized",
+                "withContext": True,
+                "minContextSlot": min_slot,
+                "limit": PAGE_LIMIT,
+                "dataSlice": {"offset": 0, "length": 0},
+                "filters": filters,
+            },
+        ],
+        rpc_url,
+    )
+
+    try:
+        slot, items, key = _page_parts(result)
+    except HolderListError as error:
+        raise OnchainBoundsError(f"frozen_{error.reason}") from None
+
+    if slot < min_slot:
+        raise OnchainBoundsError("frozen_slot_before_holder_list")
+
+    if key is not None:
+        raise OnchainBoundsError("too_many_frozen_accounts")
+
+    addresses = set()
+
+    for item in items:
+        address = item.get("pubkey") if isinstance(item, dict) else None
+        account = item.get("account") if isinstance(item, dict) else None
+
+        if (
+            not isinstance(address, str)
+            or not address
+            or not isinstance(account, dict)
+            or ("owner" in account and account.get("owner") != token_program)
+        ):
+            raise OnchainBoundsError("frozen_account_invalid")
+
+        addresses.add(address)
+
+    return {"slot": slot, "addresses": addresses}

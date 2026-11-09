@@ -30,6 +30,16 @@ def no_helius_by_default(monkeypatch):
         "desk.security_scan.fetch_full_holder_list", full_list_unavailable
     )
 
+    def onchain_unavailable(*args, **kwargs):
+        raise AssertionError("on-chain bounds query in test without mock")
+
+    monkeypatch.setattr(
+        "desk.security_scan.fetch_authority_accounts", onchain_unavailable
+    )
+    monkeypatch.setattr(
+        "desk.security_scan.fetch_frozen_token_accounts", onchain_unavailable
+    )
+
 
 @pytest.fixture(autouse=True)
 def isolated_log_file(tmp_path, monkeypatch):

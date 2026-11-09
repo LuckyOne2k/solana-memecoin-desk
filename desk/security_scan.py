@@ -16,6 +16,11 @@ Ablauf pro Pool:
       bestätigen.
 5. Holder-Verteilung (desk.holders) und Marktkapitalisierung
    (desk.market_cap)
+6. Nur mit market_cap_onchain_bounds.allow_onchain_bounds (Standard aus)
+   und nur, wenn allein die Marktkapitalisierung offen ist: eigene
+   On-Chain-Spanne aus heuristischer Wallet-Untergrenze
+   (desk.circulating_bounds) und
+   Obergrenze. Jede Lücke -> bleibt unvollständig.
 
 Externe Daten werden je Token nur einmal abgefragt; bewertet wird je
 Pool. Alle Grenzwerte kommen aus config.yaml.
@@ -26,9 +31,16 @@ hinten. Das ändert nur die Reihenfolge, nie das Ergebnis einer Prüfung.
 """
 
 from desk.check_queue import order_check_mints
+from desk.circulating_bounds import COMPLETED, compute_wallet_lower_bound
 from desk.data_quality import CONFIRMED, REJECTED, check_liquidity
 from desk.holders import evaluate_holders
-from desk.market_cap import evaluate_market_cap
+from desk.market_cap import (
+    ONCHAIN_BOUNDS,
+    TWO_SOURCES_AGREE,
+    evaluate_market_cap,
+    evaluate_onchain_bounds,
+    onchain_target_amount_raw,
+)
 from desk.market_data import prepare_pools
 from desk.security import (
     SecurityDataError,
@@ -39,6 +51,8 @@ from desk.solana_rpc import (
     PRESENT,
     HolderListError,
     SolanaRpcError,
+    fetch_authority_accounts,
+    fetch_frozen_token_accounts,
     fetch_full_holder_list,
     fetch_holder_snapshot,
     fetch_mint_info,
@@ -443,6 +457,165 @@ def _evaluate_item(item, data, config, counters):
         elif market_cap["status"] == REJECTED:
             _resolve(item, "market_cap_usd")
             _reject(item, market_cap["reason"])
+        elif market_cap["reason"] == "circulating_supply_not_confirmed":
+            _evaluate_onchain_bounds(
+                item, data, config, counters, security, snapshot,
+                holders, market_cap,
+            )
+
+
+def _onchain_precondition_error(item, security, holders, market_cap):
+    """Grund, warum die On-Chain-Spanne nicht versucht wird; sonst None.
+
+    Alle anderen Prüfungen müssen bestätigt sein (spart Credits: sonst
+    wäre der Pool ohnehin nicht bereit). Ausdrücklich zusätzlich: Mint-
+    und Freeze-Authority widerrufen, kein Permanent Delegate, vollständige
+    Holder-Liste, zwei übereinstimmende Preise. Sonst könnten neue Token
+    erzeugt, Konten eingefroren oder Bestände bewegt werden.
+    """
+    if item["rejection_reasons"]:
+        return "already_rejected"
+
+    if item["missing_checks"] != ["market_cap_usd"]:
+        return "other_checks_open"
+
+    if security.get("mint_authority_revoked") is not True:
+        return "mint_authority_not_revoked"
+
+    if security.get("freeze_authority_revoked") is not True:
+        return "freeze_authority_not_revoked"
+
+    if item.get("mint_info_status") != "completed":
+        return "mint_info_unavailable"
+
+    if item.get("permanent_delegate_status") != ABSENT:
+        return "permanent_delegate_not_absent"
+
+    if item.get("holder_source") != "full_holder_list":
+        return "full_holder_list_required"
+
+    if (
+        holders.get("data_scope") != FULL_LIST_SCOPE
+        or holders.get("is_complete_distribution") is not True
+        or holders.get("unseen_amount_raw") != 0
+    ):
+        return "full_holder_list_incomplete"
+
+    if holders.get("top10_status") != CONFIRMED or holders.get("dev_status") != CONFIRMED:
+        return "holder_checks_not_confirmed"
+
+    price = market_cap.get("price") or {}
+
+    if price.get("status") != CONFIRMED or price.get("reason") != TWO_SOURCES_AGREE:
+        return "two_agreeing_prices_required"
+
+    return None
+
+
+def _evaluate_onchain_bounds(
+    item, data, config, counters, security, snapshot, holders, market_cap
+):
+    """Eigene On-Chain-Spanne. Bestätigt nur bei vollständig belegten
+    Grenzen; jede Lücke lässt die Prüfung offen."""
+    settings = config.get("market_cap_onchain_bounds") or {}
+
+    if settings.get("allow_onchain_bounds") is not True:
+        item["market_cap_onchain_bounds"] = {"status": "disabled"}
+        return
+
+    precondition = _onchain_precondition_error(
+        item, security, holders, market_cap
+    )
+
+    if precondition is not None:
+        item["market_cap_onchain_bounds"] = {
+            "status": "skipped",
+            "reason": precondition,
+        }
+        return
+
+    price = market_cap["price"]
+    prices = (price.get("geckoterminal_price_usd"), price.get("rugcheck_price_usd"))
+    price_low, price_high = min(prices), max(prices)
+
+    supply = snapshot["supply_amount_raw"]
+    upper_amount = supply - holders.get("burned_amount_raw", 0)
+    decimals = snapshot.get("supply_decimals")
+
+    target = onchain_target_amount_raw(
+        config=config,
+        price_low_usd=price_low,
+        price_high_usd=price_high,
+        upper_amount_raw=upper_amount,
+        decimals=decimals,
+    )
+
+    if target is None:
+        item["market_cap_onchain_bounds"] = {
+            "status": "skipped",
+            "reason": "onchain_bounds_input_invalid",
+        }
+        return
+
+    # Einmal je Token (mehrere Pools desselben Tokens teilen das Ergebnis).
+    if "onchain_lower_bound" not in data:
+        counters["onchain_bounds_attempted"] += 1
+        lower = compute_wallet_lower_bound(
+            mint=item["token_address"],
+            snapshot=snapshot,
+            security=security,
+            pool_addresses=data.get("pool_addresses") or (),
+            target_amount_raw=target,
+            max_calls=settings["max_account_calls_per_token"],
+            max_slot_span=settings["max_slot_span"],
+            fetch_accounts=fetch_authority_accounts,
+            fetch_frozen=fetch_frozen_token_accounts,
+        )
+        counters["authority_account_calls"] += lower["account_calls"]
+        counters["frozen_account_checks"] += lower["frozen_check_calls"]
+
+        if lower["status"] != COMPLETED:
+            counters["onchain_bounds_failed"] += 1
+
+        data["onchain_lower_bound"] = lower
+
+    lower = data["onchain_lower_bound"]
+    log = {"status": lower["status"], "wallet_like_lower_bound": lower}
+
+    if lower["status"] != COMPLETED:
+        log["decision"] = {"status": "unclear", "reason": lower["reason"]}
+        item["market_cap_onchain_bounds"] = log
+        return
+
+    decision = evaluate_onchain_bounds(
+        config=config,
+        price_low_usd=price_low,
+        price_high_usd=price_high,
+        lower_amount_raw=lower["wallet_like_lower_bound_raw"],
+        upper_amount_raw=upper_amount,
+        decimals=decimals,
+    )
+    log["decision"] = decision
+    item["market_cap_onchain_bounds"] = log
+
+    if decision["status"] == CONFIRMED:
+        _resolve(item, "market_cap_usd")
+        item["market_cap_basis"] = ONCHAIN_BOUNDS
+        item["market_cap_heuristic_lower_bound_usd"] = decision["market_cap_heuristic_lower_bound_usd"]
+        market_cap.update(
+            status=CONFIRMED,
+            reason=decision["reason"],
+            basis=ONCHAIN_BOUNDS,
+        )
+    elif decision["status"] == REJECTED:
+        _resolve(item, "market_cap_usd")
+        _reject(item, decision["reason"])
+        item["market_cap_basis"] = ONCHAIN_BOUNDS
+        market_cap.update(
+            status=REJECTED,
+            reason=decision["reason"],
+            basis=ONCHAIN_BOUNDS,
+        )
 
 
 def scan_pool_security(pools, config, max_checks=None, check_history=None):
@@ -482,6 +655,10 @@ def scan_pool_security(pools, config, max_checks=None, check_history=None):
         "full_holder_list_succeeded": 0,
         "full_holder_list_failed": 0,
         "holder_fallbacks": 0,
+        "onchain_bounds_attempted": 0,
+        "onchain_bounds_failed": 0,
+        "authority_account_calls": 0,
+        "frozen_account_checks": 0,
     }
 
     # Prüfreihenfolge: eindeutige Token, die überhaupt geprüft würden.
@@ -501,6 +678,17 @@ def scan_pool_security(pools, config, max_checks=None, check_history=None):
     }
 
     data_by_mint = {}
+
+    # Alle DexPaprika-Pool-Adressen je Token: werden bei der
+    # Wallet-Untergrenze gemeinsam herausgerechnet.
+    pool_addresses = {}
+
+    for item in prepared:
+        mint = item.get("token_address")
+        address = item.get("pool_address")
+
+        if mint and isinstance(address, str) and address:
+            pool_addresses.setdefault(mint, set()).add(address)
 
     for item in prepared:
         item["security_check_status"] = "not_checked"
@@ -536,6 +724,9 @@ def scan_pool_security(pools, config, max_checks=None, check_history=None):
                 mint,
                 risk_filters,
                 counters,
+            )
+            data_by_mint[mint]["pool_addresses"] = sorted(
+                pool_addresses.get(mint, ())
             )
 
         _evaluate_item(item, data_by_mint[mint], config, counters)
