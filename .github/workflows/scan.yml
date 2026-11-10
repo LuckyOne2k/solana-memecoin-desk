@@ -125,6 +125,16 @@ jobs:
           --data-dir desk-data
           --scan-outcome "${{ steps.scan.outcome }}"
 
+      - name: Schattendepot
+        # Nur Lernen: Kursentwicklung aller geprüften Token (1 h / 6 h / 24 h),
+        # keine Kauf- oder Prüfentscheidung.
+        id: shadow
+        if: ${{ !cancelled() && steps.datadir.outcome == 'success' }}
+        run: >-
+          python -m desk.shadow
+          --data-dir desk-data
+          --scan-outcome "${{ steps.scan.outcome }}"
+
       - name: Protokoll speichern
         # Auch nach einem Fehler im Scan speichern, damit der Fehler
         # im Protokoll nachvollziehbar bleibt.
@@ -156,6 +166,12 @@ jobs:
           # Depot nur speichern, wenn der Paper-Broker erfolgreich war.
           if [ "${{ steps.paper.outcome }}" = "success" ]; then
             for file in paper_state.json paper_trades.jsonl; do
+              if [ -f "$file" ]; then git add "$file"; fi
+            done
+          fi
+
+          if [ "${{ steps.shadow.outcome }}" = "success" ]; then
+            for file in shadow_state.json shadow_summary.json; do
               if [ -f "$file" ]; then git add "$file"; fi
             done
           fi

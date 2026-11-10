@@ -7,7 +7,8 @@ All thresholds live in `config.yaml`, the single source of truth. It is
 loaded and validated by `desk/config.py` at startup. Missing or implausible
 values stop the program; `mode` must be `paper`.
 
-- Pair age: 30–72 hours
+- Pair age: 24 hours–7 days (widened 2026-11-10, see `docs/paper_broker.md`)
+- Up to 30 tokens get the full security check per run (was 10)
 - Market cap: $300,000–$20,000,000
 - Reject if mint authority is not revoked
 - Reject if liquidity is below $40,000
@@ -41,6 +42,7 @@ values stop the program; `mode` must be `paper`.
 | Market cap (`desk/market_cap.py`) | active: point value passes only with reported circulating supply; otherwise only the on-chain range can confirm; upper bound can only reject; FDV separate |
 | On-chain market cap range (`desk/circulating_bounds.py`) | implemented, **on by default** (`market_cap_onchain_bounds.allow_onchain_bounds: true`; `false` switches it off) |
 | Paper broker (`desk/paper.py`) | active: hourly after each scan, price monitor every 15 min, state `paper_state.json` on `desk-data` |
+| Shadow portfolio (`desk/shadow.py`) | active: price change after 1 h / 6 h / 24 h for every checked token (ready, incomplete, rejected), learning only, `shadow_summary.json` shown in the app |
 | Telegram notifications (`desk/notify.py`) | optional: only with secrets `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID` |
 | Web app (`app/`) | active: paper portfolio + last scan, read-only |
 | `desk/risk.py`, `desk/debate.py` | kept, not wired (broker has its own tested calculations) |

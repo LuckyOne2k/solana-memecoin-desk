@@ -5,7 +5,7 @@
  */
 "use strict";
 
-const CACHE = "desk-app-v2";
+const CACHE = "desk-app-v3";
 const SHELL = [
   "./",
   "index.html",

@@ -5,15 +5,15 @@ mode: paper
 # Programm.
 
 scanner:
-  pair_age_hours_min: 30
-  pair_age_hours_max: 72
+  pair_age_hours_min: 24
+  pair_age_hours_max: 168
   market_cap_usd_min: 300000
   market_cap_usd_max: 20000000
   # Bestehen nur mit gemeldeter Umlaufmenge. Die Schätzung aus der
   # Gesamtmenge ist eine Obergrenze und kann nur eine Ablehnung
   # begründen (siehe desk/market_cap.py).
   # Höchstzahl RugCheck-/Holder-Prüfungen pro Lauf (bisher fest im Code)
-  max_security_checks_per_run: 10
+  max_security_checks_per_run: 30
 
 risk_filters:
   require_mint_authority_revoked: true

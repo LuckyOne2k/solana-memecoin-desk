@@ -117,6 +117,7 @@ def test_service_worker_never_caches_scan_data():
     assert "latest.json" not in code("sw.js")
     assert "raw.githubusercontent" not in worker
     assert "paper_state" not in worker
+    assert "shadow_summary" not in worker
     assert "url.origin !== self.location.origin) return;" in worker
 
 
@@ -150,13 +151,19 @@ PAPER_URL = (
 )
 
 
+SHADOW_URL = (
+    "https://raw.githubusercontent.com/LuckyOne2k/solana-memecoin-desk/"
+    "desk-data/shadow_summary.json"
+)
+
+
 def test_paper_view_reads_only_paper_state():
     script = text("paper.js")
 
     # SVG-Namensraum ist kein Abruf
     urls = set(re.findall(r"https?://[^\s\"'`]+", script)) - {"http://www.w3.org/2000/svg"}
-    assert urls == {PAPER_URL}
-    assert script.count("fetch(") == 1
+    assert urls == {PAPER_URL, SHADOW_URL}
+    assert script.count("fetch(") == 2
     assert "localStorage" not in script
     assert 'd.mode !== "paper" || d.live_trading !== false' in script
 

@@ -359,3 +359,62 @@ def test_fetch_pools_by_age_rejects_inverted_window():
             max_age_hours=72,
             min_liquidity_usd=40000,
         )
+
+
+# --------------------------------------------------
+# DexPaprika: begrenzte Wiederholungen
+# --------------------------------------------------
+
+def _http_error(status):
+    import requests as _requests
+    error = _requests.HTTPError(f"{status}")
+    error.response = Mock(status_code=status)
+    failing = Mock()
+    failing.raise_for_status.side_effect = error
+    return failing
+
+
+def _ok_page():
+    ok = Mock()
+    ok.raise_for_status.return_value = None
+    ok.json.return_value = {"results": [{"id": "pool-1"}], "has_next_page": False}
+    return ok
+
+
+def test_fetch_pools_by_age_retries_429_then_succeeds():
+    waits = []
+    with patch("desk.market_data._wait", waits.append), patch(
+        "desk.market_data.requests.get",
+        side_effect=[_http_error(429), _http_error(503), _ok_page()],
+    ) as mocked_get:
+        result = fetch_pools_by_age(min_age_hours=24, max_age_hours=168,
+                                    min_liquidity_usd=40000)
+
+    assert mocked_get.call_count == 3
+    assert waits == [5, 10]
+    assert len(result["results"]) == 1
+
+
+def test_fetch_pools_by_age_gives_up_after_three_attempts():
+    with patch("desk.market_data._wait"), patch(
+        "desk.market_data.requests.get",
+        side_effect=[_http_error(429)] * 3,
+    ) as mocked_get:
+        with pytest.raises(MarketDataError):
+            fetch_pools_by_age(min_age_hours=24, max_age_hours=168,
+                               min_liquidity_usd=40000)
+
+    assert mocked_get.call_count == 3
+
+
+def test_fetch_pools_by_age_does_not_retry_client_errors():
+    with patch("desk.market_data._wait") as wait, patch(
+        "desk.market_data.requests.get",
+        side_effect=[_http_error(401)],
+    ) as mocked_get:
+        with pytest.raises(MarketDataError):
+            fetch_pools_by_age(min_age_hours=24, max_age_hours=168,
+                               min_liquidity_usd=40000)
+
+    assert mocked_get.call_count == 1
+    wait.assert_not_called()

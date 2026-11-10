@@ -43,8 +43,10 @@ Den Token nie in Chat, Issues oder Code schreiben, nur in die Secrets.
 | Stündlicher Scan + Paper-Broker | `scan.yml` | aktiv nach Merge |
 | Kursüberwachung alle 15 Min. | `paper-monitor.yml` | aktiv nach Merge |
 
-Helius-Verbrauch bei stündlichem Scan: geschätzt 80.000–110.000 Credits
-pro Monat, also etwa 10 % des Freikontingents. Prüfe das nach ein paar
+Helius-Verbrauch bei stündlichem Scan mit 30 Prüfungen: geschätzt
+250.000–350.000 Credits pro Monat, also etwa 30 % des Freikontingents.
+Falls es mehr wird: `scanner.max_security_checks_per_run` in
+`config.yaml` senken. Prüfe das nach ein paar
 Tagen im Helius-Dashboard.
 
 ## 4. Bedienung

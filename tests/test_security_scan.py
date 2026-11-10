@@ -490,7 +490,7 @@ def test_duplicate_token_mints_are_not_checked_twice():
 def test_default_run_limit_comes_from_config():
     pools = [
         make_pool(mint=f"TOKEN{i}")
-        for i in range(15)
+        for i in range(CONFIG["scanner"]["max_security_checks_per_run"] + 5)
     ]
 
     def fake_security(mint, **kwargs):
