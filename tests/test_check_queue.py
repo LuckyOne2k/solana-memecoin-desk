@@ -8,9 +8,11 @@ import pytest
 
 from desk.check_queue import (
     MAX_SCAN_EVENTS,
-    QUEUE_BACK,
+    QUEUE_AFTER_INCOMPLETE,
+    QUEUE_AFTER_READY,
+    QUEUE_AFTER_REJECTION,
     QUEUE_DEFAULT,
-    QUEUE_FIRST,
+    QUEUE_NEW,
     SOURCE_HISTORY,
     SOURCE_NO_LOG,
     SOURCE_NO_SCANS,
@@ -195,6 +197,15 @@ def test_only_completed_and_rejected_checks_count(tmp_path):
 
     assert history["source"] == SOURCE_HISTORY
     assert set(history["last_rejected"]) == {"REJ"}
+    # Prüfversuche: abgeschlossen oder Fehler; übersprungene nicht
+    assert {m: r for m, (_, _, r) in history["last_checked"].items()} == {
+        "REJ": "rejected",
+        "INC": "incomplete",
+        "ERR": "incomplete",
+        "NOREASON": "incomplete",
+    }
+    # Erster Auftritt zählt auch ungeprüft
+    assert set(history["first_seen"]) == {"REJ", "INC", "SKIP", "PRE", "ERR", "NOREASON"}
 
 
 def test_later_non_rejected_check_clears_rejection(tmp_path):
@@ -260,26 +271,64 @@ def test_without_history_order_is_unchanged():
 
 @pytest.mark.parametrize("source", [SOURCE_NO_LOG, SOURCE_NO_SCANS, SOURCE_UNREADABLE])
 def test_fallback_sources_keep_order(source):
-    history = {"source": source, "last_rejected": {"A": (0, "t")}}
+    history = {
+        "source": source,
+        "scans_read": 1,
+        "last_rejected": {"A": (0, "t")},
+        "last_checked": {"A": (0, "t", "rejected")},
+        "first_seen": {"A": 0},
+    }
 
     assert [m for m, _, _ in order_check_mints(["A", "B"], history)] == ["A", "B"]
 
 
-def test_rejected_move_back_and_groups_keep_order():
-    history = {
+def history_dict(scans, checked=None, first_seen=None):
+    return {
         "source": SOURCE_HISTORY,
-        "last_rejected": {"A": (1, "t1"), "C": (0, "t0"), "E": (1, "t1")},
+        "scans_read": scans,
+        "last_checked": checked or {},
+        "first_seen": first_seen or {},
+        "last_rejected": {
+            m: (n, t) for m, (n, t, r) in (checked or {}).items() if r == "rejected"
+        },
     }
 
-    order = order_check_mints(["A", "B", "C", "D", "E"], history)
+
+def test_longest_waiting_first_and_ties_are_stable():
+    history = history_dict(
+        3,
+        checked={
+            "A": (2, "t2", "rejected"),    # Wartezeit 1
+            "H": (0, "t0", "rejected"),    # Wartezeit 3, trotzdem hinten
+            "B": (0, "t0", "ready"),       # Wartezeit 3
+            "C": (1, "t1", "incomplete"),  # Wartezeit 2
+            "D": (2, "t2", "incomplete"),  # Wartezeit 1
+            "E": (2, "t2", "ready"),       # Wartezeit 1
+        },
+        first_seen={"F": 1},               # nie geprüft, Wartezeit 3
+    )
+
+    order = order_check_mints(["A", "B", "C", "D", "E", "F", "G", "H"], history)
 
     assert order == [
-        ("B", QUEUE_FIRST, None),
-        ("D", QUEUE_FIRST, None),
-        ("C", QUEUE_BACK, "t0"),  # am längsten zurückliegende Ablehnung zuerst
-        ("A", QUEUE_BACK, "t1"),
-        ("E", QUEUE_BACK, "t1"),
+        ("F", QUEUE_NEW, None),            # Wartezeit 3, nie geprüft vor B
+        ("B", QUEUE_AFTER_READY, None),
+        ("C", QUEUE_AFTER_INCOMPLETE, None),
+        ("G", QUEUE_NEW, None),            # ganz neu, Wartezeit 1
+        ("D", QUEUE_AFTER_INCOMPLETE, None),
+        ("E", QUEUE_AFTER_READY, None),
+        # Abgelehnte hinten (PR #13), älteste Prüfung zuerst
+        ("H", QUEUE_AFTER_REJECTION, "t0"),
+        ("A", QUEUE_AFTER_REJECTION, "t2"),
     ]
+
+
+def test_same_input_gives_same_order():
+    history = history_dict(2, checked={"A": (1, "t", "ready")}, first_seen={"B": 0})
+
+    first = order_check_mints(["A", "B", "C"], history)
+
+    assert first == order_check_mints(["A", "B", "C"], history)
 
 
 # --------------------------------------------------
@@ -346,7 +395,7 @@ def test_rejected_token_is_rechecked_when_budget_allows(tmp_path):
     item = {pool["token_address"]: pool for pool in result["pools"]}["T00"]
 
     assert sorted(checked) == ["T00", "T01", "T02"]
-    assert item["queue_reason"] == QUEUE_BACK
+    assert item["queue_reason"] == QUEUE_AFTER_REJECTION
     assert item["check_queue_position"] == 3
     assert item["security_check_status"] == "completed"
 
@@ -374,7 +423,7 @@ def test_previously_clean_token_is_still_freshly_rejected(tmp_path):
     result, _ = run_scan([make_pool("T00")], history)
 
     assert result["pools"][0]["status"] == "rejected"
-    assert result["pools"][0]["queue_reason"] == QUEUE_FIRST
+    assert result["pools"][0]["queue_reason"] == QUEUE_AFTER_INCOMPLETE
 
 
 def test_unchecked_tokens_never_pass(tmp_path):
@@ -438,3 +487,148 @@ def test_damaged_log_uses_default_order(tmp_path):
     assert checked == MINTS[:LIMIT]
     assert result["check_order_source"] == SOURCE_UNREADABLE
     assert result["pools"][0]["queue_reason"] == QUEUE_DEFAULT
+
+
+# --------------------------------------------------
+# Fairness über mehrere Läufe
+# --------------------------------------------------
+
+def simulate(rounds, pools_per_round, security, logged_ready=frozenset()):
+    """Mehrere Läufe nacheinander; Protokoll wie desk.__main__.
+    pools_per_round: Funktion Rundennummer -> Liste der Token.
+    logged_ready: Token, die im Protokoll als bereit erscheinen, wenn sie
+    geprüft und nicht abgelehnt wurden (die Reihenfolge liest nur das
+    Protokoll; echte Bereitschaft bräuchte Mint-Info und Holder)."""
+    import tempfile
+    from pathlib import Path
+
+    with tempfile.TemporaryDirectory() as directory:
+        path = Path(directory) / "events.jsonl"
+        events = []
+        checked_rounds = []
+
+        for number in range(rounds):
+            history = load_check_history(write_log(path, events)) if events else None
+            result, checked = run_scan(
+                [make_pool(m) for m in pools_per_round(number)], history, security
+            )
+            checked_rounds.append(checked)
+            event = as_log_event(result, f"2026-11-10T{number:02d}:00:00+00:00")
+            for pool in event["details"]["checked_pools"]:
+                if (
+                    pool["token_address"] in logged_ready
+                    and pool["security_check_status"] == "completed"
+                    and pool["status"] != "rejected"
+                ):
+                    pool["status"] = "ready_for_full_risk_screen"
+            events.append(event)
+
+    return checked_rounds
+
+
+def not_rejected_for(mints):
+    """RugCheck: Token aus mints nicht abgelehnt (LP gesperrt), alle
+    anderen abgelehnt (LP nicht gesperrt)."""
+    def security(mint):
+        return make_security(mint=mint, lp_locked=mint in mints)
+    return security
+
+
+def test_new_candidates_are_preferred_over_last_checked(tmp_path):
+    # Lauf 1: T00-T09 geprüft. Lauf 2: zwei ganz neue Token kommen dazu.
+    history = history_from(
+        tmp_path,
+        [scan_event([logged_pool(m, status="incomplete") for m in MINTS[:10]])],
+    )
+
+    _, checked = run_scan([make_pool(m) for m in ["N1", "N2"] + MINTS[:10]], history)
+
+    assert {"N1", "N2"} <= set(checked)
+    assert len(checked) == LIMIT
+
+
+def test_incomplete_candidates_are_checked_again():
+    # 12 Token, alle unvollständig (Holder fehlen): Wer im ersten Lauf
+    # übersprungen wurde, kommt im zweiten zuerst; danach kommen die
+    # zuerst geprüften wieder dran.
+    mints = MINTS[:12]
+
+    rounds = simulate(3, lambda _: mints, not_rejected_for(set(mints)))
+
+    assert rounds[0] == mints[:10]
+    assert set(rounds[1]) == {"T10", "T11"} | set(mints[:8])
+    assert set(rounds[2]) >= {"T08", "T09"}
+
+
+def test_ready_candidates_do_not_block_every_run():
+    # 10 bereite Token füllen das Kontingent. Neue, nie geprüfte Token
+    # kommen trotzdem sofort dran; die bereiten rotieren.
+    ready_mints = set(MINTS[:10])
+    rounds = simulate(
+        3,
+        lambda number: MINTS[:10] + ([] if number == 0 else MINTS[10:15]),
+        not_rejected_for(ready_mints),
+        logged_ready=ready_mints,
+    )
+
+    assert rounds[0] == MINTS[:10]
+    assert set(MINTS[10:15]) <= set(rounds[1])
+    # Bereite Token sind nicht in jedem Lauf alle dabei ...
+    assert not ready_mints <= set(rounds[1])
+    # ... aber jeder kommt wieder dran.
+    assert ready_mints <= set(rounds[1]) | set(rounds[2])
+
+
+@pytest.mark.parametrize("outcome", ["rejected", "ready", "incomplete"])
+def test_no_candidate_is_skipped_permanently(outcome):
+    """25 alte Token plus in jedem Lauf 4 ganz neue (bleiben danach in
+    der Liste, wie Pools im Alterfenster). Mehr Kandidaten als Plätze:
+    trotzdem wird jeder Token nach endlich vielen Läufen geprüft, und
+    kein Token wartet länger als nötig."""
+    old = [f"T{i:02d}" for i in range(25)]
+
+    logged_ready = frozenset()
+
+    if outcome == "rejected":
+        security = not_rejected_for(set())
+    elif outcome == "ready":
+        security = not_rejected_for(set(old))
+        logged_ready = frozenset(old)
+    else:
+        security = not_rejected_for(set(old) | {f"N{r}_{i}" for r in range(10) for i in range(4)})
+
+    def pools(number):
+        new = [f"N{r}_{i}" for r in range(number, -1, -1) for i in range(4)]
+        return new + old  # neueste zuerst, wie DexPaprika
+
+    runs = 10
+    rounds = simulate(runs, pools, security, logged_ready)
+
+    # Jeder Kandidat, der mindestens 5 Läufe in der Liste stand, wurde
+    # geprüft (Kapazität 10 je Lauf reicht im Mittel für ~4 neue + 6 alte).
+    checked = set(sum(rounds, []))
+    for mint in old:
+        assert mint in checked
+    for number in range(runs - 5):
+        for index in range(4):
+            assert f"N{number}_{index}" in checked
+
+    # Nicht abgelehnte alte Token: keine Lücke über 5 Läufe. Abgelehnte
+    # stehen bewusst hinten (PR #13) und dürfen länger warten.
+    for mint in old if outcome != "rejected" else []:
+        hits = [n for n, r in enumerate(rounds) if mint in r]
+        gaps = [b - a for a, b in zip([-1] + hits, hits + [runs])]
+        assert max(gaps) <= 6, (mint, hits)
+
+    assert all(len(r) <= LIMIT for r in rounds)
+
+
+def test_limit_is_kept_over_many_runs():
+    rounds = simulate(
+        5,
+        lambda number: MINTS + [f"X{number}_{i}" for i in range(20)],
+        not_rejected_for(set()),
+    )
+
+    assert all(len(r) == LIMIT for r in rounds)
+    assert all(len(set(r)) == len(r) for r in rounds)

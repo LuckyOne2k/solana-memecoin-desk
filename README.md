@@ -44,15 +44,24 @@ leaves the pool `incomplete`.
 
 - **Check order (fair rotation, `desk/check_queue.py`):** at most
   `scanner.max_security_checks_per_run` (10) tokens are checked per run.
-  Tokens whose last *completed* security check in earlier scans
-  (`events.jsonl`) ended `rejected` move to the back of the queue (oldest
-  rejection first); all other tokens go first in DexPaprika order. This only
-  changes *which* tokens get the budget: every selected token is checked
-  fresh, old results are never reused, unselected pools stay `incomplete`,
-  and rejected tokens come back once newer ones were rejected. Missing,
-  damaged or incomplete logs fall back to the plain DexPaprika order. Each
-  pool logs `check_queue_position`, `queue_reason` and
-  `previous_rejection_at`; the summary logs `check_order_source`.
+  Two groups, each ordered by waiting time (longest first), read from the
+  recent scans in `events.jsonl`: (1) tokens whose last check attempt
+  (completed or error) did *not* end `rejected` – never checked, last
+  incomplete/error, last ready; (2) tokens whose last attempt ended
+  `rejected` (kept at the back, as before). Waiting time = scans since the
+  last attempt; for never-checked tokens scans since first appearance + 1
+  (brand new = 1). Ties: never checked, then incomplete, then ready, then
+  DexPaprika order. So new tokens go ahead of everything checked in the last
+  scan, a ready token does not take a slot every run, and no non-rejected
+  token is skipped permanently. This only changes *which* tokens get the
+  budget: every selected token is checked fresh, old results are never
+  reused, unselected pools stay `incomplete` (also a previously ready one).
+  Missing, damaged or incomplete logs fall back to the plain DexPaprika
+  order. Each pool logs `check_queue_position`, `queue_reason`
+  (`never_checked_in_recent_scans`, `recheck_after_incomplete`,
+  `recheck_after_ready`, `recheck_after_rejection`) and
+  `previous_rejection_at`; the summary logs `check_order_source` and
+  `deprioritized_tokens` (number of tokens rechecked after a rejection).
 - **Non-memecoins:** stablecoins and staking/yield tokens are excluded only by
   exact mint address (list verified via GeckoTerminal on 2026-11-09). Tokens
   that merely use such a symbol or name are marked `token_classification`
