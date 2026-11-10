@@ -31,11 +31,12 @@ Externe Daten werden je Token nur einmal abgefragt; bewertet wird je
 Pool. Alle Grenzwerte kommen aus config.yaml.
 
 Welche Token das Kontingent (max_checks) erhalten, legt
-desk.check_queue fest: Token, die zuletzt abgelehnt wurden, rücken nach
-hinten. Das ändert nur die Reihenfolge, nie das Ergebnis einer Prüfung.
+desk.check_queue fest: noch nie geprüfte und am längsten nicht geprüfte
+Token abwechselnd zuerst. Das ändert nur die Reihenfolge, nie das
+Ergebnis einer Prüfung.
 """
 
-from desk.check_queue import order_check_mints
+from desk.check_queue import QUEUE_AFTER_REJECTION, order_check_mints
 from desk.circulating_bounds import COMPLETED, compute_wallet_lower_bound
 from desk.data_quality import CONFIRMED, REJECTED, check_liquidity
 from desk.holders import evaluate_holders
@@ -906,6 +907,6 @@ def scan_pool_security(pools, config, max_checks=None, check_history=None):
             else "not_provided"
         ),
         "deprioritized_tokens": sum(
-            1 for _, reason, _ in queue if reason == "rejected_in_previous_scan"
+            1 for _, reason, _ in queue if reason == QUEUE_AFTER_REJECTION
         ),
     }
