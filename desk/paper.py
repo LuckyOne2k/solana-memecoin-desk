@@ -478,17 +478,49 @@ def equity_usd(state):
     return state["cash_usd"] + sum(_position_value(p) for p in state["open_positions"])
 
 
+def stop_levels(position, paper):
+    """Alle Stop-Stufen einer Position (nur steigend, nie zurück).
+
+    - initial: Einstieg − initial_stop_loss_pct
+    - profit_lock (Gewinnsicherung in Stufen): sobald der Höchstkurs
+      profit_lock_step_pct über dem Einstieg lag, mindestens Einstand
+      nach geschätzten Verkaufskosten; jede weitere volle Stufe hebt den
+      Stop um eine Stufe (Höchstkurs +12 % → Stop +6 %, +18 % → +12 % …).
+      Gilt nur, solange die Stufe unter dem Höchstkurs liegt.
+    - trailing: ab trailing_activation_profit_pct Höchstkurs − trailing_distance_pct
+    """
+    entry = position["entry_price_usd"]
+    highest = position["highest_price_usd"]
+    levels = {"initial": position["initial_stop_usd"]}
+
+    step = paper["profit_lock_step_pct"]
+    steps = int(round((highest / entry - 1) * 100, 9) // step) if highest > entry else 0
+    if steps >= 1:
+        # Verkaufskosten ≈ Kaufkosten (gleiche Größe, Gebühr + Preiseinfluss);
+        # fehlt der Wert, konservativ Gebühr + 2 × höchster Liquiditätsanteil
+        exit_cost = position.get("entry_cost_pct")
+        if exit_cost is None:
+            exit_cost = paper["swap_fee_pct"] + 2 * paper["max_pool_liquidity_share_pct"]
+        breakeven = entry / (1 - exit_cost / 100)
+        lock = max(breakeven, entry * (1 + (steps - 1) * step / 100))
+        if lock < highest:
+            levels["profit_lock"] = lock
+
+    activation = entry * (1 + paper["trailing_activation_profit_pct"] / 100)
+    if highest >= activation:
+        levels["trailing"] = highest * (1 - paper["trailing_distance_pct"] / 100)
+    return levels
+
+
 def current_stop(position, paper):
-    stop = position["initial_stop_usd"]
-    activation = position["entry_price_usd"] * (
-        1 + paper["trailing_activation_profit_pct"] / 100
-    )
-    if position["highest_price_usd"] >= activation:
-        trailing = position["highest_price_usd"] * (
-            1 - paper["trailing_distance_pct"] / 100
-        )
-        stop = max(stop, trailing)
-    return stop
+    return max(stop_levels(position, paper).values())
+
+
+STOP_EXIT_REASON = {
+    "initial": "stop_loss",
+    "profit_lock": "profit_lock",
+    "trailing": "trailing_stop",
+}
 
 
 def _close(state, position, now, reason, mark_price, liquidity_usd, paper):
@@ -570,15 +602,16 @@ def process_exits(state, quotes, now, paper, max_dev, rejected_tokens):
         if quote["liquidity_usd"]:
             position["last_liquidity_usd"] = quote["liquidity_usd"]
         position["highest_price_usd"] = max(position["highest_price_usd"], mark)
-        stop = current_stop(position, paper)
+        levels = stop_levels(position, paper)
+        stop_kind = max(levels, key=levels.get)
+        stop = levels[stop_kind]
         position["current_stop_usd"] = stop
+        position["current_stop_kind"] = stop_kind
         liquidity = quote["liquidity_usd"] or position.get("last_liquidity_usd")
 
         reason = None
         if mark <= stop:
-            reason = (
-                "trailing_stop" if stop > position["initial_stop_usd"] else "stop_loss"
-            )
+            reason = STOP_EXIT_REASON[stop_kind]
         elif position["token_address"] in rejected_tokens:
             reason = "security_rejected"
         elif _hours_between(_parse_time(position["opened_at"]), now) >= paper["max_holding_hours"]:

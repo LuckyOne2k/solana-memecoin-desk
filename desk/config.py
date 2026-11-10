@@ -68,6 +68,7 @@ SCHEMA = {
         "initial_stop_loss_pct": PERCENT,
         "trailing_activation_profit_pct": NUMBER,
         "trailing_distance_pct": PERCENT,
+        "profit_lock_step_pct": PERCENT,
         "starting_balance_usd": NUMBER,
         "max_open_positions": POSITIVE_COUNT,
         "max_pool_liquidity_share_pct": PERCENT,
@@ -182,6 +183,9 @@ def validate_config(config):
 
     if paper["trailing_distance_pct"] <= 0 or paper["trailing_distance_pct"] >= 100:
         raise ConfigError("paper_trading.trailing_distance_pct muss zwischen 0 und 100 liegen")
+
+    if paper["profit_lock_step_pct"] <= 0 or paper["profit_lock_step_pct"] >= 100:
+        raise ConfigError("paper_trading.profit_lock_step_pct muss zwischen 0 und 100 liegen")
 
     if paper["confirm_min_gap_minutes"] > paper["confirm_max_gap_hours"] * 60:
         raise ConfigError("paper_trading.confirm_min_gap_minutes ist größer als confirm_max_gap_hours")

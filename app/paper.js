@@ -25,9 +25,14 @@
   const EXIT_LABEL = {
     stop_loss: "Stop-Loss",
     trailing_stop: "Trailing-Stop",
+    profit_lock: "Gewinnsicherung",
     security_rejected: "Sicherheitsprüfung abgelehnt",
     max_holding_time: "Maximale Haltedauer",
     price_unavailable_writeoff: "Kurs fehlt – abgeschrieben",
+  };
+  const STOP_KIND_LABEL = {
+    profit_lock: "Gewinnsicherung",
+    trailing: "Trailing",
   };
   const SKIP_LABEL = {
     open: "Gekauft",
@@ -186,6 +191,7 @@
         main.appendChild(el("div", "pool-symbol", p.token_symbol || "–"));
         main.appendChild(el("div", "pool-sub",
           `Kauf ${when(p.opened_at)} · ${usd(p.cost_basis_usd)} · Einstieg ${price(p.entry_price_usd)} · Stop ${price(p.current_stop_usd)}` +
+          (STOP_KIND_LABEL[p.current_stop_kind] ? ` (${STOP_KIND_LABEL[p.current_stop_kind]})` : "") +
           (p.price_missing_since ? " · Kurs fehlt seit " + when(p.price_missing_since) : "")));
         row.appendChild(main);
         row.appendChild(el("span", "tag " + (signCls(change) === "pos" ? "tag-ready" : "tag-rejected"), pct(change)));
