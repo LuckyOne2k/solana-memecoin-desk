@@ -4,9 +4,9 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-10T21:37:26.394660+00:00",
+  "updated_at": "2026-11-10T21:52:28.069348+00:00",
   "starting_balance_usd": 10000.0,
-  "cash_usd": 7845.2542373,
+  "cash_usd": 8575.08850526,
   "open_positions": [
     {
       "token_symbol": "TTP",
@@ -23,46 +23,18 @@
       "cost_basis_usd": 800.0,
       "initial_stop_usd": 0.006670913011928179,
       "highest_price_usd": 0.007096715970136361,
-      "last_price_usd": 0.006963733086577576,
-      "last_price_at": "2026-11-10T21:37:26.394660+00:00",
+      "last_price_usd": 0.006989175489697167,
+      "last_price_at": "2026-11-10T21:52:28.069348+00:00",
       "current_stop_usd": 0.006670913011928179,
       "last_quote": {
-        "at": "2026-11-10T21:37:26.394660+00:00",
+        "at": "2026-11-10T21:52:28.069348+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.006963733086577576,
-        "price_high_usd": 0.006968986445117939,
-        "deviation_pct": 0.0754,
+        "price_low_usd": 0.006989175489697167,
+        "price_high_usd": 0.006990194631871033,
+        "deviation_pct": 0.0146,
         "errors": {}
       },
-      "last_liquidity_usd": 201132.8552
-    },
-    {
-      "token_symbol": "BRUH",
-      "token_name": "The Bruhvengers",
-      "token_address": "PgFtGGquvnv2zEkjG2N2QPvBTBrafuExGYEqahRpump",
-      "pool_address": "EhPzeSdXTyMvWZ1iy5NT3LrNjY1xbC1KGqSpL1kqNYiv",
-      "dex_name": "PumpSwap",
-      "opened_at": "2026-11-10T21:35:11.806604+00:00",
-      "entry_price_usd": 0.002656557754904207,
-      "entry_mark_price_usd": 0.002598025957048943,
-      "entry_cost_pct": 2.2529,
-      "entry_liquidity_usd": 127512.7992,
-      "token_amount": 300699.39395268477,
-      "cost_basis_usd": 798.8253069,
-      "initial_stop_usd": 0.0024971642896099546,
-      "highest_price_usd": 0.002656557754904207,
-      "last_price_usd": 0.002598025957048943,
-      "last_price_at": "2026-11-10T21:37:26.394660+00:00",
-      "current_stop_usd": 0.0024971642896099546,
-      "last_quote": {
-        "at": "2026-11-10T21:37:26.394660+00:00",
-        "status": "confirmed",
-        "price_low_usd": 0.002598025957048943,
-        "price_high_usd": 0.0025998422479971365,
-        "deviation_pct": 0.0699,
-        "errors": {}
-      },
-      "last_liquidity_usd": 127512.7992
+      "last_liquidity_usd": 200912.4745
     },
     {
       "token_symbol": "PAWKET",
@@ -80,10 +52,10 @@
       "initial_stop_usd": 0.00047844467872535675,
       "highest_price_usd": 0.0005089837007716562,
       "last_price_usd": 0.0004938774028645486,
-      "last_price_at": "2026-11-10T21:37:26.394660+00:00",
+      "last_price_at": "2026-11-10T21:52:28.069348+00:00",
       "current_stop_usd": 0.00047844467872535675,
       "last_quote": {
-        "at": "2026-11-10T21:37:26.394660+00:00",
+        "at": "2026-11-10T21:52:28.069348+00:00",
         "status": "confirmed",
         "price_low_usd": 0.0004938774028645486,
         "price_high_usd": 0.0004941589327880156,
@@ -93,14 +65,36 @@
       "last_liquidity_usd": 55592.04558039688
     }
   ],
-  "closed_trades": [],
-  "last_exit_at": {},
+  "closed_trades": [
+    {
+      "token_symbol": "BRUH",
+      "token_address": "PgFtGGquvnv2zEkjG2N2QPvBTBrafuExGYEqahRpump",
+      "pool_address": "EhPzeSdXTyMvWZ1iy5NT3LrNjY1xbC1KGqSpL1kqNYiv",
+      "opened_at": "2026-11-10T21:35:11.806604+00:00",
+      "closed_at": "2026-11-10T21:52:28.069348+00:00",
+      "holding_hours": 0.288,
+      "entry_price_usd": 0.002656557754904207,
+      "exit_mark_price_usd": 0.002481520564012712,
+      "exit_price_usd": 0.0024271225104990084,
+      "exit_cost_pct": 2.1921,
+      "token_amount": 300699.39395268477,
+      "cost_basis_usd": 798.8253069,
+      "proceeds_usd": 729.83426796,
+      "pnl_usd": -68.99103894,
+      "pnl_pct": -8.6366,
+      "exit_reason": "stop_loss",
+      "highest_price_usd": 0.002656557754904207
+    }
+  ],
+  "last_exit_at": {
+    "PgFtGGquvnv2zEkjG2N2QPvBTBrafuExGYEqahRpump": "2026-11-10T21:52:28.069348+00:00"
+  },
   "stats": {
     "trades_opened": 3,
-    "trades_closed": 0,
+    "trades_closed": 1,
     "wins": 0,
-    "losses": 0,
-    "realized_pnl_usd": 0.0
+    "losses": 1,
+    "realized_pnl_usd": -68.99103894
   },
   "equity_history": [
     {
@@ -122,16 +116,20 @@
     {
       "at": "2026-11-10T21:37:26.394660+00:00",
       "equity_usd": 9950.90925349
+    },
+    {
+      "at": "2026-11-10T21:52:28.069348+00:00",
+      "equity_usd": 9902.38676694
     }
   ],
   "last_run": {
-    "at": "2026-11-10T21:37:26.394660+00:00",
+    "at": "2026-11-10T21:52:28.069348+00:00",
     "mode": "monitor",
     "scan_status": "not_requested",
     "scan_at": null,
     "entry_decisions": [],
-    "open_positions": 3,
-    "equity_usd": 9950.90925349,
-    "run_number": "2"
+    "open_positions": 2,
+    "equity_usd": 9902.38676694,
+    "run_number": "3"
   }
 }
