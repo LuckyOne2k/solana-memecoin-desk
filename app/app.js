@@ -57,6 +57,15 @@ const REASON_LABEL = {
   mint_authority_not_revoked: "Mint-Authority nicht entzogen",
   top10_share_too_high: "Top-10-Anteil zu hoch",
   dev_share_too_high: "Entwickler-Anteil zu hoch",
+  token_extension_non_transferable: "Token nicht übertragbar",
+  token_extension_permanent_delegate_active: "Permanent Delegate aktiv",
+  token_extension_pausable_authority_active: "Überweisungen anhaltbar",
+  token_extension_pausable_paused: "Überweisungen angehalten",
+  token_extension_default_account_state_frozen: "Neue Konten eingefroren",
+  token_extension_transfer_hook_program_active: "Transfer-Hook aktiv",
+  token_extension_transfer_hook_authority_active: "Transfer-Hook einschaltbar",
+  token_extension_transfer_fee_authority_active: "Überweisungsgebühr änderbar",
+  token_extension_transfer_fee_nonzero: "Überweisungsgebühr über 0",
 };
 const CHECK_LABEL = {
   market_cap_usd: "Marktkapitalisierung",
@@ -64,6 +73,7 @@ const CHECK_LABEL = {
   dev_share_pct: "Entwickler-Anteil",
   permanent_delegate_absent: "Kein Permanent Delegate",
   token_extensions_safe: "Token-Erweiterungen unbedenklich",
+  authority_cross_check: "Mint-/Freeze-Authority-Gegenprobe (RPC/RugCheck)",
   liquidity_cross_check: "Liquiditätsvergleich zwischen Quellen",
   mint_authority_revoked: "Mint-Authority entzogen",
   freeze_authority_revoked: "Freeze-Authority entzogen",

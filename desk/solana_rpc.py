@@ -430,7 +430,7 @@ def fetch_holder_snapshot(
 # ---------------------------------------------------------------------
 # Vollständige Holder-Liste (Helius getProgramAccountsV2)
 # Plan: docs/helius_integration_plan.md, Abschnitt 1 und 2.
-# Noch nicht in die Prüfkette eingebunden (PR B).
+# Eingebunden in desk/security_scan.py (PR B).
 # ---------------------------------------------------------------------
 
 TOKEN_PROGRAM_ID = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
@@ -539,20 +539,26 @@ def _call(method, params, rpc_url):
 
 
 def _read_extensions(info, space):
-    """Token-2022-Erweiterungen -> (Namen, unbekannte, Delegate-Status, Delegate)."""
+    """Token-2022-Erweiterungen -> (Namen, unbekannte, Delegate-Status,
+    Delegate, Zustände).
+
+    Zustände: Liste {"extension": Name, "state": Rohzustand} in der
+    Reihenfolge der Antwort; bewertet wird in desk/security_scan.py.
+    """
     extensions = info.get("extensions")
 
     if extensions is None:
         # Ohne Erweiterungen hat das Mint-Konto genau die Grundgröße.
         if _is_int(space) and space == BASE_MINT_SIZE:
-            return [], [], ABSENT, None
-        return None, None, UNKNOWN, None
+            return [], [], ABSENT, None, []
+        return None, None, UNKNOWN, None, None
 
     if not isinstance(extensions, list):
-        return None, None, UNKNOWN, None
+        return None, None, UNKNOWN, None, None
 
     names = []
     unknown = []
+    states = []
     delegate_status = ABSENT
     delegate = None
 
@@ -560,9 +566,10 @@ def _read_extensions(info, space):
         name = entry.get("extension") if isinstance(entry, dict) else None
 
         if not isinstance(name, str) or not name:
-            return None, None, UNKNOWN, None
+            return None, None, UNKNOWN, None, None
 
         names.append(name)
+        states.append({"extension": name, "state": entry.get("state")})
 
         if name == PERMANENT_DELEGATE_EXTENSION:
             delegate_status = PRESENT
@@ -578,7 +585,24 @@ def _read_extensions(info, space):
     if delegate_status == ABSENT and UNPARSEABLE_EXTENSION in names:
         delegate_status = UNKNOWN
 
-    return names, unknown, delegate_status, delegate
+    return names, unknown, delegate_status, delegate, states
+
+
+def _authority_revoked(info, key):
+    """True nur bei vorhandenem Feld mit null (entzogen), False bei einer
+    Adresse, sonst None (fehlt oder unklarer Wert)."""
+    if key not in info:
+        return None
+
+    value = info[key]
+
+    if value is None:
+        return True
+
+    if isinstance(value, str) and value.strip():
+        return False
+
+    return None
 
 
 def fetch_mint_info(mint, rpc_url=None):
@@ -628,9 +652,11 @@ def fetch_mint_info(mint, rpc_url=None):
         raise HolderListError("mint_data_invalid")
 
     if program == TOKEN_PROGRAM_ID:
-        names, unknown, delegate_status, delegate = [], [], ABSENT, None
+        names, unknown, delegate_status, delegate, states = (
+            [], [], ABSENT, None, []
+        )
     else:
-        names, unknown, delegate_status, delegate = _read_extensions(
+        names, unknown, delegate_status, delegate, states = _read_extensions(
             info, value.get("space")
         )
 
@@ -644,6 +670,14 @@ def fetch_mint_info(mint, rpc_url=None):
         "extensions_readable": names is not None,
         "permanent_delegate_status": delegate_status,
         "permanent_delegate": delegate,
+        "token2022_extension_states": states,
+        # Gegenprobe zu RugCheck (desk/security_scan.py)
+        "mint_authority_revoked_onchain": _authority_revoked(
+            info, "mintAuthority"
+        ),
+        "freeze_authority_revoked_onchain": _authority_revoked(
+            info, "freezeAuthority"
+        ),
     }
 
 

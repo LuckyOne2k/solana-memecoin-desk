@@ -158,8 +158,15 @@ def make_mint_info(
     delegate_status="absent",
     delegate=None,
     readable=True,
+    extension_states=None,
+    mint_authority_onchain=True,
+    freeze_authority_onchain=True,
 ):
-    """Rückgabeform von fetch_mint_info."""
+    """Rückgabeform von fetch_mint_info.
+
+    extension_states: Liste {"extension", "state"}; None = keine
+    Zustände (Erweiterungen werden dann nicht bewertet, bleiben offen).
+    """
     names = list(extensions or []) if readable else None
     return {
         "mint": mint,
@@ -171,4 +178,7 @@ def make_mint_info(
         "extensions_readable": readable,
         "permanent_delegate_status": delegate_status,
         "permanent_delegate": delegate,
+        "token2022_extension_states": extension_states,
+        "mint_authority_revoked_onchain": mint_authority_onchain,
+        "freeze_authority_revoked_onchain": freeze_authority_onchain,
     }

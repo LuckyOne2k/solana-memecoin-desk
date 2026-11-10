@@ -114,7 +114,7 @@ def scan(
         ),
         patch(
             "desk.security_scan.check_token_security",
-            return_value=security or make_security(mint=MINT),
+            return_value=security or make_security(mint=MINT, freeze_revoked=True),
         ),
         patch(
             "desk.security_scan.fetch_holder_snapshot",
@@ -223,7 +223,8 @@ def test_holder_limits_come_from_config():
 # Token-2022: Permanent Delegate und Erweiterungen
 # --------------------------------------------------
 
-def test_permanent_delegate_keeps_token_incomplete_without_rejection():
+def test_permanent_delegate_without_states_stays_incomplete():
+    # Ohne lesbare Zustände keine Bewertung: offen, nie bereit.
     info = make_mint_info(
         mint=MINT,
         token_program=TOKEN_2022_PROGRAM_ID,
@@ -562,7 +563,14 @@ def account(address, owner_index, amount, program):
 
 
 def mint_response(program, extensions=None, slot=900):
-    info = {"decimals": 6, "supply": str(SUPPLY)}
+    # Entzogene Authorities: Feld vorhanden mit null (belegt am
+    # Mainnet, z. B. TTP und BONK, jsonParsed).
+    info = {
+        "decimals": 6,
+        "supply": str(SUPPLY),
+        "mintAuthority": None,
+        "freezeAuthority": None,
+    }
     if extensions is not None:
         info["extensions"] = extensions
     return {
@@ -629,6 +637,7 @@ def real_scan(fake, monkeypatch, sample=None):
     monkeypatch.setenv("SOLANA_RPC_URL", "https://rpc.test.invalid")
     security = make_security(
         mint=MINT,
+        freeze_revoked=True,
         creator_address=CREATOR,
         labels=make_labels(),
     )
@@ -674,7 +683,7 @@ def test_end_to_end_full_list_confirms(program, extensions, monkeypatch):
     mocks[2].assert_not_called()
 
 
-def test_end_to_end_token2022_permanent_delegate(monkeypatch):
+def test_end_to_end_token2022_permanent_delegate_is_rejected(monkeypatch):
     extensions = [
         {"extension": "permanentDelegate", "state": {"delegate": "DELEGATE999"}},
     ]
@@ -687,15 +696,15 @@ def test_end_to_end_token2022_permanent_delegate(monkeypatch):
     result, _ = real_scan(fake, monkeypatch)
     item = first(result)
 
-    assert item["holder_evaluation"]["top10_status"] == "confirmed"
     assert item["permanent_delegate"] == "DELEGATE999"
     assert item["token2022_extensions"] == ["permanentDelegate"]
-    assert set(item["missing_checks"]) == {
-        "permanent_delegate_absent",
-        "token_extensions_safe",
-    }
-    assert item["rejection_reasons"] == []
-    assert item["status"] == "incomplete"
+    assert item["rejection_reasons"] == [
+        "token_extension_permanent_delegate_active"
+    ]
+    assert item["status"] == "rejected"
+    # Nach der Ablehnung keine Holder-Abfragen mehr.
+    assert item["holder_check_status"] == "skipped_token_rejection"
+    assert "getProgramAccountsV2" not in fake.methods
 
 
 def _expect_fallback(fake, monkeypatch, reason):

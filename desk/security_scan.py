@@ -7,17 +7,22 @@ Ablauf pro Pool:
 2. RugCheck: Mint-/Freeze-Authority, LP-Sperre, Pool-Kennzeichnungen
 3. Liquidität: DexPaprika gegen RugCheck
 4. Solana-RPC (nur ohne vorherige Ablehnung):
-   a) Mint-Info: Token-Programm und Token-2022-Erweiterungen
-      (Pflichtprüfungen permanent_delegate_absent und
-      token_extensions_safe; nie Ablehnung, nur offen)
+   a) Mint-Info: Token-Programm, Token-2022-Erweiterungen und
+      Gegenprobe der Mint-/Freeze-Authority zu RugCheck (Pflicht-
+      prüfungen permanent_delegate_absent, token_extensions_safe,
+      authority_cross_check). Abgelehnt wird nur bei eindeutig
+      belegtem Risiko einer Erweiterung (classify_token_extension);
+      Abweichung, unbekannte oder unlesbare Daten -> offen. Nach einer
+      Ablehnung keine weiteren RPC-Abfragen für diesen Pool.
    b) vollständige Holder-Liste (fetch_full_holder_list)
    c) nur wenn b) fehlschlägt: Rückfall auf die Top-20-Stichprobe.
       Die Stichprobe kann nur ablehnen oder "unklar" liefern, nie
       bestätigen.
 5. Holder-Verteilung (desk.holders) und Marktkapitalisierung
    (desk.market_cap)
-6. Nur mit market_cap_onchain_bounds.allow_onchain_bounds (Standard aus)
-   und nur, wenn allein die Marktkapitalisierung offen ist: eigene
+6. Nur mit market_cap_onchain_bounds.allow_onchain_bounds (Standard an,
+   false schaltet ab) und nur, wenn allein die Marktkapitalisierung
+   offen ist: eigene
    On-Chain-Spanne aus heuristischer Wallet-Untergrenze
    (desk.circulating_bounds) und
    Obergrenze. Jede Lücke -> bleibt unvollständig.
@@ -62,9 +67,14 @@ from desk.solana_rpc import (
 FULL_LIST_SCOPE = "full_token_account_list"
 SAMPLE_SCOPE = "largest_20_token_accounts_sample"
 
-# Pflichtprüfungen aus der Mint-Info. Werden nur geklärt, nie abgelehnt
-# (eine Ablehnungsregel für Permanent Delegate folgt gesondert).
-TOKEN_CHECKS = ("permanent_delegate_absent", "token_extensions_safe")
+# Pflichtprüfungen aus der Mint-Info. Bleiben offen, bis die Mint-Info
+# sie eindeutig klärt. Ablehnungen kommen nur aus
+# classify_token_extension (eindeutig belegtes Risiko).
+TOKEN_CHECKS = (
+    "permanent_delegate_absent",
+    "token_extensions_safe",
+    "authority_cross_check",
+)
 
 # Token-2022-Erweiterungen, die ausdrücklich als unbedenklich eingestuft
 # sind: reine Metadaten- und Gruppenangaben ohne Einfluss auf Bestände,
@@ -83,6 +93,83 @@ SAFE_TOKEN_2022_EXTENSIONS = frozenset(
         "tokenGroupMember",
     }
 )
+
+
+EXTENSION_SAFE = "safe"
+EXTENSION_REJECT = "reject"
+EXTENSION_UNCLEAR = "unclear"
+
+
+def _address(value):
+    return isinstance(value, str) and bool(value.strip())
+
+
+def _fee_bps(fee):
+    """Gebühr in Basispunkten oder None, wenn nicht eindeutig lesbar."""
+    if not isinstance(fee, dict):
+        return None
+
+    bps = fee.get("transferFeeBasisPoints")
+
+    if isinstance(bps, bool) or not isinstance(bps, int) or bps < 0:
+        return None
+
+    return bps
+
+
+def classify_token_extension(name, state):
+    """Bewertet eine Token-2022-Erweiterung des Mints.
+
+    Gibt (Entscheidung, Grund) zurück. "reject" nur bei eindeutig
+    belegtem Risiko (Feld vorhanden, Wert eindeutig). "safe" nur für die
+    Positivliste SAFE_TOKEN_2022_EXTENSIONS. Alles andere (fehlende oder
+    falsch typisierte Felder, unbekannte, nicht lesbare oder nicht
+    ausdrücklich freigegebene Erweiterungen) -> "unclear", nie Freigabe.
+    """
+    if name in SAFE_TOKEN_2022_EXTENSIONS:
+        return EXTENSION_SAFE, "classified_safe"
+
+    # Kein Zustand nötig: Token ist grundsätzlich nicht übertragbar.
+    if name == "nonTransferable":
+        return EXTENSION_REJECT, "non_transferable"
+
+    if not isinstance(state, dict):
+        return EXTENSION_UNCLEAR, "extension_state_unreadable"
+
+    if name == "permanentDelegate":
+        if _address(state.get("delegate")):
+            return EXTENSION_REJECT, "permanent_delegate_active"
+        return EXTENSION_UNCLEAR, "permanent_delegate_not_active_unverified"
+
+    if name == "pausableConfig":
+        if _address(state.get("authority")):
+            return EXTENSION_REJECT, "pausable_authority_active"
+        if state.get("paused") is True:
+            return EXTENSION_REJECT, "pausable_paused"
+        return EXTENSION_UNCLEAR, "pausable_not_active_unverified"
+
+    if name == "defaultAccountState":
+        if state.get("accountState") == "frozen":
+            return EXTENSION_REJECT, "default_account_state_frozen"
+        return EXTENSION_UNCLEAR, "default_account_state_not_classified_safe"
+
+    if name == "transferHook":
+        if _address(state.get("programId")):
+            return EXTENSION_REJECT, "transfer_hook_program_active"
+        if _address(state.get("authority")):
+            return EXTENSION_REJECT, "transfer_hook_authority_active"
+        return EXTENSION_UNCLEAR, "transfer_hook_not_active_unverified"
+
+    if name == "transferFeeConfig":
+        if _address(state.get("transferFeeConfigAuthority")):
+            return EXTENSION_REJECT, "transfer_fee_authority_active"
+        for key in ("olderTransferFee", "newerTransferFee"):
+            bps = _fee_bps(state.get(key))
+            if bps is not None and bps > 0:
+                return EXTENSION_REJECT, "transfer_fee_nonzero"
+        return EXTENSION_UNCLEAR, "transfer_fee_zero_unverified"
+
+    return EXTENSION_UNCLEAR, "token_extension_not_classified_safe"
 
 
 def _status(item):
@@ -283,9 +370,42 @@ def _fetch_holders(mint, security, data, holder_config, counters):
     return {**fallback, "holder_snapshot": sample}
 
 
-def _evaluate_mint_info(item, data):
-    """Token-Programm und Erweiterungen: klärt TOKEN_CHECKS oder lässt
-    sie offen. Nie Ablehnung, nie bloßes Protokollieren bei Risiko."""
+def _evaluate_authorities(item, info, security, reasons):
+    """Gegenprobe Mint-/Freeze-Authority: RPC gegen RugCheck. Geklärt nur,
+    wenn beide Quellen für beide Authorities eindeutig übereinstimmen;
+    Abweichung oder fehlender Wert -> offen (nie Freigabe)."""
+    pairs = (
+        (
+            "mint_authority",
+            info.get("mint_authority_revoked_onchain"),
+            security.get("mint_authority_revoked"),
+        ),
+        (
+            "freeze_authority",
+            info.get("freeze_authority_revoked_onchain"),
+            security.get("freeze_authority_revoked"),
+        ),
+    )
+    agree = True
+
+    for name, onchain, rugcheck in pairs:
+        item[f"{name}_revoked_onchain"] = onchain
+
+        if onchain not in (True, False) or rugcheck not in (True, False):
+            reasons.append(f"{name}_cross_check_data_missing")
+            agree = False
+        elif onchain != rugcheck:
+            reasons.append(f"{name}_sources_disagree")
+            agree = False
+
+    if agree:
+        _resolve(item, "authority_cross_check")
+
+
+def _evaluate_mint_info(item, data, security):
+    """Token-Programm, Erweiterungen und Authority-Gegenprobe: klärt
+    TOKEN_CHECKS, lässt sie offen oder lehnt bei eindeutig belegtem
+    Risiko einer Erweiterung ab."""
     if "mint_info_error" in data:
         item["mint_info_status"] = "error"
         item["mint_info_error"] = data["mint_info_error"]
@@ -294,6 +414,7 @@ def _evaluate_mint_info(item, data):
 
     info = data["mint_info"]
     names = info.get("token2022_extensions")
+    states = info.get("token2022_extension_states")
     delegate_status = info.get("permanent_delegate_status")
     reasons = []
 
@@ -321,8 +442,47 @@ def _evaluate_mint_info(item, data):
         if unsafe:
             reasons.append("token_extension_not_classified_safe")
             item["unsafe_token_extensions"] = unsafe
+
+        # Zustände gehören eindeutig zu den Namen; sonst keine Bewertung
+        # (bleibt offen, kann aber nicht ablehnen).
+        state_names = (
+            [entry.get("extension") for entry in states if isinstance(entry, dict)]
+            if isinstance(states, list)
+            else None
+        )
+
+        if state_names != names:
+            if unsafe:
+                reasons.append("token_extension_states_unreadable")
         else:
+            findings = []
+
+            for entry in states:
+                decision, reason = classify_token_extension(
+                    entry["extension"], entry.get("state")
+                )
+
+                if decision == EXTENSION_SAFE:
+                    continue
+
+                findings.append(
+                    {
+                        "extension": entry["extension"],
+                        "decision": decision,
+                        "reason": reason,
+                    }
+                )
+
+                if decision == EXTENSION_REJECT:
+                    _reject(item, f"token_extension_{reason}")
+
+            if findings:
+                item["token_extension_findings"] = findings
+
+        if not unsafe:
             _resolve(item, "token_extensions_safe")
+
+    _evaluate_authorities(item, info, security, reasons)
 
     item["token_check_reasons"] = reasons
 
@@ -389,7 +549,11 @@ def _evaluate_item(item, data, config, counters):
     if "mint_info" not in data and "mint_info_error" not in data:
         data.update(_fetch_mint(mint, counters))
 
-    _evaluate_mint_info(item, data)
+    _evaluate_mint_info(item, data, security)
+
+    if item["rejection_reasons"]:
+        item["holder_check_status"] = "skipped_token_rejection"
+        return
 
     if "holder_snapshot" not in data and "holder_error" not in data:
         data.update(

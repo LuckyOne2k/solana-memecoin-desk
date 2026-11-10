@@ -629,7 +629,12 @@ class FakeRpc:
         self.methods.append(method)
 
         if method == "getAccountInfo":
-            info = {"decimals": DECIMALS, "supply": str(SUPPLY)}
+            info = {
+                "decimals": DECIMALS,
+                "supply": str(SUPPLY),
+                "mintAuthority": None,
+                "freezeAuthority": None,
+            }
             if self.extensions is not None:
                 info["extensions"] = self.extensions
             return {

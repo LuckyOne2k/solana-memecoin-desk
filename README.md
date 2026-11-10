@@ -30,8 +30,9 @@ values stop the program; `mode` must be `paper`.
 | Token classification (`desk/token_classification.py`) | active: stablecoins and staking tokens excluded by verified mint address |
 | Liquidity cross-check (`desk/data_quality.py`) | active: DexPaprika vs. RugCheck for the same pool |
 | Holder distribution (`desk/holders.py`) | active: full holder list via Helius (`fetch_full_holder_list`), top-20 sample only as fallback (can never confirm) |
-| Token-2022 extensions | active: permanent delegate and any extension not classified safe keep the pool `incomplete` |
-| Market cap (`desk/market_cap.py`) | active: passes only with reported circulating supply; upper bound can only reject; FDV separate |
+| Token-2022 extensions | active: proven risky extensions reject; unknown, unreadable or not classified safe keep the pool `incomplete` |
+| Mint/freeze authority cross-check | active: RPC (`fetch_mint_info`) vs. RugCheck; disagreement or missing value keeps the pool `incomplete` |
+| Market cap (`desk/market_cap.py`) | active: point value passes only with reported circulating supply; otherwise only the on-chain range can confirm; upper bound can only reject; FDV separate |
 | On-chain market cap range (`desk/circulating_bounds.py`) | implemented, **on by default** (`market_cap_onchain_bounds.allow_onchain_bounds: true`; `false` switches it off) |
 | `desk/risk.py`, `desk/debate.py` | kept, not wired yet |
 | Paper trading, strategy, AI agents, app | not implemented |
@@ -86,10 +87,19 @@ leaves the pool `incomplete`.
   holder list (unseen amount 0), complete owner mapping and complete RugCheck
   labels → confirmed. Otherwise the check stays `incomplete`.
 - **Token-2022:** `permanent_delegate_absent` and `token_extensions_safe` are
-  mandatory checks. A permanent delegate (address logged), an unknown or
-  unreadable extension, or any extension not explicitly classified safe
-  (only metadata/group extensions are) keeps the pool `incomplete`. No
-  rejection rule yet (separate decision).
+  mandatory checks. Rejected only on a proven risk read from the extension
+  state (`classify_token_extension` in `desk/security_scan.py`): permanent
+  delegate with an address, `nonTransferable`, `pausableConfig` with an
+  authority or `paused: true`, `defaultAccountState` `frozen`,
+  `transferHook` with a program or an authority, `transferFeeConfig` with a
+  fee above 0 or a fee authority. Everything else that is not explicitly
+  classified safe (only metadata/group extensions are) – including inactive
+  delegate/hook/fee, unknown or unreadable extensions, missing or mistyped
+  fields – keeps the pool `incomplete`. After a rejection no holder queries.
+- **Mint/freeze authority cross-check:** mandatory check
+  `authority_cross_check`. `mintAuthority`/`freezeAuthority` from the RPC
+  (`null` = revoked) must match RugCheck for both authorities. Disagreement
+  or a missing/unclear value → `incomplete`, never ready.
 - **Developer share:** creator from RugCheck. Lower bound = creator holdings in
   the sample, upper bound = lower bound + unseen amount. Same decision rule
   with the 3 % limit.
