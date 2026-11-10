@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "purpose": "learning_only_no_trading",
+  "generated_at": "2026-11-10T20:04:15.904332+00:00",
+  "note": "Kursveränderung ohne Kosten seit erster Beobachtung; keine Kaufempfehlung.",
+  "observations_total": 77,
+  "observations_open": 77,
+  "by_status": [
+    {
+      "group": "incomplete",
+      "observations": 41,
+      "1h": null,
+      "6h": null,
+      "24h": null
+    },
+    {
+      "group": "rejected",
+      "observations": 32,
+      "1h": null,
+      "6h": null,
+      "24h": null
+    },
+    {
+      "group": "ready_for_full_risk_screen",
+      "observations": 4,
+      "1h": null,
+      "6h": null,
+      "24h": null
+    }
+  ],
+  "by_reason": [
+    {
+      "group": "incomplete:market_cap_usd",
+      "observations": 41,
+      "1h": null,
+      "6h": null,
+      "24h": null
+    },
+    {
+      "group": "rejected:lp_burn_or_lock_not_verified",
+      "observations": 8,
+      "1h": null,
+      "6h": null,
+      "24h": null
+    },
+    {
+      "group": "rejected:no_24h_trading_activity",
+      "observations": 7,
+      "1h": null,
+      "6h": null,
+      "24h": null
+    },
+    {
+      "group": "rejected:market_cap_above_maximum_onchain_lower_bound",
+      "observations": 6,
+      "1h": null,
+      "6h": null,
+      "24h": null
+    },
+    {
+      "group": "rejected:market_cap_below_minimum",
+      "observations": 5,
+      "1h": null,
+      "6h": null,
+      "24h": null
+    },
+    {
+      "group": "ready_for_full_risk_screen",
+      "observations": 4,
+      "1h": null,
+      "6h": null,
+      "24h": null
+    },
+    {
+      "group": "rejected:market_cap_out_of_range",
+      "observations": 3,
+      "1h": null,
+      "6h": null,
+      "24h": null
+    },
+    {
+      "group": "rejected:mint_authority_not_confirmed_revoked",
+      "observations": 2,
+      "1h": null,
+      "6h": null,
+      "24h": null
+    },
+    {
+      "group": "rejected:creator_share_above_limit",
+      "observations": 1,
+      "1h": null,
+      "6h": null,
+      "24h": null
+    }
+  ]
+}
