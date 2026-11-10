@@ -85,9 +85,28 @@ immer mit dem **niedrigeren** verfügbaren Kurs (konservativ).
 |---|---|---|
 | 1 | `price_unavailable_writeoff` | Kein Kurs aus beiden Quellen länger als 24 h → Abschreibung auf 0 $ |
 | 2 | `stop_loss` | Kurs ≤ Einstieg − 6 % |
+| 2 | `profit_lock` | Gewinnsicherung in Stufen (siehe unten) |
 | 2 | `trailing_stop` | ab +12 % Höchstkurs: Kurs ≤ Höchstkurs − 6 % |
 | 3 | `security_rejected` | Token im neuesten Scan `rejected` (nur „unvollständig“ → halten) |
 | 4 | `max_holding_time` | Haltedauer ≥ 72 h |
+
+Es gilt immer der **höchste** der drei Stops; er sinkt nie.
+
+**Gewinnsicherung in Stufen** (`profit_lock_step_pct: 6`, Nutzerwunsch
+2026-11-10: ein Token im Plus soll nicht erst im Minus verkauft werden):
+
+| Höchstkurs seit Kauf | Stop mindestens |
+|---|---|
+| unter +6 % | Einstieg − 6 % |
+| ab +6 % | Einstand nach geschätzten Verkaufskosten |
+| ab +12 % | Einstieg + 6 % |
+| ab +18 % | Einstieg + 12 % |
+| … je weitere 6 % | eine Stufe höher |
+
+Verkaufskosten werden mit den Kaufkosten der Position geschätzt (gleiche
+Größe), ohne gespeicherten Wert konservativ mit 3 %. Liegt die Stufe
+nicht unter dem Höchstkurs (sehr hohe Kosten), entfällt sie. Die App
+zeigt beim Stop „(Gewinnsicherung)“ bzw. „(Trailing)“ an.
 
 Verkaufskurs = beobachteter Kurs × (1 − Kosten), nie der Stop-Kurs. Fällt
 der Kurs zwischen zwei Abfragen weit unter den Stop, trägt das Depot
@@ -103,6 +122,10 @@ entschieden.
   bestätigt nie.
 - **1 % der Liquidität** hält den simulierten Preiseinfluss klein, damit
   die Simulation realistisch bleibt.
+- **Gewinnsicherung** (seit 2026-11-10): Einstand wird nur garantiert,
+  wenn der Kurs nicht zwischen zwei Abfragen (15 Min.) unter die Stufe
+  springt. Ob die Stufen unterm Strich helfen oder zu früh verkaufen,
+  zeigt die Auswertung nach 20–30 Trades.
 - **Stop 6 % / Trailing 12 % / 6 %** sind die bisherigen Werte aus
   `config.yaml` und bleiben vorerst unverändert. Vermutung: Bei
   Memecoins und Kosten von etwa 2–3 % je Runde ist das sehr eng. Das wird

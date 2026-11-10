@@ -16,6 +16,7 @@ from desk.paper import (
     PaperStateError,
     combine_quote,
     current_stop,
+    stop_levels,
     run_paper,
     trade_cost_pct,
 )
@@ -161,11 +162,60 @@ def test_trade_cost_pct():
 
 def test_trailing_stop_activates_only_after_gain(desk_config):
     p = desk_config["paper_trading"]
-    position = {"entry_price_usd": 1.0, "initial_stop_usd": 0.94, "highest_price_usd": 1.11}
+    # Höchstkurs unter der ersten Gewinnstufe: nur der Anfangs-Stop
+    position = {"entry_price_usd": 1.0, "initial_stop_usd": 0.94, "highest_price_usd": 1.05,
+                "entry_cost_pct": 2.0}
     assert current_stop(position, p) == 0.94
 
-    position["highest_price_usd"] = 1.2
-    assert current_stop(position, p) == pytest.approx(1.2 * 0.94)
+    # +50 %: Stufe 8 -> +42 % liegt über dem Trailing (1,5 x 0,94 = 1,41)
+    position["highest_price_usd"] = 1.5
+    assert current_stop(position, p) == pytest.approx(1.42)
+
+
+@pytest.mark.parametrize("highest, expected, kind", [
+    (1.059, 0.94, "initial"),            # knapp unter +6 %: noch kein Einstand
+    (1.06, 1 / 0.98, "profit_lock"),     # +6 %: Einstand nach 2 % Verkaufskosten
+    (1.119, 1 / 0.98, "profit_lock"),    # bis zur nächsten Stufe Einstand
+    (1.12, 1.06, "profit_lock"),         # +12 %: Stop +6 % (Trailing nur 1,0528)
+    (1.179, 1.179 * 0.94, "trailing"),   # kurz vor +18 %: Trailing liegt höher
+    (1.18, 1.12, "profit_lock"),         # +18 %: Stop +12 %
+    (1.30, 1.24, "profit_lock"),         # +30 %: Stop +24 %
+])
+def test_profit_lock_steps(desk_config, highest, expected, kind):
+    p = desk_config["paper_trading"]
+    position = {"entry_price_usd": 1.0, "initial_stop_usd": 0.94, "highest_price_usd": highest,
+                "entry_cost_pct": 2.0}
+    levels = stop_levels(position, p)
+    assert current_stop(position, p) == pytest.approx(expected)
+    assert max(levels, key=levels.get) == kind
+
+
+def test_profit_lock_needs_exit_cost_and_stays_below_high(desk_config):
+    p = desk_config["paper_trading"]
+    # Ohne gespeicherte Kosten: konservativ 1 % + 2 x 1 % = 3 %
+    position = {"entry_price_usd": 1.0, "initial_stop_usd": 0.94, "highest_price_usd": 1.06}
+    assert current_stop(position, p) == pytest.approx(1 / 0.97)
+    # Einstand läge über dem Höchstkurs (sehr hohe Kosten) -> keine Stufe,
+    # sonst würde sofort ohne Grund verkauft
+    position["entry_cost_pct"] = 8.0
+    assert "profit_lock" not in stop_levels(position, p)
+
+
+def test_profit_lock_sells_at_breakeven_instead_of_loss(tmp_path, desk_config):
+    position = open_ttp(tmp_path, desk_config)
+    entry = position["entry_price_usd"]
+    up = entry * 1.08
+    monitor(tmp_path, desk_config, {POOL: quote(up, up)}, NOW + timedelta(minutes=15))
+    held = state_file(tmp_path)["open_positions"][0]
+    assert held["current_stop_kind"] == "profit_lock"
+    assert held["current_stop_usd"] > entry
+
+    back = entry * 1.0
+    monitor(tmp_path, desk_config, {POOL: quote(back, back)}, NOW + timedelta(minutes=30))
+    trade = state_file(tmp_path)["closed_trades"][0]
+    assert trade["exit_reason"] == "profit_lock"
+    # Verkauft beim beobachteten Kurs (hier unter der Stufe) – nie zum Stop-Kurs
+    assert trade["exit_mark_price_usd"] == pytest.approx(back)
 
 
 # --------------------------------------------------
@@ -412,12 +462,13 @@ def test_trailing_stop_locks_in_profit(tmp_path, desk_config):
     entry = position["entry_price_usd"]
     high = entry * 1.5
     monitor(tmp_path, desk_config, {POOL: quote(high, high)}, NOW + timedelta(hours=1))
-    assert state_file(tmp_path)["open_positions"][0]["current_stop_usd"] == pytest.approx(high * 0.94)
+    # +50 %: Gewinnstufe +42 % liegt über dem Trailing (1,5 x 0,94 = 1,41)
+    assert state_file(tmp_path)["open_positions"][0]["current_stop_usd"] == pytest.approx(entry * 1.42)
 
     drop = high * 0.93
     monitor(tmp_path, desk_config, {POOL: quote(drop, drop)}, NOW + timedelta(hours=2))
     state = state_file(tmp_path)
-    assert state["closed_trades"][0]["exit_reason"] == "trailing_stop"
+    assert state["closed_trades"][0]["exit_reason"] == "profit_lock"
     assert state["closed_trades"][0]["pnl_usd"] > 0
     assert state["stats"]["wins"] == 1
 

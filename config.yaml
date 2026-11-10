@@ -68,6 +68,12 @@ paper_trading:
   initial_stop_loss_pct: 6
   trailing_activation_profit_pct: 12
   trailing_distance_pct: 6
+  # Gewinnsicherung in Stufen (2026-11-10, Nutzerwunsch): Lag der
+  # Höchstkurs 6 % über dem Einstieg, steigt der Stop auf Einstand
+  # (nach geschätzten Verkaufskosten); jede weitere 6-%-Stufe hebt ihn um
+  # 6 % (Höchstkurs +12 % → Stop +6 %, +18 % → +12 % …). Kurssprünge
+  # zwischen zwei Abfragen können trotzdem darunter verkaufen.
+  profit_lock_step_pct: 6
   # Paper-Broker (desk/paper.py, nur Simulation). Einstiegsregel und
   # folgende Werte von Claude festgelegt (Nutzer-Delegation 2026-11-10),
   # Begründung in docs/paper_broker.md.

@@ -39,6 +39,7 @@ EXPECTED_THRESHOLDS = {
         "initial_stop_loss_pct": 6,
         "trailing_activation_profit_pct": 12,
         "trailing_distance_pct": 6,
+        "profit_lock_step_pct": 6,
         "starting_balance_usd": 10000,
         "max_open_positions": 5,
         "max_pool_liquidity_share_pct": 1,
