@@ -18,7 +18,8 @@ Begriffe:
 Entscheidungsregeln:
 - Eine Obergrenze kann nur eine Ablehnung begründen (Obergrenze unter
   dem Minimum). Sie führt NIE zum Bestehen der Prüfung.
-- Bestehen ist nur mit gemeldeter Umlaufmenge möglich, und nur wenn
+- Bestehen über einen Punktwert (evaluate_market_cap) ist nur mit
+  gemeldeter Umlaufmenge möglich, und nur wenn
   * zwei unabhängige Preisquellen (GeckoTerminal, RugCheck) vorliegen
     und übereinstimmen,
   * die Gesamtmenge von der Blockchain vorliegt und
@@ -27,9 +28,12 @@ Entscheidungsregeln:
     der beiden Preisquellen).
 - Widersprüchliche Preise machen die Prüfung immer unklar, auch wenn
   ein gemeldeter Wert vorliegt.
+- Ohne gemeldete Umlaufmenge kann nur die eigene On-Chain-Spanne
+  (unten) bestätigen.
 
 Eigene On-Chain-Spanne (evaluate_onchain_bounds, nur mit Schalter
-market_cap_onchain_bounds.allow_onchain_bounds, Standard aus):
+market_cap_onchain_bounds.allow_onchain_bounds, Standard an, false
+schaltet ab):
 - Untergrenze = niedriger Preis x heuristische Wallet-Untergrenze L
   (desk.circulating_bounds: Summe technisch wallet-ähnlicher Konten;
   kein Nachweis eines privaten Schlüssels, keine nachgewiesene

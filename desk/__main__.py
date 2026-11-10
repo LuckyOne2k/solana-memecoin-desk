@@ -54,6 +54,41 @@ def _onchain_details(pool):
     }
 
 
+RUGCHECK_RISK_FIELDS = ("name", "level", "score", "value")
+MAX_RUGCHECK_RISKS = 30
+MAX_RISK_TEXT = 200
+
+
+def _rugcheck_risks(pool):
+    """RugCheck-Risikoliste, nur zur Protokollierung (keine Bewertung).
+    Begrenzt auf feste Felder und Längen; None, wenn nicht vorhanden."""
+    security = pool.get("security")
+    risks = security.get("rugcheck_risks") if isinstance(security, dict) else None
+
+    if not isinstance(risks, list):
+        return None
+
+    result = []
+
+    for risk in risks[:MAX_RUGCHECK_RISKS]:
+        if not isinstance(risk, dict):
+            continue
+
+        entry = {}
+
+        for field in RUGCHECK_RISK_FIELDS:
+            value = risk.get(field)
+
+            if isinstance(value, str):
+                entry[field] = value[:MAX_RISK_TEXT]
+            elif isinstance(value, (int, float)) and not isinstance(value, bool):
+                entry[field] = value
+
+        result.append(entry)
+
+    return result
+
+
 def _check_details(pool):
     """Kompakte, nachvollziehbare Prüfdetails für das Protokoll."""
     liquidity = pool.get("liquidity_check") or {}
@@ -84,6 +119,13 @@ def _check_details(pool):
             "unsafe_token_extensions": pool.get("unsafe_token_extensions"),
             "permanent_delegate_status": pool.get("permanent_delegate_status"),
             "permanent_delegate": pool.get("permanent_delegate"),
+            "token_extension_findings": pool.get("token_extension_findings"),
+            "mint_authority_revoked_onchain": pool.get(
+                "mint_authority_revoked_onchain"
+            ),
+            "freeze_authority_revoked_onchain": pool.get(
+                "freeze_authority_revoked_onchain"
+            ),
             "token_check_reasons": pool.get("token_check_reasons"),
         },
         "holders": {
@@ -135,6 +177,11 @@ def _check_details(pool):
         },
         "fdv_usd_dexpaprika": pool.get("fdv_usd_dexpaprika"),
         "fdv_usd_geckoterminal": pool.get("fdv_usd_geckoterminal"),
+        # Nur protokolliert, nicht bewertet (keine Filter, keine Strategie)
+        "pair_age_hours": pool.get("pair_age_hours"),
+        "volume_usd_24h": pool.get("volume_usd_24h"),
+        "transactions_24h": pool.get("transactions_24h"),
+        "rugcheck_risks": _rugcheck_risks(pool),
     }
 
 
