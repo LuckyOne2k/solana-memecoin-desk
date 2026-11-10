@@ -45,11 +45,10 @@ def triggers_of(workflow):
     return workflow.get("on", workflow.get(True))
 
 
-def test_scan_runs_manually_or_hourly():
-    triggers = triggers_of(load("scan.yml"))
-
-    assert set(triggers) == {"workflow_dispatch", "schedule"}
-    assert triggers["schedule"] == [{"cron": "7 * * * *"}]
+def test_scan_is_started_manually_or_by_clock():
+    # Kein eigener Zeitplan: der Taktgeber (clock.yml) ist die einzige Uhr,
+    # damit nie doppelte Scans entstehen.
+    assert set(triggers_of(load("scan.yml"))) == {"workflow_dispatch"}
 
 
 def test_scan_requires_tests_before_scanning():
@@ -168,7 +167,7 @@ def test_monitor_workflow_is_limited():
     workflow = load("paper-monitor.yml")
     triggers = triggers_of(workflow)
 
-    assert set(triggers) == {"workflow_dispatch", "schedule"}
+    assert set(triggers) == {"workflow_dispatch"}
     assert workflow["permissions"] == {"contents": "read"}
     assert workflow["jobs"]["monitor"]["permissions"] == {"contents": "write"}
     assert "python -m desk.paper monitor" in text
@@ -195,3 +194,33 @@ def test_shadow_step_is_learning_only_and_saved_separately():
     assert "secrets." not in yaml.safe_dump(step)
     assert 'steps.shadow.outcome }}" = "success"' in script
     assert "shadow_state.json shadow_summary.json" in script
+
+
+# --------------------------------------------------
+# Taktgeber
+# --------------------------------------------------
+
+def test_clock_only_dispatches_known_workflows():
+    workflow = load("clock.yml")
+    text = (WORKFLOW_DIR / "clock.yml").read_text(encoding="utf-8")
+    steps = workflow["jobs"]["clock"]["steps"]
+
+    assert set(triggers_of(workflow)) == {"workflow_dispatch", "schedule"}
+    assert workflow["permissions"] == {"actions": "write", "contents": "read"}
+    assert workflow["concurrency"] == {"group": "taktgeber", "cancel-in-progress": False}
+    assert not any("uses" in step for step in steps)
+    assert "07) dispatch scan.yml" in text
+    assert "22|37|52) dispatch paper-monitor.yml" in text
+    assert "workflows/clock.yml/dispatches" in text
+    assert '{"ref":"main"}' in text
+    # Nur das automatische GITHUB_TOKEN, keine anderen Secrets
+    assert text.count("secrets.") == 1
+    assert "secrets.GITHUB_TOKEN" in text
+
+
+def test_clock_restarts_itself_within_job_limit():
+    workflow = load("clock.yml")
+    job = workflow["jobs"]["clock"]
+
+    assert int(job["env"]["RUN_SECONDS"]) < job["timeout-minutes"] * 60 < 6 * 3600
+    assert job["steps"][-1]["if"] == "${{ !cancelled() }}"

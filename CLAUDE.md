@@ -87,8 +87,9 @@
 ## Infrastruktur
 - `.github/workflows/tests.yml`: Tests bei jedem PR und auf `main`, nur lesend.
 - `.github/workflows/pages.yml`: veröffentlicht nur `app/` auf GitHub Pages (nach Merge auf `main` oder manuell); einmalig in Settings → Pages „GitHub Actions“ wählen.
-- `.github/workflows/scan.yml`: stündlich (Minute 7) und manuell; erst Tests, dann Scan, `latest.json`, Paper-Broker (`after-scan`).
-- `.github/workflows/paper-monitor.yml`: Minute 22/37/52 und manuell; nur `python -m desk.paper monitor` (kein Scan, kein Helius). Gemeinsame Concurrency-Gruppe `desk-data-write` mit dem Scan.
+- `.github/workflows/clock.yml` (Taktgeber): einzige Uhr, weil GitHub-`schedule` hier keine Läufe startete. Läuft ~5,5 h, startet `scan.yml` zu Minute 07 und `paper-monitor.yml` zu 22/37/52, startet sich danach selbst neu (Neustart-Zeitplan alle 6 h, falls die Kette abreißt). Nur `actions: write`, kein Checkout.
+- `.github/workflows/scan.yml`: stündlich (Minute 7, über Taktgeber) und manuell; erst Tests, dann Scan, `latest.json`, Paper-Broker (`after-scan`).
+- `.github/workflows/paper-monitor.yml`: Minute 22/37/52 (über Taktgeber) und manuell; nur `python -m desk.paper monitor` (kein Scan, kein Helius). Gemeinsame Concurrency-Gruppe `desk-data-write` mit dem Scan.
 - Optionale Secrets `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` (Anleitung `docs/start_anleitung.md`).
 - Scan-Protokoll: geht in den Branch `desk-data` (`events.jsonl` + `latest.json`, dazu `paper_state.json` + `paper_trades.jsonl`), nie auf `main`. `data/events.jsonl` auf `main` ist nur noch Archiv.
 - Secrets in GitHub: `SOLANA_RPC_URL` (vollständige Helius-URL `https://mainnet.helius-rpc.com/?api-key=…`, kostenloser Tarif: 1 Mio. Credits/Monat, 10 Anfragen/s), `DEXPAPRIKA_API_KEY`. Ohne gültige https-Adresse schlägt die RPC-Abfrage fehl (kein Zurückfallen auf die öffentliche RPC), Holder-Prüfung dann „unvollständig“. Helius ist in der Cloud-Umgebung nicht freigegeben, Holder-Prüfung deshalb nur im GitHub-Scan.
@@ -118,7 +119,7 @@ Vollständiger Verlauf (Scans, PRs, Testzahlen, Begründungen): `docs/entscheidu
 - LP-Prüfung ist tokenweit (RugCheck `lpLockedPct` über alle Pools): kleine ungesperrte Neben-Pools können ablehnen, obwohl der untersuchte Pool gesperrt ist (MYWAY, Scan #57); umgekehrt denkbar, dass ein ungesperrter kleiner Pool durchrutscht. Poolbezogene Regel offen (Nutzerentscheidung). Je-Pool-Werte werden protokolliert (`lp`).
 - PumpSwap: DexPaprika-Liquidität weicht stark von RugCheck ab (Scan #51, 5 Pools); Prüfung wirkt korrekt (→ unklar), Ursache offen.
 - Wallets derselben Person nicht erkennbar; Bonding-Curve-Token und Pools ohne SOL/USDC/USDT bleiben unvollständig.
-- Höchstens 30 Token pro Lauf; Altersfenster 24 h–7 Tage; Scan stündlich (GitHub kann verzögern; geplante Läufe werden nach 60 Tagen ohne Aktivität auf `main` deaktiviert). `events.jsonl` wächst ca. 1 MB/Tag. Prüfreihenfolge rotiert (am längsten wartend zuerst, zuletzt abgelehnte nach hinten; abgelehnte können bei dauerhaft > 30 anderen Kandidaten unbegrenzt warten); ein beschädigtes Protokoll schaltet die Rotation ab (Rückfall, sichtbar in `check_order_source`).
+- Höchstens 30 Token pro Lauf; Altersfenster 24 h–7 Tage; Scan stündlich über den Taktgeber (`clock.yml`); reißt die Kette ab, startet ihn der 6-h-Zeitplan oder ein manueller Start neu. `events.jsonl` wächst ca. 1 MB/Tag. Prüfreihenfolge rotiert (am längsten wartend zuerst, zuletzt abgelehnte nach hinten; abgelehnte können bei dauerhaft > 30 anderen Kandidaten unbegrenzt warten); ein beschädigtes Protokoll schaltet die Rotation ab (Rückfall, sichtbar in `check_order_source`).
 - Test-Branch `claude/helius-verbindungstest` (enthält die Testskripte) bleibt vorerst (Commit `5214857`), Löschung nach Abschluss der Integration; Ergebnisse stehen in `docs/helius_validierung.md`.
 - Offene Frage: Was ist im 20-€-Budget schon enthalten? (Repo ist öffentlich.)
 

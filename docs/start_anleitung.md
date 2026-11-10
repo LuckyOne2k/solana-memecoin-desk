@@ -55,13 +55,13 @@ Tagen im Helius-Dashboard.
   workflow.
 - **Depot sofort prüfen:** Actions → „Paper-Depot überwachen“ → Run
   workflow.
-- **Alles pausieren:** Actions → Workflow → ⋯ → **Disable workflow**,
-  für beide Workflows.
+- **Alles pausieren:** Actions → „Taktgeber“ → ⋯ → **Disable workflow**
+  und den laufenden Taktgeber abbrechen (Cancel run). Wieder starten:
+  Enable workflow und **Run workflow**.
 - **Depot zurücksetzen:** Im Branch `desk-data` die Datei
   `paper_state.json` löschen. Beim nächsten Lauf startet ein neues Depot
   mit 10.000 virtuellen $.
-- Nach 60 Tagen ohne Commit auf `main` schaltet GitHub geplante Läufe ab.
-  Dann einfach wieder **Enable workflow** klicken.
+- **Läuft nichts mehr?** In Actions → „Taktgeber“ → **Run workflow** klicken.
 
 ## 5. Was der Bot nicht tut
 

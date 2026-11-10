@@ -221,7 +221,11 @@ notifications, pausing, resetting the paper portfolio.
 ## GitHub Actions
 - **Tests** (`.github/workflows/tests.yml`): runs on every pull request and on
   `main`. Read-only, no secrets, no network calls to market APIs.
-- **Solana Memecoin Desk** (`.github/workflows/scan.yml`): hourly (minute 7)
+- **Taktgeber** (`.github/workflows/clock.yml`): the only clock (GitHub
+  `schedule` did not start runs here). Runs ~5.5 h, dispatches `scan.yml` at
+  minute 07 and `paper-monitor.yml` at 22/37/52, then restarts itself;
+  a 6-hourly schedule restarts it if the chain breaks. Only `actions: write`.
+- **Solana Memecoin Desk** (`.github/workflows/scan.yml`): hourly (minute 7, via Taktgeber)
   or manually. Runs the tests first, then one scan, then the paper broker
   (`python -m desk.paper after-scan`). The event log is written to the
   separate branch **`desk-data`** (`events.jsonl`), never to `main`.
