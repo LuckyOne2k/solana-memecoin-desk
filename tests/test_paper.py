@@ -501,14 +501,25 @@ def test_monitor_never_opens(tmp_path, desk_config):
     result = monitor(tmp_path, desk_config, {POOL: quote()}, NOW)
 
     assert result["state"]["open_positions"] == []
+    assert result["written"] is False
+
+    # auch mit offener Position: Monitor kauft nichts dazu
+    write_scan(tmp_path, [ready_pool(MINT2, POOL2, symbol="B")])
+    open_ttp(tmp_path, desk_config)
+    write_scan(tmp_path, [ready_pool(MINT2, POOL2, symbol="B")])
+    result = monitor(tmp_path, desk_config, {POOL: quote(), POOL2: quote(mint=MINT2)},
+                     NOW + timedelta(minutes=15))
+    assert [p["token_address"] for p in result["state"]["open_positions"]] == [MINT]
     assert result["state"]["last_run"]["scan_status"] == "not_requested"
 
 
-def test_monitor_without_positions_makes_no_requests(tmp_path, desk_config):
+def test_monitor_without_positions_makes_no_requests_and_writes_nothing(tmp_path, desk_config):
     fetch = fetcher({})
-    run_paper("monitor", tmp_path, desk_config, now=NOW, quote_fetcher=fetch)
+    result = run_paper("monitor", tmp_path, desk_config, now=NOW, quote_fetcher=fetch)
 
     assert fetch.calls == []
+    assert result["written"] is False
+    assert not (tmp_path / "paper_state.json").exists()
 
 
 # --------------------------------------------------
@@ -516,12 +527,20 @@ def test_monitor_without_positions_makes_no_requests(tmp_path, desk_config):
 # --------------------------------------------------
 
 def test_new_state_and_equity_history(tmp_path, desk_config):
-    monitor(tmp_path, desk_config, {}, NOW)
+    after_scan(tmp_path, desk_config, {}, now=NOW)
     state = state_file(tmp_path)
 
     assert state["cash_usd"] == 10000
     assert state["mode"] == "paper"
     assert state["equity_history"] == [{"at": NOW.isoformat(), "equity_usd": 10000}]
+
+
+def test_monitor_with_unchanged_state_file_is_left_alone(tmp_path, desk_config):
+    after_scan(tmp_path, desk_config, {}, now=NOW)
+    before = (tmp_path / "paper_state.json").read_text(encoding="utf-8")
+    monitor(tmp_path, desk_config, {}, NOW + timedelta(minutes=15))
+
+    assert (tmp_path / "paper_state.json").read_text(encoding="utf-8") == before
 
 
 def test_corrupt_state_stops_without_overwriting(tmp_path, desk_config):
@@ -541,7 +560,7 @@ def test_corrupt_state_stops_without_overwriting(tmp_path, desk_config):
     {"open_positions": [{"token_address": MINT}]},
 ])
 def test_implausible_state_is_rejected(tmp_path, desk_config, change):
-    monitor(tmp_path, desk_config, {}, NOW)
+    after_scan(tmp_path, desk_config, {}, now=NOW)
     state = state_file(tmp_path)
     state.update(change)
     (tmp_path / "paper_state.json").write_text(json.dumps(state), encoding="utf-8")
