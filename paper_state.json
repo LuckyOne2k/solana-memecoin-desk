@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-10T21:35:11.806604+00:00",
+  "updated_at": "2026-11-10T21:37:26.394660+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 7845.2542373,
   "open_positions": [
@@ -23,9 +23,18 @@
       "cost_basis_usd": 800.0,
       "initial_stop_usd": 0.006670913011928179,
       "highest_price_usd": 0.007096715970136361,
-      "last_price_usd": 0.006966458731556939,
-      "last_price_at": "2026-11-10T21:35:11.806604+00:00",
-      "current_stop_usd": 0.006670913011928179
+      "last_price_usd": 0.006963733086577576,
+      "last_price_at": "2026-11-10T21:37:26.394660+00:00",
+      "current_stop_usd": 0.006670913011928179,
+      "last_quote": {
+        "at": "2026-11-10T21:37:26.394660+00:00",
+        "status": "confirmed",
+        "price_low_usd": 0.006963733086577576,
+        "price_high_usd": 0.006968986445117939,
+        "deviation_pct": 0.0754,
+        "errors": {}
+      },
+      "last_liquidity_usd": 201132.8552
     },
     {
       "token_symbol": "BRUH",
@@ -42,9 +51,18 @@
       "cost_basis_usd": 798.8253069,
       "initial_stop_usd": 0.0024971642896099546,
       "highest_price_usd": 0.002656557754904207,
-      "last_price_usd": 0.0025761553329365933,
-      "last_price_at": "2026-11-10T21:35:11.806604+00:00",
-      "current_stop_usd": 0.0024971642896099546
+      "last_price_usd": 0.002598025957048943,
+      "last_price_at": "2026-11-10T21:37:26.394660+00:00",
+      "current_stop_usd": 0.0024971642896099546,
+      "last_quote": {
+        "at": "2026-11-10T21:37:26.394660+00:00",
+        "status": "confirmed",
+        "price_low_usd": 0.002598025957048943,
+        "price_high_usd": 0.0025998422479971365,
+        "deviation_pct": 0.0699,
+        "errors": {}
+      },
+      "last_liquidity_usd": 127512.7992
     },
     {
       "token_symbol": "PAWKET",
@@ -62,8 +80,17 @@
       "initial_stop_usd": 0.00047844467872535675,
       "highest_price_usd": 0.0005089837007716562,
       "last_price_usd": 0.0004938774028645486,
-      "last_price_at": "2026-11-10T21:35:11.806604+00:00",
-      "current_stop_usd": 0.00047844467872535675
+      "last_price_at": "2026-11-10T21:37:26.394660+00:00",
+      "current_stop_usd": 0.00047844467872535675,
+      "last_quote": {
+        "at": "2026-11-10T21:37:26.394660+00:00",
+        "status": "confirmed",
+        "price_low_usd": 0.0004938774028645486,
+        "price_high_usd": 0.0004941589327880156,
+        "deviation_pct": 0.057,
+        "errors": {}
+      },
+      "last_liquidity_usd": 55592.04558039688
     }
   ],
   "closed_trades": [],
@@ -91,47 +118,20 @@
     {
       "at": "2026-11-10T21:35:11.806604+00:00",
       "equity_usd": 9944.64002712
+    },
+    {
+      "at": "2026-11-10T21:37:26.394660+00:00",
+      "equity_usd": 9950.90925349
     }
   ],
   "last_run": {
-    "at": "2026-11-10T21:35:11.806604+00:00",
-    "mode": "after-scan",
-    "scan_status": "ok",
-    "scan_at": "2026-11-10T21:35:11.553332+00:00",
-    "entry_decisions": [
-      {
-        "token_symbol": "TTP",
-        "token_address": "E5c1JvHbwEf3ud2m4PXPMugcMDevLrnskq7sj1FTpump",
-        "decision": "open"
-      },
-      {
-        "token_symbol": "BRUH",
-        "token_address": "PgFtGGquvnv2zEkjG2N2QPvBTBrafuExGYEqahRpump",
-        "decision": "open"
-      },
-      {
-        "token_symbol": "PAWKET",
-        "token_address": "ECNQSQA7Y5bnXzbotgv6XcG15c6jpJ6V2BFbYzJrpump",
-        "decision": "open"
-      },
-      {
-        "token_symbol": "BTX",
-        "token_address": "GNggUoCrkgcshssMFn1AxRGEeiNpS7fFaLJMEbSWpump",
-        "decision": "not_ready_in_previous_scan"
-      },
-      {
-        "token_symbol": "UHI",
-        "token_address": "34As1e1Kop9zBvu5e84kjg452Uigq8krcoGEJiWRpump",
-        "decision": "not_ready_in_previous_scan"
-      },
-      {
-        "token_symbol": "MBG",
-        "token_address": "HzQQyPcBZgqiarw9R8jYDqb89xLUsyHAwezk8CvEpump",
-        "decision": "not_ready_in_previous_scan"
-      }
-    ],
+    "at": "2026-11-10T21:37:26.394660+00:00",
+    "mode": "monitor",
+    "scan_status": "not_requested",
+    "scan_at": null,
+    "entry_decisions": [],
     "open_positions": 3,
-    "equity_usd": 9944.64002712,
-    "run_number": "61"
+    "equity_usd": 9950.90925349,
+    "run_number": "2"
   }
 }
