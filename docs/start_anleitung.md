@@ -41,7 +41,7 @@ Den Token nie in Chat, Issues oder Code schreiben, nur in die Secrets.
 | `SOLANA_RPC_URL` (Helius, kostenlos) | Secrets | vorhanden |
 | `DEXPAPRIKA_API_KEY` | Secrets | vorhanden |
 | Stündlicher Scan + Paper-Broker | `scan.yml` | aktiv nach Merge |
-| Kursüberwachung alle 15 Min. | `paper-monitor.yml` | aktiv nach Merge |
+| Kursüberwachung alle 5 Min. | `paper-monitor.yml` | aktiv nach Merge |
 
 Helius-Verbrauch bei stündlichem Scan mit 30 Prüfungen: geschätzt
 250.000–350.000 Credits pro Monat, also etwa 30 % des Freikontingents.

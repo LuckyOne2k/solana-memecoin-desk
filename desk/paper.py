@@ -72,6 +72,8 @@ TRADES_FILE = "paper_trades.jsonl"
 EVENTS_FILE = "events.jsonl"
 MAX_CLOSED_IN_STATE = 100
 MAX_EQUITY_POINTS = 1000
+# Höchstens ein Depotwert-Punkt je 15 Minuten (Überwachung läuft alle 5 Min.)
+EQUITY_POINT_MIN_MINUTES = 15
 GECKOTERMINAL_POOL_BATCH = 30
 REQUEST_TIMEOUT = 15
 
@@ -767,7 +769,7 @@ def run_paper(mode, data_dir, config, now=None, quote_fetcher=fetch_quotes,
     state = load_state(data_dir / STATE_FILE, paper, now)
 
     # Überwachung ohne offene Positionen: nichts abfragen, nichts schreiben
-    # (vermeidet leere Commits alle 15 Minuten).
+    # (vermeidet leere Commits alle 5 Minuten).
     if mode == "monitor" and not state["open_positions"]:
         return {"state": state, "events": [], "written": False}
 
@@ -814,7 +816,15 @@ def run_paper(mode, data_dir, config, now=None, quote_fetcher=fetch_quotes,
             })
 
     equity = round(equity_usd(state), 8)
-    state["equity_history"].append({"at": _iso(now), "equity_usd": equity})
+    point = {"at": _iso(now), "equity_usd": equity}
+    history = state["equity_history"]
+    last_at = _parse_time(history[-1].get("at")) if history else None
+    # Je 15-Minuten-Fenster ein Punkt: im selben Fenster wird der letzte ersetzt
+    slot = EQUITY_POINT_MIN_MINUTES * 60
+    if last_at and int(last_at.timestamp() // slot) == int(now.timestamp() // slot):
+        history[-1] = point
+    else:
+        history.append(point)
     state["equity_history"] = state["equity_history"][-MAX_EQUITY_POINTS:]
     state["updated_at"] = _iso(now)
     state["last_run"] = {

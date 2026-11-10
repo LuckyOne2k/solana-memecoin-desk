@@ -19,7 +19,7 @@ eingestiegen.
 |---|---|---|
 | `clock.yml` (Taktgeber) | läuft dauerhaft in ~5,5-h-Abschnitten | startet die beiden folgenden Workflows zur richtigen Minute |
 | `scan.yml` | stündlich (Minute 7, über Taktgeber) und manuell | Tests → Scan → `latest.json` → `python -m desk.paper after-scan` |
-| `paper-monitor.yml` | Minute 22, 37, 52 (über Taktgeber) und manuell | `python -m desk.paper monitor` (nur Kurse + Ausstiege; ohne offene Position keine Abfrage und kein Commit) |
+| `paper-monitor.yml` | alle 5 Min. außer Minute 07 (über Taktgeber) und manuell | `python -m desk.paper monitor` (nur Kurse + Ausstiege; ohne offene Position keine Abfrage und kein Commit) |
 
 Beide Workflows schreiben nur in den Branch `desk-data`. Sie teilen sich
 die Concurrency-Gruppe `desk-data-write`, damit nie zwei gleichzeitig
@@ -78,7 +78,7 @@ Identifikation nur über Adressen, nie über Symbole (vgl. die zwei
 
 ## Ausstiegsregeln
 
-Geprüft wird in jedem Lauf, also etwa alle 15 Minuten. Bewertet wird
+Geprüft wird in jedem Lauf, also etwa alle 5 Minuten. Bewertet wird
 immer mit dem **niedrigeren** verfügbaren Kurs (konservativ).
 
 | Reihenfolge | Grund | Regel |
@@ -123,7 +123,7 @@ entschieden.
 - **1 % der Liquidität** hält den simulierten Preiseinfluss klein, damit
   die Simulation realistisch bleibt.
 - **Gewinnsicherung** (seit 2026-11-10): Einstand wird nur garantiert,
-  wenn der Kurs nicht zwischen zwei Abfragen (15 Min.) unter die Stufe
+  wenn der Kurs nicht zwischen zwei Abfragen (5 Min.) unter die Stufe
   springt. Ob die Stufen unterm Strich helfen oder zu früh verkaufen,
   zeigt die Auswertung nach 20–30 Trades.
 - **Stop 6 % / Trailing 12 % / 6 %** sind die bisherigen Werte aus
@@ -166,7 +166,7 @@ Handelsergebnisse.
 
 ## Bekannte Grenzen
 
-- Kurse werden nur etwa alle 15 Minuten abgefragt. Bewegungen dazwischen
+- Kurse werden nur etwa alle 5 Minuten abgefragt (GitHub-Auslösung kann sich um bis zu etwa 1 Minute verzögern). Bewegungen dazwischen
   sieht der Broker nicht.
 - Der Preiseinfluss ist eine Näherung. Echte Ausführung, MEV und
   Priority-Fees können schlechter sein.

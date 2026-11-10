@@ -223,7 +223,7 @@ notifications, pausing, resetting the paper portfolio.
   `main`. Read-only, no secrets, no network calls to market APIs.
 - **Taktgeber** (`.github/workflows/clock.yml`): the only clock (GitHub
   `schedule` did not start runs here). Runs ~5.5 h, dispatches `scan.yml` at
-  minute 07 and `paper-monitor.yml` at 22/37/52, then restarts itself;
+  minute 07 and `paper-monitor.yml` every 5 minutes (except minute 07), then restarts itself;
   a 6-hourly schedule restarts it if the chain breaks. Only `actions: write`.
 - **Solana Memecoin Desk** (`.github/workflows/scan.yml`): hourly (minute 7, via Taktgeber)
   or manually. Runs the tests first, then one scan, then the paper broker
