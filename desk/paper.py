@@ -733,6 +733,11 @@ def run_paper(mode, data_dir, config, now=None, quote_fetcher=fetch_quotes,
 
     state = load_state(data_dir / STATE_FILE, paper, now)
 
+    # Überwachung ohne offene Positionen: nichts abfragen, nichts schreiben
+    # (vermeidet leere Commits alle 15 Minuten).
+    if mode == "monitor" and not state["open_positions"]:
+        return {"state": state, "events": [], "written": False}
+
     scan = {"status": "not_requested", "pools": [], "scan_at": None}
     if mode == "after-scan":
         scan = load_scan(data_dir / EVENTS_FILE, scan_outcome, now,
@@ -792,7 +797,7 @@ def run_paper(mode, data_dir, config, now=None, quote_fetcher=fetch_quotes,
 
     save_state(state, data_dir / STATE_FILE)
     append_trades(data_dir / TRADES_FILE, events)
-    return {"state": state, "events": events}
+    return {"state": state, "events": events, "written": True}
 
 
 # --------------------------------------------------
@@ -826,6 +831,9 @@ def main(argv=None):
         return 1
 
     state = result["state"]
+    if not result["written"]:
+        print("PAPER-BROKER: keine offene Position, nichts zu prüfen.")
+        return 0
     messages = [m for m in (_format_event(e) for e in result["events"]) if m]
     print("PAPER-BROKER (nur Simulation, kein echtes Geld)")
     print("Modus:", args.mode, "| Scan:", state["last_run"]["scan_status"])

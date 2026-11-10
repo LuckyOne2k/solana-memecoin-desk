@@ -18,7 +18,7 @@ eingestiegen.
 | Workflow | Takt | Was passiert |
 |---|---|---|
 | `scan.yml` | stündlich (Minute 7) und manuell | Tests → Scan → `latest.json` → `python -m desk.paper after-scan` |
-| `paper-monitor.yml` | Minute 22, 37, 52 und manuell | `python -m desk.paper monitor` (nur Kurse + Ausstiege) |
+| `paper-monitor.yml` | Minute 22, 37, 52 und manuell | `python -m desk.paper monitor` (nur Kurse + Ausstiege; ohne offene Position keine Abfrage und kein Commit) |
 
 Beide Workflows schreiben nur in den Branch `desk-data`. Sie teilen sich
 die Concurrency-Gruppe `desk-data-write`, damit nie zwei gleichzeitig
