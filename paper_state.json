@@ -4,14 +4,72 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-10T20:04:12.639507+00:00",
+  "updated_at": "2026-11-10T21:35:11.806604+00:00",
   "starting_balance_usd": 10000.0,
-  "cash_usd": 10000.0,
-  "open_positions": [],
+  "cash_usd": 7845.2542373,
+  "open_positions": [
+    {
+      "token_symbol": "TTP",
+      "token_name": "TrendTrader Pro",
+      "token_address": "E5c1JvHbwEf3ud2m4PXPMugcMDevLrnskq7sj1FTpump",
+      "pool_address": "9eTpuokzkShkz9GSFrQ1cPpow8beSx1ZXE7UtTQUrAFT",
+      "dex_name": "PumpSwap",
+      "opened_at": "2026-11-10T21:35:11.806604+00:00",
+      "entry_price_usd": 0.007096715970136361,
+      "entry_mark_price_usd": 0.006971438063374197,
+      "entry_cost_pct": 1.797,
+      "entry_liquidity_usd": 200748.61475886605,
+      "token_amount": 112728.19757285964,
+      "cost_basis_usd": 800.0,
+      "initial_stop_usd": 0.006670913011928179,
+      "highest_price_usd": 0.007096715970136361,
+      "last_price_usd": 0.006966458731556939,
+      "last_price_at": "2026-11-10T21:35:11.806604+00:00",
+      "current_stop_usd": 0.006670913011928179
+    },
+    {
+      "token_symbol": "BRUH",
+      "token_name": "The Bruhvengers",
+      "token_address": "PgFtGGquvnv2zEkjG2N2QPvBTBrafuExGYEqahRpump",
+      "pool_address": "EhPzeSdXTyMvWZ1iy5NT3LrNjY1xbC1KGqSpL1kqNYiv",
+      "dex_name": "PumpSwap",
+      "opened_at": "2026-11-10T21:35:11.806604+00:00",
+      "entry_price_usd": 0.002656557754904207,
+      "entry_mark_price_usd": 0.002598025957048943,
+      "entry_cost_pct": 2.2529,
+      "entry_liquidity_usd": 127512.7992,
+      "token_amount": 300699.39395268477,
+      "cost_basis_usd": 798.8253069,
+      "initial_stop_usd": 0.0024971642896099546,
+      "highest_price_usd": 0.002656557754904207,
+      "last_price_usd": 0.0025761553329365933,
+      "last_price_at": "2026-11-10T21:35:11.806604+00:00",
+      "current_stop_usd": 0.0024971642896099546
+    },
+    {
+      "token_symbol": "PAWKET",
+      "token_name": "Pocket Money for your AI Agent",
+      "token_address": "ECNQSQA7Y5bnXzbotgv6XcG15c6jpJ6V2BFbYzJrpump",
+      "pool_address": "9icJRrZeVFLonFyC5XJ9CJekdyirt2KvLSzQ9GMtahFD",
+      "dex_name": "PumpSwap",
+      "opened_at": "2026-11-10T21:35:11.806604+00:00",
+      "entry_price_usd": 0.0005089837007716562,
+      "entry_mark_price_usd": 0.0004941589327880156,
+      "entry_cost_pct": 3.0,
+      "entry_liquidity_usd": 55592.04558039688,
+      "token_amount": 1092216.6170688458,
+      "cost_basis_usd": 555.9204558,
+      "initial_stop_usd": 0.00047844467872535675,
+      "highest_price_usd": 0.0005089837007716562,
+      "last_price_usd": 0.0004938774028645486,
+      "last_price_at": "2026-11-10T21:35:11.806604+00:00",
+      "current_stop_usd": 0.00047844467872535675
+    }
+  ],
   "closed_trades": [],
   "last_exit_at": {},
   "stats": {
-    "trades_opened": 0,
+    "trades_opened": 3,
     "trades_closed": 0,
     "wins": 0,
     "losses": 0,
@@ -29,37 +87,51 @@
     {
       "at": "2026-11-10T20:04:12.639507+00:00",
       "equity_usd": 10000.0
+    },
+    {
+      "at": "2026-11-10T21:35:11.806604+00:00",
+      "equity_usd": 9944.64002712
     }
   ],
   "last_run": {
-    "at": "2026-11-10T20:04:12.639507+00:00",
+    "at": "2026-11-10T21:35:11.806604+00:00",
     "mode": "after-scan",
     "scan_status": "ok",
-    "scan_at": "2026-11-10T20:04:12.399290+00:00",
+    "scan_at": "2026-11-10T21:35:11.553332+00:00",
     "entry_decisions": [
       {
         "token_symbol": "TTP",
         "token_address": "E5c1JvHbwEf3ud2m4PXPMugcMDevLrnskq7sj1FTpump",
-        "decision": "not_ready_in_previous_scan"
+        "decision": "open"
       },
       {
         "token_symbol": "BRUH",
         "token_address": "PgFtGGquvnv2zEkjG2N2QPvBTBrafuExGYEqahRpump",
-        "decision": "not_ready_in_previous_scan"
-      },
-      {
-        "token_symbol": "BAGEL",
-        "token_address": "Gb7gExpwNdth2iq3Ppio6c423jEP6TYkWPkRkAUpump",
-        "decision": "not_ready_in_previous_scan"
+        "decision": "open"
       },
       {
         "token_symbol": "PAWKET",
         "token_address": "ECNQSQA7Y5bnXzbotgv6XcG15c6jpJ6V2BFbYzJrpump",
+        "decision": "open"
+      },
+      {
+        "token_symbol": "BTX",
+        "token_address": "GNggUoCrkgcshssMFn1AxRGEeiNpS7fFaLJMEbSWpump",
+        "decision": "not_ready_in_previous_scan"
+      },
+      {
+        "token_symbol": "UHI",
+        "token_address": "34As1e1Kop9zBvu5e84kjg452Uigq8krcoGEJiWRpump",
+        "decision": "not_ready_in_previous_scan"
+      },
+      {
+        "token_symbol": "MBG",
+        "token_address": "HzQQyPcBZgqiarw9R8jYDqb89xLUsyHAwezk8CvEpump",
         "decision": "not_ready_in_previous_scan"
       }
     ],
-    "open_positions": 0,
-    "equity_usd": 10000.0,
-    "run_number": "60"
+    "open_positions": 3,
+    "equity_usd": 9944.64002712,
+    "run_number": "61"
   }
 }
