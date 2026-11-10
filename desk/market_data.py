@@ -15,6 +15,8 @@ from desk.token_classification import (
 
 BASE_URL = "https://api.geckoterminal.com/api/v2"
 DEXPAPRIKA_URL = "https://api.dexpaprika.com"
+DEXPAPRIKA_MAX_ATTEMPTS = 3
+DEXPAPRIKA_RETRY_DELAY_SECONDS = 5
 
 QUOTE_TOKEN_IDS = {
     "So11111111111111111111111111111111111111112".lower(),
@@ -106,25 +108,38 @@ def fetch_pools_by_age(
         if page > 0:
             time.sleep(1)
 
-        try:
-            response = requests.get(
-                f"{DEXPAPRIKA_URL}/networks/solana/pools/search",
-                params=params,
-                headers=headers,
-                timeout=timeout,
-            )
-            response.raise_for_status()
-            payload = response.json()
+        # Begrenzte Wiederholungen: Netzwerkfehler, 429 und 5xx höchstens
+        # DEXPAPRIKA_MAX_ATTEMPTS Versuche, sonst sofort Fehler.
+        attempt = 0
+        while True:
+            attempt += 1
+            try:
+                response = requests.get(
+                    f"{DEXPAPRIKA_URL}/networks/solana/pools/search",
+                    params=params,
+                    headers=headers,
+                    timeout=timeout,
+                )
+                response.raise_for_status()
+                payload = response.json()
+                break
 
-        except requests.RequestException as error:
-            raise MarketDataError(
-                f"DexPaprika request failed: {error}"
-            ) from error
+            except requests.RequestException as error:
+                status = _http_status(error)
+                retryable = status is None or status == 429 or status >= 500
 
-        except ValueError as error:
-            raise MarketDataError(
-                "Invalid DexPaprika JSON response"
-            ) from error
+                if retryable and attempt < DEXPAPRIKA_MAX_ATTEMPTS:
+                    _wait(DEXPAPRIKA_RETRY_DELAY_SECONDS * attempt)
+                    continue
+
+                raise MarketDataError(
+                    f"DexPaprika request failed: {error}"
+                ) from error
+
+            except ValueError as error:
+                raise MarketDataError(
+                    "Invalid DexPaprika JSON response"
+                ) from error
 
         if not isinstance(payload, dict) or not isinstance(
             payload.get("results"), list

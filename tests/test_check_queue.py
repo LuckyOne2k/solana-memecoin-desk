@@ -25,7 +25,11 @@ from desk.security_scan import scan_pool_security
 from factories import make_security, make_snapshot
 
 
+# Die Reihenfolge-Tests sind für ein Limit von 10 Token je Lauf gebaut
+# (feste Tokenzahlen). Das Limit kommt hier aus einer Config-Kopie; die
+# Logik hängt nicht vom konkreten Wert ab.
 CONFIG = load_config()
+CONFIG["scanner"]["max_security_checks_per_run"] = 10
 LIMIT = CONFIG["scanner"]["max_security_checks_per_run"]
 
 

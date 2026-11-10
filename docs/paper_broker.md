@@ -106,10 +106,38 @@ entschieden.
   Memecoins und Kosten von etwa 2–3 % je Runde ist das sehr eng. Das wird
   nach den ersten 20–30 abgeschlossenen Paper-Trades ausgewertet und
   erst dann angepasst, damit keine Werte ohne Daten überangepasst werden.
-- **72 h Haltedauer** passt zum Alters-Fenster des Scanners (30–72 h).
+- **72 h Haltedauer** begrenzt die Haltezeit; ursprünglich passend zum alten Scanner-Fenster 30–72 h (seit 2026-11-10: 24 h–7 Tage).
   Ohne Grenze würden Positionen beliebig lange liegen.
 - Die **Debatte** (`desk/debate.py`) bleibt unangeschlossen, weil KI-Agenten
   kostenpflichtig wären. Sie dürfte ohnehin nur bremsen.
+
+## Mehr Kandidaten (2026-11-10)
+
+In 15 Scans wurden nur 150 von 606 Pool-Einträgen geprüft (Limit 10 je
+Lauf), nur 2 Token waren je bereit. Deshalb, ohne eine Sicherheitsprüfung
+zu lockern:
+
+- Altersfenster 24 h–7 Tage statt 30–72 h: Token, die die ersten Tage
+  überlebt haben, sind seltener Betrug und haben meist mehr Liquidität.
+- 30 statt 10 Prüfungen je Lauf. Helius geschätzt etwa 30 % des
+  Freikontingents. RugCheck läuft weiterhin mit 1,1 s Abstand.
+- DexPaprika: begrenzte Wiederholungen bei 429/5xx/Netzwerk (höchstens
+  3 Versuche, 5 s/10 s Pause), weil mehr Seiten abgerufen werden.
+
+## Schattendepot (nur Lernen)
+
+`desk/shadow.py` läuft nach jedem Scan. Für jeden geprüften Pool, ob
+bereit, unvollständig oder abgelehnt, wird ein Startkurs gespeichert
+(GeckoTerminal, gleicher Pool, höchstens eine neue Beobachtung je Token
+und 24 h). Danach wird die Kursveränderung nach 1 h, 6 h und 24 h
+gemessen. `shadow_summary.json` fasst das je Status und je erstem Grund
+zusammen. Die App zeigt es an.
+
+Ziel ist, nach 1–2 Wochen zu sehen, welche Regeln Gewinne verhindern und
+welche Verluste vermeiden. Grundlage für spätere Anpassungen der
+Einstiegs- und Stop-Regeln. Es gibt keine Entscheidung und keine
+Ersatzwerte. Es sind Kursveränderungen ohne Kosten, keine
+Handelsergebnisse.
 
 ## Bekannte Grenzen
 

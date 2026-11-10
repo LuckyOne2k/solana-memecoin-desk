@@ -182,3 +182,16 @@ def test_monitor_workflow_is_limited():
             if "git" in line and " push" in line:
                 assert "refs/heads/$DATA_BRANCH" in line
                 assert "main" not in line
+
+
+def test_shadow_step_is_learning_only_and_saved_separately():
+    step = _scan_step("Schattendepot")
+    names = [s.get("name") for s in load("scan.yml")["jobs"]["scan"]["steps"]]
+    script = _scan_step("Protokoll speichern")["run"]
+
+    assert names.index("Paper-Broker") < names.index("Schattendepot") < names.index("Protokoll speichern")
+    assert "python -m desk.shadow" in step["run"]
+    assert "!cancelled()" in step["if"]
+    assert "secrets." not in yaml.safe_dump(step)
+    assert 'steps.shadow.outcome }}" = "success"' in script
+    assert "shadow_state.json shadow_summary.json" in script

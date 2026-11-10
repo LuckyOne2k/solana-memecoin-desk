@@ -16,11 +16,11 @@ from desk.config import (
 # bewusst nachgezogen werden.
 EXPECTED_THRESHOLDS = {
     "scanner": {
-        "pair_age_hours_min": 30,
-        "pair_age_hours_max": 72,
+        "pair_age_hours_min": 24,
+        "pair_age_hours_max": 168,
         "market_cap_usd_min": 300000,
         "market_cap_usd_max": 20000000,
-        "max_security_checks_per_run": 10,
+        "max_security_checks_per_run": 30,
     },
     "risk_filters": {
         "require_mint_authority_revoked": True,
@@ -93,7 +93,7 @@ def test_load_config_returns_independent_copy():
     first = load_config()
     first["scanner"]["pair_age_hours_min"] = 999
 
-    assert load_config()["scanner"]["pair_age_hours_min"] == 30
+    assert load_config()["scanner"]["pair_age_hours_min"] == 24
 
 
 def test_config_path_can_be_set_by_environment(tmp_path, monkeypatch):
@@ -169,7 +169,7 @@ def test_invalid_values_are_rejected(section, key, value):
 
 def test_inverted_ranges_are_rejected():
     config = load_config()
-    config["scanner"]["pair_age_hours_min"] = 80
+    config["scanner"]["pair_age_hours_min"] = 200
 
     with pytest.raises(ConfigError):
         validate_config(config)

@@ -11,7 +11,14 @@
 (function () {
   const PAPER_URL =
     "https://raw.githubusercontent.com/LuckyOne2k/solana-memecoin-desk/desk-data/paper_state.json";
+  const SHADOW_URL =
+    "https://raw.githubusercontent.com/LuckyOne2k/solana-memecoin-desk/desk-data/shadow_summary.json";
   const TIMEOUT_MS = 15000;
+  const STATUS_TEXT = {
+    ready_for_full_risk_screen: "Bereit",
+    incomplete: "Unvollständig",
+    rejected: "Abgelehnt",
+  };
   const STALE_AFTER_MS = 2 * 60 * 60 * 1000;
   const MAX_CLOSED_SHOWN = 15;
 
@@ -222,6 +229,77 @@
     }
   }
 
+  /* ---------- Schattendepot (nur Lernen) ---------- */
+
+  function groupLabel(name) {
+    if (STATUS_TEXT[name]) return STATUS_TEXT[name];
+    const [status, code] = String(name).split(":");
+    return (STATUS_TEXT[status] || status) + (code ? " · " + code : "");
+  }
+
+  function shadowRow(r) {
+    const row = el("div", "pool-row");
+    const main = el("div", "pool-main");
+    main.appendChild(el("div", "pool-symbol", groupLabel(r.group)));
+    const parts = [];
+    for (const h of ["1h", "6h", "24h"]) {
+      const s = r[h];
+      if (s && num(s.mean_pct)) parts.push(`${h}: ${pct(s.mean_pct)} (${s.count}, ${s.positive_share_pct} % positiv)`);
+    }
+    main.appendChild(el("div", "pool-sub wrap", `${r.observations} Beobachtungen` + (parts.length ? " · " + parts.join(" · ") : " · noch keine Messung")));
+    row.appendChild(main);
+    const day = r["24h"];
+    if (day && num(day.mean_pct))
+      row.appendChild(el("span", "tag " + (day.mean_pct > 0 ? "tag-ready" : "tag-rejected"), pct(day.mean_pct)));
+    return row;
+  }
+
+  function renderShadow(d) {
+    const box = $("shadow-body");
+    clear(box);
+    box.appendChild(el("p", "kpi-meta",
+      `${d.observations_total} Token beobachtet, Stand ${when(d.generated_at)}. Durchschnittliche Kursveränderung ohne Kosten – keine Kaufempfehlung.`));
+    const list = el("div", "pool-list");
+    for (const r of d.by_status) list.appendChild(shadowRow(r));
+    box.appendChild(list);
+    if (Array.isArray(d.by_reason) && d.by_reason.length) {
+      box.appendChild(el("h2", "section-title", "Nach Grund"));
+      const reasons = el("div", "pool-list");
+      for (const r of d.by_reason.slice(0, 10)) reasons.appendChild(shadowRow(r));
+      box.appendChild(reasons);
+    }
+  }
+
+  async function loadShadow() {
+    const box = $("shadow-body");
+    let response;
+    try {
+      response = await fetch(SHADOW_URL + "?t=" + Date.now(), { cache: "no-store", credentials: "omit" });
+    } catch (e) {
+      clear(box);
+      box.appendChild(el("div", "empty", "Schattendepot nicht abrufbar."));
+      return;
+    }
+    let data = null;
+    if (response.ok) {
+      try {
+        data = await response.json();
+      } catch (e) {
+        data = null;
+      }
+    }
+    clear(box);
+    if (response.status === 404) {
+      box.appendChild(el("div", "empty", "Wird beim nächsten Scan angelegt."));
+      return;
+    }
+    if (!data || data.purpose !== "learning_only_no_trading" || !Array.isArray(data.by_status)) {
+      box.appendChild(el("div", "empty empty-bad", "Schattendaten fehlerhaft oder nicht abrufbar."));
+      return;
+    }
+    renderShadow(data);
+  }
+
   async function loadPaper() {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
@@ -262,10 +340,14 @@
   }
 
   document.addEventListener("DOMContentLoaded", () => {
-    $("refresh").addEventListener("click", loadPaper);
+    const loadAll = () => {
+      loadPaper();
+      loadShadow();
+    };
+    $("refresh").addEventListener("click", loadAll);
     document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "visible") loadPaper();
+      if (document.visibilityState === "visible") loadAll();
     });
-    loadPaper();
+    loadAll();
   });
 })();
