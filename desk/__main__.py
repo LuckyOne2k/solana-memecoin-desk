@@ -89,6 +89,53 @@ def _rugcheck_risks(pool):
     return result
 
 
+def _lp_details(pool):
+    """LP-Angaben nur zur Protokollierung, keine Bewertung. Die
+    LP-Prüfung nutzt unverändert den tokenweiten Wert
+    (token_lp_locked_pct gegen risk_filters.lp_locked_min_pct)."""
+    security = pool.get("security")
+
+    if not isinstance(security, dict):
+        return None
+
+    evaluated = pool.get("pool_address")
+    markets = security.get("market_lp")
+    entries = None
+    evaluated_entry = None
+
+    if isinstance(markets, list):
+        entries = []
+
+        for market in markets:
+            if not isinstance(market, dict):
+                continue
+
+            entry = {
+                **market,
+                "is_evaluated_pool": bool(evaluated)
+                and market.get("pool_address") == evaluated,
+            }
+            entries.append(entry)
+
+            if entry["is_evaluated_pool"] and evaluated_entry is None:
+                evaluated_entry = entry
+
+    return {
+        "basis": "token_wide_lp_locked_pct",
+        "token_lp_locked_pct": security.get("lp_locked_pct"),
+        "lp_burned_or_locked": security.get("lp_burned_or_locked"),
+        "evaluated_pool_address": evaluated,
+        "evaluated_pool_found_in_markets": evaluated_entry is not None,
+        "evaluated_pool_lp_locked_pct": (
+            evaluated_entry.get("lp_locked_pct") if evaluated_entry else None
+        ),
+        "evaluated_pool_lp_locked_usd": (
+            evaluated_entry.get("lp_locked_usd") if evaluated_entry else None
+        ),
+        "markets": entries,
+    }
+
+
 def _check_details(pool):
     """Kompakte, nachvollziehbare Prüfdetails für das Protokoll."""
     liquidity = pool.get("liquidity_check") or {}
@@ -182,6 +229,7 @@ def _check_details(pool):
         "volume_usd_24h": pool.get("volume_usd_24h"),
         "transactions_24h": pool.get("transactions_24h"),
         "rugcheck_risks": _rugcheck_risks(pool),
+        "lp": _lp_details(pool),
     }
 
 

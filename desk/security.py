@@ -101,6 +101,48 @@ POOL_LABEL_TYPES = {"AMM"}
 LOCKER_LABEL_TYPES = {"LOCKER"}
 
 
+MAX_LOGGED_MARKETS = 20
+
+
+def extract_market_lp(report):
+    """LP-Angaben je Markt aus dem RugCheck-Bericht, NUR zur
+    Protokollierung (keine Bewertung; die LP-Prüfung nutzt weiterhin den
+    tokenweiten lpLockedPct der Zusammenfassung).
+
+    Liste {"pool_address", "market_type", "lp_locked_pct",
+    "lp_locked_usd"} in Berichtsreihenfolge, höchstens
+    MAX_LOGGED_MARKETS Einträge; fehlende/ungültige Zahlen -> None.
+    None, wenn "markets" fehlt oder keine Liste ist.
+    """
+    markets = report.get("markets")
+
+    if not isinstance(markets, list):
+        return None
+
+    result = []
+
+    for market in markets[:MAX_LOGGED_MARKETS]:
+        if not isinstance(market, dict):
+            continue
+
+        pubkey = market.get("pubkey")
+        market_type = market.get("marketType")
+        lp = market.get("lp") if isinstance(market.get("lp"), dict) else {}
+
+        result.append(
+            {
+                "pool_address": pubkey if isinstance(pubkey, str) and pubkey else None,
+                "market_type": (
+                    market_type[:40] if isinstance(market_type, str) else None
+                ),
+                "lp_locked_pct": _number(lp.get("lpLockedPct")),
+                "lp_locked_usd": _number(lp.get("lpLockedUSD")),
+            }
+        )
+
+    return result
+
+
 def extract_holder_labels(report, mint):
     """Liest Pool-, Börsen- und Locker-Kennzeichnungen aus RugCheck.
 
@@ -295,6 +337,8 @@ def analyze_rugcheck_report(report, summary, *, lp_locked_min_pct):
         "freeze_authority_revoked": freeze_revoked,
         "lp_locked_pct": lp_locked_pct,
         "lp_burned_or_locked": lp_burned_or_locked,
+        # Nur Protokoll, keine Bewertung (siehe extract_market_lp)
+        "market_lp": extract_market_lp(report),
         "largest_reported_holder_pct": largest_holder_pct,
         "creator_share_sampled_pct": creator_share,
         "top10_share_sampled_pct": top10_sample_pct,

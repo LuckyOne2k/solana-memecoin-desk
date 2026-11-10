@@ -66,6 +66,14 @@ leaves the pool `incomplete`.
   exact mint address (list verified via GeckoTerminal on 2026-11-09). Tokens
   that merely use such a symbol or name are marked `token_classification`
   unclear (possible impersonation).
+- **LP burn/lock:** decided on RugCheck's token-wide `lpLockedPct`
+  (summary, all pools of the token) against `risk_filters.lp_locked_min_pct`
+  (99.99). Logged in addition, without any evaluation: `lp.token_lp_locked_pct`,
+  per RugCheck market `pool_address`, `market_type`, `lp_locked_pct`,
+  `lp_locked_usd`, `is_evaluated_pool`, plus the evaluated pool's own values
+  (`evaluated_pool_*`, `evaluated_pool_found_in_markets`). Example MYWAY
+  (scan #57): evaluated pool 100 % locked, token-wide 99.94 % because of two
+  tiny unlocked pools → rejected. A pool-based LP rule is a separate decision.
 - **Liquidity:** DexPaprika pool liquidity is compared with RugCheck's
   liquidity for the same pool. Deviation above
   `data_quality.max_liquidity_deviation_pct` → unclear. If both agree, the

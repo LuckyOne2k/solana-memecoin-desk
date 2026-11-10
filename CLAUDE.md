@@ -107,6 +107,7 @@ Vollständiger Verlauf (Scans, PRs, Testzahlen, Begründungen): `docs/entscheidu
 ## Offene Probleme
 - GeckoTerminal meldet die Umlaufmenge nur für etwa 5 % der Token; seit PR #16 kann die On-Chain-Spanne (Heuristik) die Marktkapitalisierung bestätigen, Werte nahe 300k $ können zwischen Scans kippen.
 - Holder-Bewertung gilt nur für ihren Zeitpunkt (Beispiel USAR); vor simulierten Käufen später neu prüfen.
+- LP-Prüfung ist tokenweit (RugCheck `lpLockedPct` über alle Pools): kleine ungesperrte Neben-Pools können ablehnen, obwohl der untersuchte Pool gesperrt ist (MYWAY, Scan #57); umgekehrt denkbar, dass ein ungesperrter kleiner Pool durchrutscht. Poolbezogene Regel offen (Nutzerentscheidung). Je-Pool-Werte werden protokolliert (`lp`).
 - PumpSwap: DexPaprika-Liquidität weicht stark von RugCheck ab (Scan #51, 5 Pools); Prüfung wirkt korrekt (→ unklar), Ursache offen.
 - Wallets derselben Person nicht erkennbar; Bonding-Curve-Token und Pools ohne SOL/USDC/USDT bleiben unvollständig.
 - Nur 10 Token pro Lauf; Scan nur manuell. Prüfreihenfolge rotiert (am längsten wartend zuerst, zuletzt abgelehnte nach hinten; abgelehnte können bei dauerhaft > 10 anderen Kandidaten unbegrenzt warten); ein beschädigtes Protokoll schaltet die Rotation ab (Rückfall, sichtbar in `check_order_source`).
