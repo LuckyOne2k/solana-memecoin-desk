@@ -1,16 +1,22 @@
 name: Solana Memecoin Desk
 
-# Manueller Scan. Das Protokoll wird in den Branch "desk-data"
-# geschrieben, nie mehr auf main.
+# Scan stündlich (Minute 7, GitHub kann verzögern) oder manuell.
+# Danach der Paper-Broker (nur Simulation, kein echtes Geld).
+# Protokoll und Depot werden in den Branch "desk-data" geschrieben,
+# nie auf main.
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: "7 * * * *"
 
 permissions:
   contents: read
 
+# Gemeinsame Gruppe mit paper-monitor.yml: nie zwei Schreiber
+# gleichzeitig auf desk-data.
 concurrency:
-  group: desk-scan
+  group: desk-data-write
   cancel-in-progress: false
 
 env:
@@ -105,6 +111,20 @@ jobs:
           desk-data/events.jsonl desk-data/latest.json
           --scan-outcome "${{ steps.scan.outcome }}"
 
+      - name: Paper-Broker
+        # Erst Ausstiege (auch nach fehlgeschlagenem Scan), Einstiege nur
+        # nach erfolgreichem, plausiblem und frischem Scan.
+        id: paper
+        if: ${{ !cancelled() && steps.datadir.outcome == 'success' }}
+        env:
+          DEXPAPRIKA_API_KEY: ${{ secrets.DEXPAPRIKA_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: >-
+          python -m desk.paper after-scan
+          --data-dir desk-data
+          --scan-outcome "${{ steps.scan.outcome }}"
+
       - name: Protokoll speichern
         # Auch nach einem Fehler im Scan speichern, damit der Fehler
         # im Protokoll nachvollziehbar bleibt.
@@ -133,12 +153,19 @@ jobs:
             git rm -q --cached --ignore-unmatch latest.json
           fi
 
+          # Depot nur speichern, wenn der Paper-Broker erfolgreich war.
+          if [ "${{ steps.paper.outcome }}" = "success" ]; then
+            for file in paper_state.json paper_trades.jsonl; do
+              if [ -f "$file" ]; then git add "$file"; fi
+            done
+          fi
+
           if git diff --cached --quiet; then
             echo "Keine neuen Protokolleinträge."
             exit 0
           fi
 
-          git commit -m "Update desk event log"
+          git commit -m "Update desk event log and paper portfolio"
 
           auth="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
           git -c http.extraheader="$auth" push origin "HEAD:refs/heads/$DATA_BRANCH"

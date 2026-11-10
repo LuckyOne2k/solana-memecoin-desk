@@ -1,0 +1,89 @@
+name: Paper-Depot überwachen
+
+# Alle 15 Minuten zwischen den stündlichen Scans: nur Kurse der offenen
+# Paper-Positionen abrufen und Ausstiege prüfen (keine Einstiege, kein
+# Scan, keine Helius-Abfragen). Nur Simulation, kein echtes Geld.
+# Schreibt ausschließlich paper_state.json und paper_trades.jsonl in den
+# Branch desk-data, nie auf main.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "22,37,52 * * * *"
+
+permissions:
+  contents: read
+
+# Gemeinsame Gruppe mit scan.yml: nie zwei Schreiber gleichzeitig.
+concurrency:
+  group: desk-data-write
+  cancel-in-progress: false
+
+env:
+  DATA_BRANCH: desk-data
+  DATA_DIR: desk-data
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    permissions:
+      # Nur für den Push in den Protokoll-Branch.
+      contents: write
+
+    steps:
+      - name: Repository herunterladen
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Python einrichten
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+
+      - name: Abhängigkeiten installieren
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Protokoll-Branch laden
+        id: datadir
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          auth="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          git -c http.extraheader="$auth" fetch --depth=1 origin "$DATA_BRANCH"
+          git worktree add --detach "$DATA_DIR" FETCH_HEAD
+
+      - name: Paper-Depot prüfen
+        id: paper
+        env:
+          DEXPAPRIKA_API_KEY: ${{ secrets.DEXPAPRIKA_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python -m desk.paper monitor --data-dir desk-data
+
+      - name: Depot speichern
+        if: ${{ steps.paper.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        working-directory: desk-data
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          for file in paper_state.json paper_trades.jsonl; do
+            if [ -f "$file" ]; then git add "$file"; fi
+          done
+
+          if git diff --cached --quiet; then
+            echo "Keine Änderungen am Depot."
+            exit 0
+          fi
+
+          git commit -m "Update paper portfolio"
+
+          auth="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          git -c http.extraheader="$auth" push origin "HEAD:refs/heads/$DATA_BRANCH"

@@ -413,6 +413,8 @@ def main():
         ),
         "live_trading": False,
         "ai_agents_connected": False,
+        # Der Scan selbst handelt nie; der Paper-Broker (desk.paper) ist
+        # ein eigener Workflow-Schritt danach.
         "paper_trading_enabled": False,
         "checked_pools": checked_pool_results,
     }
@@ -441,7 +443,7 @@ def main():
     print("Rückfall auf Stichprobe:", result.get("holder_fallbacks"))
 
     print("\nKI-Agenten: Noch nicht verbunden")
-    print("Paper-Trading: Noch nicht aktiviert")
+    print("Paper-Trading: eigener Schritt danach (python -m desk.paper)")
     print("Live-Trading: Deaktiviert")
 
     print("\nScan abgeschlossen.")

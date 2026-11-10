@@ -319,3 +319,21 @@ body.stale #status-card, body.stale #dashboard { opacity: 0.6; filter: saturate(
 @media (min-width: 560px) {
   .kpi-value { font-size: 36px; }
 }
+
+/* Paper-Depot */
+.paper .section-title:first-child { margin-top: 18px; }
+.hint { text-transform: none; letter-spacing: 0; font-weight: 400; }
+.kpi-small { font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kpi-paper { min-width: 0; padding-left: 10px; padding-right: 10px; }
+.kpi-paper::after { background: var(--blue); }
+.pos { color: var(--green); }
+.neg { color: var(--red); }
+.warn-text { color: var(--yellow); }
+.empty-bad { border-color: rgba(239, 68, 68, 0.45); color: #fecaca; }
+.spark { display: block; width: 100%; height: 60px; margin: 10px 0 4px; }
+.spark polyline { fill: none; stroke-width: 2; vector-effect: non-scaling-stroke; }
+.spark-up { stroke: var(--green); }
+.spark-down { stroke: var(--red); }
+@media (min-width: 560px) {
+  .kpi-small { font-size: 20px; }
+}

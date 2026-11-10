@@ -18,6 +18,7 @@ FILES = [
     "index.html",
     "style.css",
     "app.js",
+    "paper.js",
     "sw.js",
     "manifest.webmanifest",
     "icon-192.png",
@@ -73,7 +74,7 @@ def test_content_security_policy_limits_connections():
 
 
 def test_app_is_read_only_without_wallet():
-    for name in ("app.js", "sw.js", "index.html"):
+    for name in ("app.js", "paper.js", "sw.js", "index.html"):
         source = code(name).lower()
         for forbidden in (
             "method:",
@@ -91,12 +92,13 @@ def test_app_is_read_only_without_wallet():
 
 
 def test_external_data_is_never_inserted_as_html():
-    script = text("app.js")
+    for name in ("app.js", "paper.js"):
+        script = text(name)
 
-    assert "innerHTML" not in script
-    assert "outerHTML" not in script
-    assert "insertAdjacentHTML" not in script
-    assert "document.write" not in script
+        assert "innerHTML" not in script
+        assert "outerHTML" not in script
+        assert "insertAdjacentHTML" not in script
+        assert "document.write" not in script
 
 
 def test_failed_or_invalid_data_hides_tokens():
@@ -114,6 +116,7 @@ def test_service_worker_never_caches_scan_data():
 
     assert "latest.json" not in code("sw.js")
     assert "raw.githubusercontent" not in worker
+    assert "paper_state" not in worker
     assert "url.origin !== self.location.origin) return;" in worker
 
 
@@ -139,3 +142,25 @@ def test_pages_workflow_publishes_only_app_from_main():
     assert steps[0]["with"]["persist-credentials"] is False
     assert steps[1]["with"]["path"] == "app"
     assert not any("run" in step for step in steps)
+
+
+PAPER_URL = (
+    "https://raw.githubusercontent.com/LuckyOne2k/solana-memecoin-desk/"
+    "desk-data/paper_state.json"
+)
+
+
+def test_paper_view_reads_only_paper_state():
+    script = text("paper.js")
+
+    # SVG-Namensraum ist kein Abruf
+    urls = set(re.findall(r"https?://[^\s\"'`]+", script)) - {"http://www.w3.org/2000/svg"}
+    assert urls == {PAPER_URL}
+    assert script.count("fetch(") == 1
+    assert "localStorage" not in script
+    assert 'd.mode !== "paper" || d.live_trading !== false' in script
+
+
+def test_paper_script_is_loaded_and_cached_as_app_file():
+    assert '<script src="paper.js"></script>' in text("index.html")
+    assert '"paper.js"' in text("sw.js")
