@@ -110,9 +110,11 @@ def extract_market_lp(report):
     tokenweiten lpLockedPct der Zusammenfassung).
 
     Liste {"pool_address", "market_type", "lp_locked_pct",
-    "lp_locked_usd"} in Berichtsreihenfolge, höchstens
-    MAX_LOGGED_MARKETS Einträge; fehlende/ungültige Zahlen -> None.
-    None, wenn "markets" fehlt oder keine Liste ist.
+    "lp_locked_usd"} in Berichtsreihenfolge, ALLE lesbaren Einträge
+    (die Begrenzung auf MAX_LOGGED_MARKETS erfolgt erst beim
+    Protokollieren, damit der untersuchte Pool immer auffindbar ist);
+    fehlende/ungültige Zahlen -> None. None, wenn "markets" fehlt oder
+    keine Liste ist.
     """
     markets = report.get("markets")
 
@@ -121,7 +123,7 @@ def extract_market_lp(report):
 
     result = []
 
-    for market in markets[:MAX_LOGGED_MARKETS]:
+    for market in markets:
         if not isinstance(market, dict):
             continue
 

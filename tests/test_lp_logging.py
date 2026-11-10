@@ -101,10 +101,10 @@ def test_invalid_values_become_none_and_are_not_guessed():
     ]
 
 
-def test_logged_markets_are_limited():
+def test_extract_reads_all_markets_limit_applies_only_to_log():
     report = {"markets": [market(f"P{i:03d}", "x", 1, 1) for i in range(50)]}
 
-    assert len(extract_market_lp(report)) == MAX_LOGGED_MARKETS
+    assert len(extract_market_lp(report)) == 50
 
 
 # --------------------------------------------------
@@ -167,6 +167,9 @@ def test_check_details_log_lp_with_evaluated_pool():
     assert [m["pool_address"] for m in details["markets"]] == [POOL, ORCA, METEORA]
     assert [m["is_evaluated_pool"] for m in details["markets"]] == [True, False, False]
     assert details["markets"][1]["lp_locked_pct"] == 0.0
+    assert details["evaluated_pool_market_position"] == 1
+    assert details["markets_total_count"] == 3
+    assert details["markets_truncated"] is False
 
 
 def test_evaluated_pool_missing_in_markets_is_explicit():
@@ -199,5 +202,83 @@ def test_markets_missing_in_report_logged_as_none():
     details = app._check_details(pool_record(security=analyze(report)))["lp"]
 
     assert details["markets"] is None
+    assert details["markets_total_count"] is None
+    assert details["markets_truncated"] is None
+    assert details["evaluated_pool_market_position"] is None
     assert details["evaluated_pool_found_in_markets"] is False
     assert details["token_lp_locked_pct"] == pytest.approx(99.93564262340658)
+
+
+# --------------------------------------------------
+# Viele Märkte: Begrenzung nur im Protokoll, untersuchter Pool immer dabei
+# --------------------------------------------------
+
+def many_markets_report(count, evaluated_index):
+    """count Märkte; der untersuchte Pool POOL steht an Position
+    evaluated_index (1-basiert), gesperrt mit 100 %."""
+    markets = []
+    for position in range(1, count + 1):
+        if position == evaluated_index:
+            markets.append(market(POOL, "pump_fun_amm", 100, 5000.0))
+        else:
+            markets.append(market(f"OTHER{position:03d}", "orca", 0, 0))
+    return {**myway_report(), "markets": markets}
+
+
+def lp_for(report):
+    return app._check_details(pool_record(security=analyze(report)))["lp"]
+
+
+@pytest.mark.parametrize("position", [21, 22, 35, 60])
+def test_evaluated_pool_beyond_limit_is_found_and_logged(position):
+    details = lp_for(many_markets_report(60, position))
+
+    assert details["evaluated_pool_found_in_markets"] is True
+    assert details["evaluated_pool_market_position"] == position
+    assert details["evaluated_pool_lp_locked_pct"] == 100.0
+    assert details["evaluated_pool_lp_locked_usd"] == 5000.0
+    assert details["markets_total_count"] == 60
+    assert details["markets_truncated"] is True
+    # erste 20 Märkte plus der untersuchte Pool
+    assert len(details["markets"]) == MAX_LOGGED_MARKETS + 1
+    assert [m["pool_address"] for m in details["markets"][:MAX_LOGGED_MARKETS]] == [
+        f"OTHER{i:03d}" for i in range(1, MAX_LOGGED_MARKETS + 1)
+    ]
+    assert details["markets"][-1]["pool_address"] == POOL
+    assert details["markets"][-1]["is_evaluated_pool"] is True
+    assert sum(m["is_evaluated_pool"] for m in details["markets"]) == 1
+
+
+@pytest.mark.parametrize("position", [1, 20])
+def test_evaluated_pool_within_limit_is_not_duplicated(position):
+    details = lp_for(many_markets_report(60, position))
+
+    assert details["evaluated_pool_market_position"] == position
+    assert details["markets_truncated"] is True
+    assert len(details["markets"]) == MAX_LOGGED_MARKETS
+    assert sum(m["is_evaluated_pool"] for m in details["markets"]) == 1
+
+
+def test_exactly_limit_markets_is_not_truncated():
+    details = lp_for(many_markets_report(MAX_LOGGED_MARKETS, 5))
+
+    assert details["markets_total_count"] == MAX_LOGGED_MARKETS
+    assert details["markets_truncated"] is False
+    assert len(details["markets"]) == MAX_LOGGED_MARKETS
+
+
+def test_evaluated_pool_absent_from_many_markets():
+    details = lp_for(many_markets_report(60, 0))
+
+    assert details["evaluated_pool_found_in_markets"] is False
+    assert details["evaluated_pool_market_position"] is None
+    assert details["markets_truncated"] is True
+    assert len(details["markets"]) == MAX_LOGGED_MARKETS
+
+
+def test_many_markets_do_not_change_lp_decision():
+    # Untersuchter Pool 100 % an Position 40; entscheidend bleibt tokenweit
+    report = many_markets_report(60, 40)
+
+    assert analyze(report, lp_pct=99.93)["lp_burned_or_locked"] is False
+    assert analyze(report, lp_pct=99.99)["lp_burned_or_locked"] is True

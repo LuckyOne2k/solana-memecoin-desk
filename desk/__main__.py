@@ -7,6 +7,7 @@ from desk.market_data import (
     empty_market_cap_diagnostics,
     fetch_pools_by_age,
 )
+from desk.security import MAX_LOGGED_MARKETS
 from desk.security_scan import scan_pool_security
 
 
@@ -102,23 +103,32 @@ def _lp_details(pool):
     markets = security.get("market_lp")
     entries = None
     evaluated_entry = None
+    evaluated_position = None
+    total = None
+    truncated = None
 
     if isinstance(markets, list):
+        readable = [market for market in markets if isinstance(market, dict)]
+        total = len(readable)
+        truncated = total > MAX_LOGGED_MARKETS
         entries = []
 
-        for market in markets:
-            if not isinstance(market, dict):
-                continue
+        for position, market in enumerate(readable, start=1):
+            is_evaluated = (
+                bool(evaluated)
+                and market.get("pool_address") == evaluated
+                and evaluated_entry is None
+            )
+            entry = {**market, "is_evaluated_pool": is_evaluated}
 
-            entry = {
-                **market,
-                "is_evaluated_pool": bool(evaluated)
-                and market.get("pool_address") == evaluated,
-            }
-            entries.append(entry)
-
-            if entry["is_evaluated_pool"] and evaluated_entry is None:
+            if is_evaluated:
                 evaluated_entry = entry
+                evaluated_position = position
+
+            # Erste MAX_LOGGED_MARKETS Märkte; der untersuchte Pool wird
+            # immer zusätzlich ausgegeben, auch weiter hinten.
+            if position <= MAX_LOGGED_MARKETS or is_evaluated:
+                entries.append(entry)
 
     return {
         "basis": "token_wide_lp_locked_pct",
@@ -126,12 +136,16 @@ def _lp_details(pool):
         "lp_burned_or_locked": security.get("lp_burned_or_locked"),
         "evaluated_pool_address": evaluated,
         "evaluated_pool_found_in_markets": evaluated_entry is not None,
+        # 1-basierte Position in der RugCheck-Marktliste
+        "evaluated_pool_market_position": evaluated_position,
         "evaluated_pool_lp_locked_pct": (
             evaluated_entry.get("lp_locked_pct") if evaluated_entry else None
         ),
         "evaluated_pool_lp_locked_usd": (
             evaluated_entry.get("lp_locked_usd") if evaluated_entry else None
         ),
+        "markets_total_count": total,
+        "markets_truncated": truncated,
         "markets": entries,
     }
 
