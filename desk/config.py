@@ -68,6 +68,20 @@ SCHEMA = {
         "initial_stop_loss_pct": PERCENT,
         "trailing_activation_profit_pct": NUMBER,
         "trailing_distance_pct": PERCENT,
+        "starting_balance_usd": NUMBER,
+        "max_open_positions": POSITIVE_COUNT,
+        "max_pool_liquidity_share_pct": PERCENT,
+        "min_trade_usd": NUMBER,
+        "swap_fee_pct": PERCENT,
+        "confirm_min_gap_minutes": NUMBER,
+        "confirm_max_gap_hours": NUMBER,
+        "confirm_max_price_change_pct": PERCENT,
+        "confirm_max_liquidity_drop_pct": PERCENT,
+        "max_entry_price_drift_pct": PERCENT,
+        "max_scan_age_minutes": POSITIVE_COUNT,
+        "reentry_cooldown_hours": NUMBER,
+        "max_holding_hours": NUMBER,
+        "max_price_missing_hours": NUMBER,
     },
     "debate": {
         "bear_objections_required": COUNT,
@@ -157,6 +171,23 @@ def validate_config(config):
             "market_cap_onchain_bounds.max_account_calls_per_token darf "
             f"höchstens {MAX_ONCHAIN_ACCOUNT_CALLS} sein"
         )
+
+    paper = config["paper_trading"]
+
+    if paper["starting_balance_usd"] <= 0:
+        raise ConfigError("paper_trading.starting_balance_usd muss größer als 0 sein")
+
+    if paper["initial_stop_loss_pct"] <= 0 or paper["initial_stop_loss_pct"] >= 100:
+        raise ConfigError("paper_trading.initial_stop_loss_pct muss zwischen 0 und 100 liegen")
+
+    if paper["trailing_distance_pct"] <= 0 or paper["trailing_distance_pct"] >= 100:
+        raise ConfigError("paper_trading.trailing_distance_pct muss zwischen 0 und 100 liegen")
+
+    if paper["confirm_min_gap_minutes"] > paper["confirm_max_gap_hours"] * 60:
+        raise ConfigError("paper_trading.confirm_min_gap_minutes ist größer als confirm_max_gap_hours")
+
+    if paper["max_position_pct"] <= 0:
+        raise ConfigError("paper_trading.max_position_pct muss größer als 0 sein")
 
     # Nur das Veto-Verhalten ist implementiert. Ein anderer Wert würde
     # stillschweigend ignoriert und ist deshalb nicht erlaubt.

@@ -14,11 +14,17 @@ values stop the program; `mode` must be `paper`.
 - Reject if LP is not verifiably burned/locked (RugCheck ≥ 99.99 %)
 - Reject if Top 10 holders exceed 25%
 - Reject if developer holdings exceed 3%
-- Bear: at least 3 concrete on-chain objections before every simulated entry
-- Analyst: must rebut each objection with sourced evidence; unresolved objection vetoes
-- Paper position size: max 8% of portfolio
-- Initial stop: −6%; trailing stop activates at +12%
-- All scans, debates, paper entries and exits are logged
+- Paper broker (`desk/paper.py`, details in `docs/paper_broker.md`):
+  entry only if a pool is ready in two consecutive scans (30 min–6 h apart,
+  price change ≤ 15 %, liquidity drop ≤ 20 %) and a fresh price from two
+  sources (GeckoTerminal + DexPaprika) agrees within 10 %
+- Paper position size: min(8 % of portfolio, 1 % of pool liquidity, cash);
+  max 5 open positions; costs = 1 % fee + estimated price impact
+- Exits: stop −6 %; trailing stop 6 % below the high once +12 % is reached;
+  security exit if a later scan rejects the token; max holding 72 h;
+  write-off if no price for 24 h. Always valued at the lower price
+- Debate (`desk/debate.py`) is not wired (AI agents would cost money)
+- All scans, paper entries, skipped entries and exits are logged
 
 > Important: these thresholds are risk filters, not proof of safety. Holder attribution is imperfect, lock contracts can expire, and API data may be stale or manipulated. The project is not financial advice.
 
@@ -34,8 +40,11 @@ values stop the program; `mode` must be `paper`.
 | Mint/freeze authority cross-check | active: RPC (`fetch_mint_info`) vs. RugCheck; disagreement or missing value keeps the pool `incomplete` |
 | Market cap (`desk/market_cap.py`) | active: point value passes only with reported circulating supply; otherwise only the on-chain range can confirm; upper bound can only reject; FDV separate |
 | On-chain market cap range (`desk/circulating_bounds.py`) | implemented, **on by default** (`market_cap_onchain_bounds.allow_onchain_bounds: true`; `false` switches it off) |
-| `desk/risk.py`, `desk/debate.py` | kept, not wired yet |
-| Paper trading, strategy, AI agents, app | not implemented |
+| Paper broker (`desk/paper.py`) | active: hourly after each scan, price monitor every 15 min, state `paper_state.json` on `desk-data` |
+| Telegram notifications (`desk/notify.py`) | optional: only with secrets `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID` |
+| Web app (`app/`) | active: paper portfolio + last scan, read-only |
+| `desk/risk.py`, `desk/debate.py` | kept, not wired (broker has its own tested calculations) |
+| AI agents, live trading | not implemented (live trading intentionally never) |
 
 ## Check rules (phase 1)
 A pool only reaches `ready_for_full_risk_screen` when every check is
@@ -195,6 +204,10 @@ Known limitations: wallets of the same person cannot be linked; holdings of
 an owner outside the 20 largest accounts are not seen; tokens still on the
 pump.fun bonding curve have no RugCheck market data and stay `incomplete`.
 
+## Setup guide
+See `docs/start_anleitung.md` (German): app installation, optional Telegram
+notifications, pausing, resetting the paper portfolio.
+
 ## Install locally
 1. Python 3.11+
 2. `python -m venv .venv`
@@ -206,8 +219,9 @@ pump.fun bonding curve have no RugCheck market data and stay `incomplete`.
 ## GitHub Actions
 - **Tests** (`.github/workflows/tests.yml`): runs on every pull request and on
   `main`. Read-only, no secrets, no network calls to market APIs.
-- **Solana Memecoin Desk** (`.github/workflows/scan.yml`): started manually.
-  Runs the tests first, then one scan. The event log is written to the
+- **Solana Memecoin Desk** (`.github/workflows/scan.yml`): hourly (minute 7)
+  or manually. Runs the tests first, then one scan, then the paper broker
+  (`python -m desk.paper after-scan`). The event log is written to the
   separate branch **`desk-data`** (`events.jsonl`), never to `main`.
   On the first run the branch is created and the old log from
   `data/events.jsonl` is copied over. The old file on `main` stays
@@ -220,6 +234,12 @@ pump.fun bonding curve have no RugCheck market data and stay `incomplete`.
   of ready tokens and pools are empty and no older results are reused.
   Pools that were not checked appear only as a count (`pools_not_listed`).
   If the summary could not be generated, an old `latest.json` is removed.
+- **Paper-Depot überwachen** (`.github/workflows/paper-monitor.yml`): at
+  minutes 22, 37 and 52 (or manually) only refreshes prices of open paper
+  positions and applies exits (`python -m desk.paper monitor`); no scan, no
+  Helius. Both workflows share the concurrency group `desk-data-write`
+  and write only `paper_state.json` / `paper_trades.jsonl` (plus the scan
+  files) to `desk-data`.
 - The scan code runs without GitHub write credentials; the token is only
   used in the final step that pushes the log.
 - **App veröffentlichen** (`.github/workflows/pages.yml`): publishes the
@@ -230,11 +250,14 @@ pump.fun bonding curve have no RugCheck market data and stay `incomplete`.
 - Address: `https://luckyone2k.github.io/solana-memecoin-desk/`
   (install on Android via the browser menu „Zum Startbildschirm hinzufügen“).
 - Plain HTML/CSS/JavaScript in `app/`, no build step, no dependencies.
-- Only data source: `latest.json` on `desk-data`
+- Data sources: `latest.json` (scan) and `paper_state.json` (paper
+  portfolio, `app/paper.js`) on `desk-data`
   (`raw.githubusercontent.com`, may lag up to 5 minutes behind a scan).
   No writes, no login, no wallet. Loads on open, on return to the app and
   via the refresh button.
-- Shows scan status, scan time and age (yellow warning after 24 hours),
+- Shows the paper portfolio (value, result, cash, equity line, open
+  positions, last entry check, last sales; warning if older than 2 hours),
+  scan status, scan time and age (yellow warning after 24 hours),
   counts, ready tokens and a detail view per pool with reasons.
 - Any status other than `ok`, an HTTP error or a file that fails the
   plausibility checks → clear message, no tokens shown.

@@ -68,6 +68,37 @@ paper_trading:
   initial_stop_loss_pct: 6
   trailing_activation_profit_pct: 12
   trailing_distance_pct: 6
+  # Paper-Broker (desk/paper.py, nur Simulation). Einstiegsregel und
+  # folgende Werte von Claude festgelegt (Nutzer-Delegation 2026-11-10),
+  # Begründung in docs/paper_broker.md.
+  # Virtuelles Startkapital in USD (gilt nur beim Anlegen des Depots)
+  starting_balance_usd: 10000
+  # Höchstzahl gleichzeitig offener Positionen
+  max_open_positions: 5
+  # Positionsgröße höchstens dieser Anteil der kleineren bestätigten
+  # Pool-Liquidität (begrenzt den Preiseinfluss)
+  max_pool_liquidity_share_pct: 1
+  # Kleinere Käufe werden nicht ausgeführt
+  min_trade_usd: 50
+  # Gebühr je Kauf/Verkauf (Pool-Gebühr + Priority-Fee, konservativ)
+  swap_fee_pct: 1
+  # Bestätigung in zwei Scans: Pool auch im vorigen Scan bereit,
+  # Abstand zwischen den Scans, höchstens diese Kursänderung bzw. dieser
+  # Liquiditätsrückgang zwischen beiden Scans
+  confirm_min_gap_minutes: 30
+  confirm_max_gap_hours: 6
+  confirm_max_price_change_pct: 15
+  confirm_max_liquidity_drop_pct: 20
+  # Höchste Kursänderung zwischen Scan und Einstieg (beide Richtungen)
+  max_entry_price_drift_pct: 10
+  # Einstieg nur, wenn der Scan höchstens so alt ist
+  max_scan_age_minutes: 30
+  # Kein erneuter Einstieg in denselben Token innerhalb dieser Zeit
+  reentry_cooldown_hours: 24
+  # Spätestens nach dieser Haltedauer wird verkauft
+  max_holding_hours: 72
+  # Fehlt der Kurs länger, wird die Position auf 0 abgeschrieben
+  max_price_missing_hours: 24
 
 debate:
   bear_objections_required: 3

@@ -41,11 +41,15 @@ def test_scan_uses_correct_bot_email():
     assert '"41898282+users.noreply.github.com"' not in text
 
 
-def test_scan_runs_only_manually():
-    workflow = load("scan.yml")
-    triggers = workflow.get("on", workflow.get(True))
+def triggers_of(workflow):
+    return workflow.get("on", workflow.get(True))
 
-    assert set(triggers) == {"workflow_dispatch"}
+
+def test_scan_runs_manually_or_hourly():
+    triggers = triggers_of(load("scan.yml"))
+
+    assert set(triggers) == {"workflow_dispatch", "schedule"}
+    assert triggers["schedule"] == [{"cron": "7 * * * *"}]
 
 
 def test_scan_requires_tests_before_scanning():
@@ -63,7 +67,7 @@ def test_write_permission_only_for_scan_job():
 
 
 def test_checkout_does_not_store_credentials():
-    for name in ("scan.yml", "tests.yml"):
+    for name in ("scan.yml", "tests.yml", "paper-monitor.yml"):
         workflow = load(name)
 
         for job in workflow["jobs"].values():
@@ -122,3 +126,59 @@ def test_latest_json_saved_only_on_data_branch_and_removed_if_not_generated():
     assert 'steps.latest.outcome }}" = "success"' in script
     assert "git rm -q --cached --ignore-unmatch latest.json" in script
     assert "data/latest.json" not in script
+
+
+# --------------------------------------------------
+# Paper-Broker
+# --------------------------------------------------
+
+def test_paper_step_runs_after_scan_and_only_paper_secrets():
+    step = _scan_step("Paper-Broker")
+    names = [s.get("name") for s in load("scan.yml")["jobs"]["scan"]["steps"]]
+
+    assert names.index("Paper-Broker") > names.index("Kurzübersicht erzeugen")
+    assert names.index("Paper-Broker") < names.index("Protokoll speichern")
+    assert "python -m desk.paper after-scan" in step["run"]
+    assert "steps.scan.outcome" in step["run"]
+    assert "!cancelled()" in step["if"]
+    assert set(step["env"]) == {
+        "DEXPAPRIKA_API_KEY", "TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID"
+    }
+    assert "SOLANA_RPC_URL" not in yaml.safe_dump(step)
+
+
+def test_paper_files_saved_only_after_successful_paper_step():
+    script = _scan_step("Protokoll speichern")["run"]
+
+    assert 'steps.paper.outcome }}" = "success"' in script
+    assert "paper_state.json paper_trades.jsonl" in script
+
+
+def test_scan_and_monitor_share_write_lock():
+    scan = load("scan.yml")["concurrency"]
+    monitor = load("paper-monitor.yml")["concurrency"]
+
+    assert scan["group"] == monitor["group"] == "desk-data-write"
+    assert scan["cancel-in-progress"] is False
+    assert monitor["cancel-in-progress"] is False
+
+
+def test_monitor_workflow_is_limited():
+    text = (WORKFLOW_DIR / "paper-monitor.yml").read_text(encoding="utf-8")
+    workflow = load("paper-monitor.yml")
+    triggers = triggers_of(workflow)
+
+    assert set(triggers) == {"workflow_dispatch", "schedule"}
+    assert workflow["permissions"] == {"contents": "read"}
+    assert workflow["jobs"]["monitor"]["permissions"] == {"contents": "write"}
+    assert "python -m desk.paper monitor" in text
+    assert "after-scan" not in text
+    # keine Helius-Abfragen, kein Scan
+    assert "SOLANA_RPC_URL" not in text
+    assert "python -m desk\n" not in text
+    assert BOT_EMAIL in text
+    for script in all_run_scripts(workflow):
+        for line in script.splitlines():
+            if "git" in line and " push" in line:
+                assert "refs/heads/$DATA_BRANCH" in line
+                assert "main" not in line
