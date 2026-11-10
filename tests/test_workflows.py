@@ -210,7 +210,7 @@ def test_clock_only_dispatches_known_workflows():
     assert workflow["concurrency"] == {"group": "taktgeber", "cancel-in-progress": False}
     assert not any("uses" in step for step in steps)
     assert "07) dispatch scan.yml" in text
-    assert "22|37|52) dispatch paper-monitor.yml" in text
+    assert "02|12|17|22|27|32|37|42|47|52|57) dispatch paper-monitor.yml" in text
     assert "workflows/clock.yml/dispatches" in text
     assert '{"ref":"main"}' in text
     # Nur das automatische GITHUB_TOKEN, keine anderen Secrets

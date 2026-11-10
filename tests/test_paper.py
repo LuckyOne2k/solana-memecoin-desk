@@ -732,3 +732,14 @@ def test_dexpaprika_network_error(monkeypatch):
     monkeypatch.setattr(paper.requests, "get", boom)
 
     assert paper.fetch_dexpaprika_quotes([(MINT, POOL)])[POOL]["error"] == "ConnectionError"
+
+
+def test_equity_history_keeps_one_point_per_15_minutes(tmp_path, desk_config):
+    open_ttp(tmp_path, desk_config)
+    for minutes in (5, 10, 15, 20):
+        monitor(tmp_path, desk_config, {POOL: quote()}, NOW + timedelta(minutes=minutes))
+    times = [p["at"] for p in state_file(tmp_path)["equity_history"]]
+    # Ein Punkt je 15-Minuten-Fenster (NOW liegt auf einer Fenstergrenze):
+    # 5/10 ersetzen den Kaufpunkt, 15 beginnt ein neues Fenster, 20 ersetzt ihn
+    assert times == [(NOW + timedelta(minutes=10)).isoformat(),
+                     (NOW + timedelta(minutes=20)).isoformat()]

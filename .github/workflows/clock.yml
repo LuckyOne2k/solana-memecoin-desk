@@ -4,7 +4,8 @@ name: Taktgeber
 # keine Läufe gestartet hat (2026-11-10: 0 geplante Läufe). Läuft etwa
 # 5,5 Stunden und startet in dieser Zeit:
 #   - scan.yml (Scan + Paper-Broker + Schattendepot) zu jeder Minute 07
-#   - paper-monitor.yml (nur Kurse/Ausstiege) zu den Minuten 22, 37, 52
+#   - paper-monitor.yml (nur Kurse/Ausstiege) alle 5 Minuten außer zur
+#     Scan-Minute: 02, 12, 17, 22, 27, 32, 37, 42, 47, 52, 57
 # Danach startet er sich selbst neu (workflow_dispatch ist mit dem
 # GITHUB_TOKEN ausdrücklich erlaubt). Reißt die Kette ab, startet ihn der
 # Zeitplan alle 6 Stunden oder ein manueller Start neu.
@@ -55,7 +56,7 @@ jobs:
             if [ "$key" != "$last" ]; then
               case "$minute" in
                 07) dispatch scan.yml; last=$key ;;
-                22|37|52) dispatch paper-monitor.yml; last=$key ;;
+                02|12|17|22|27|32|37|42|47|52|57) dispatch paper-monitor.yml; last=$key ;;
               esac
             fi
             sleep 20
