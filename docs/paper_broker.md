@@ -17,8 +17,9 @@ eingestiegen.
 
 | Workflow | Takt | Was passiert |
 |---|---|---|
-| `scan.yml` | stündlich (Minute 7) und manuell | Tests → Scan → `latest.json` → `python -m desk.paper after-scan` |
-| `paper-monitor.yml` | Minute 22, 37, 52 und manuell | `python -m desk.paper monitor` (nur Kurse + Ausstiege; ohne offene Position keine Abfrage und kein Commit) |
+| `clock.yml` (Taktgeber) | läuft dauerhaft in ~5,5-h-Abschnitten | startet die beiden folgenden Workflows zur richtigen Minute |
+| `scan.yml` | stündlich (Minute 7, über Taktgeber) und manuell | Tests → Scan → `latest.json` → `python -m desk.paper after-scan` |
+| `paper-monitor.yml` | Minute 22, 37, 52 (über Taktgeber) und manuell | `python -m desk.paper monitor` (nur Kurse + Ausstiege; ohne offene Position keine Abfrage und kein Commit) |
 
 Beide Workflows schreiben nur in den Branch `desk-data`. Sie teilen sich
 die Concurrency-Gruppe `desk-data-write`, damit nie zwei gleichzeitig
@@ -30,10 +31,11 @@ schreiben. Dateien:
 - `paper_trades.jsonl`: vollständiges Protokoll. Jede Zeile ist ein
   Kauf, Verkauf oder ein begründet übersprungener Einstieg.
 
-GitHub kann geplante Läufe verzögern (oft 5–20 Minuten) und deaktiviert
-sie in öffentlichen Repos nach 60 Tagen ohne Aktivität auf dem
-Standard-Branch. Dann in Actions → Workflow → „Enable workflow“
-klicken.
+Die GitHub-Zeitplanung (`schedule`) hat in diesem Repository am
+2026-11-10 keinen einzigen Lauf gestartet. Deshalb gibt der Taktgeber
+`clock.yml` den Takt: Er läuft etwa 5,5 Stunden, löst die Workflows per
+`workflow_dispatch` aus und startet sich danach selbst neu. Als
+Sicherheitsnetz hat er einen eigenen Zeitplan alle 6 Stunden.
 
 ## Einstiegsregel
 

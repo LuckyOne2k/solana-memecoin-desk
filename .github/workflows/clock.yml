@@ -1,0 +1,71 @@
+name: Taktgeber
+
+# Eigener Takt, weil die GitHub-Zeitplanung (schedule) in diesem Repository
+# keine Läufe gestartet hat (2026-11-10: 0 geplante Läufe). Läuft etwa
+# 5,5 Stunden und startet in dieser Zeit:
+#   - scan.yml (Scan + Paper-Broker + Schattendepot) zu jeder Minute 07
+#   - paper-monitor.yml (nur Kurse/Ausstiege) zu den Minuten 22, 37, 52
+# Danach startet er sich selbst neu (workflow_dispatch ist mit dem
+# GITHUB_TOKEN ausdrücklich erlaubt). Reißt die Kette ab, startet ihn der
+# Zeitplan alle 6 Stunden oder ein manueller Start neu.
+# Nur Auslösen anderer Workflows: kein Checkout, keine Secrets außer dem
+# automatischen GITHUB_TOKEN, kein Schreibzugriff auf Inhalte.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "41 */6 * * *"
+
+permissions:
+  actions: write
+  contents: read
+
+# Höchstens ein laufender und ein wartender Taktgeber.
+concurrency:
+  group: taktgeber
+  cancel-in-progress: false
+
+jobs:
+  clock:
+    runs-on: ubuntu-latest
+    timeout-minutes: 345
+
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      REPO: ${{ github.repository }}
+      RUN_SECONDS: "19800"
+
+    steps:
+      - name: Takt geben
+        run: |
+          set -u
+          dispatch() {
+            code=$(curl -sS -o /dev/null -w "%{http_code}" -X POST \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/$REPO/actions/workflows/$1/dispatches" \
+              -d '{"ref":"main"}' || echo "000")
+            echo "$(date -u +%H:%M) $1 -> HTTP $code"
+          }
+          end=$(( $(date +%s) + RUN_SECONDS ))
+          last=""
+          while [ "$(date +%s)" -lt "$end" ]; do
+            minute=$(date -u +%M)
+            key=$(date -u +%d%H)$minute
+            if [ "$key" != "$last" ]; then
+              case "$minute" in
+                07) dispatch scan.yml; last=$key ;;
+                22|37|52) dispatch paper-monitor.yml; last=$key ;;
+              esac
+            fi
+            sleep 20
+          done
+
+      - name: Nächsten Taktgeber starten
+        if: ${{ !cancelled() }}
+        run: |
+          curl -sS -o /dev/null -w "clock.yml -> HTTP %{http_code}\n" -X POST \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/$REPO/actions/workflows/clock.yml/dispatches" \
+            -d '{"ref":"main"}'

@@ -1,14 +1,12 @@
 name: Solana Memecoin Desk
 
-# Scan stündlich (Minute 7, GitHub kann verzögern) oder manuell.
+# Scan stündlich (Minute 7, ausgelöst vom Taktgeber clock.yml) oder manuell.
 # Danach der Paper-Broker (nur Simulation, kein echtes Geld).
 # Protokoll und Depot werden in den Branch "desk-data" geschrieben,
 # nie auf main.
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "7 * * * *"
 
 permissions:
   contents: read
