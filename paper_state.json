@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-11T17:09:21.260235+00:00",
+  "updated_at": "2026-11-11T17:12:18.549436+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 8163.74915245,
   "open_positions": [
@@ -23,18 +23,18 @@
       "cost_basis_usd": 760.86711888,
       "initial_stop_usd": 0.0028888548060539,
       "highest_price_usd": 0.0035864528780206986,
-      "last_price_usd": 0.003556936101132644,
-      "last_price_at": "2026-11-11T17:09:21.260235+00:00",
+      "last_price_usd": 0.003559989856355788,
+      "last_price_at": "2026-11-11T17:12:18.549436+00:00",
       "current_stop_usd": 0.0033712657053394566,
       "last_quote": {
-        "at": "2026-11-11T17:09:21.260235+00:00",
+        "at": "2026-11-11T17:12:18.549436+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.003556936101132644,
-        "price_high_usd": 0.003556981566866713,
-        "deviation_pct": 0.0013,
+        "price_low_usd": 0.003559989856355788,
+        "price_high_usd": 0.003560197266117823,
+        "deviation_pct": 0.0058,
         "errors": {}
       },
-      "last_liquidity_usd": 187566.53259738025,
+      "last_liquidity_usd": 187573.9564,
       "current_stop_kind": "trailing"
     },
     {
@@ -53,17 +53,17 @@
       "initial_stop_usd": 0.0005533048174484627,
       "highest_price_usd": 0.0005886221462217689,
       "last_price_usd": 0.0005782571975167618,
-      "last_price_at": "2026-11-11T17:09:21.260235+00:00",
+      "last_price_at": "2026-11-11T17:12:18.549436+00:00",
       "current_stop_usd": 0.0005533048174484627,
       "last_quote": {
-        "at": "2026-11-11T17:09:21.260235+00:00",
+        "at": "2026-11-11T17:12:18.549436+00:00",
         "status": "confirmed",
         "price_low_usd": 0.0005782571975167618,
         "price_high_usd": 0.0005785103495998142,
         "deviation_pct": 0.0438,
         "errors": {}
       },
-      "last_liquidity_usd": 57392.8239,
+      "last_liquidity_usd": 57326.6423,
       "current_stop_kind": "initial"
     }
   ],
@@ -508,39 +508,18 @@
       "equity_usd": 9602.86173695
     },
     {
-      "at": "2026-11-11T17:09:21.260235+00:00",
-      "equity_usd": 9602.99914786
+      "at": "2026-11-11T17:12:18.549436+00:00",
+      "equity_usd": 9603.75518856
     }
   ],
   "last_run": {
-    "at": "2026-11-11T17:09:21.260235+00:00",
-    "mode": "after-scan",
-    "scan_status": "ok",
-    "scan_at": "2026-11-11T17:09:21.037878+00:00",
-    "entry_decisions": [
-      {
-        "token_symbol": "ConConAI",
-        "token_address": "PyYAqGgWFLvhVWdZst7hR7pehr7weenFHSLM7FGpump",
-        "decision": "already_open"
-      },
-      {
-        "token_symbol": "NATF",
-        "token_address": "8nytata1aMp19E6FtCf4Sy2iCV9hY6M5Y49JHPJQpump",
-        "decision": "fresh_price_disagree"
-      },
-      {
-        "token_symbol": "BAGEL",
-        "token_address": "Gb7gExpwNdth2iq3Ppio6c423jEP6TYkWPkRkAUpump",
-        "decision": "not_ready_in_previous_scan"
-      },
-      {
-        "token_symbol": "UHI",
-        "token_address": "34As1e1Kop9zBvu5e84kjg452Uigq8krcoGEJiWRpump",
-        "decision": "reentry_cooldown"
-      }
-    ],
+    "at": "2026-11-11T17:12:18.549436+00:00",
+    "mode": "monitor",
+    "scan_status": "not_requested",
+    "scan_at": null,
+    "entry_decisions": [],
     "open_positions": 2,
-    "equity_usd": 9602.99914786,
-    "run_number": "81"
+    "equity_usd": 9603.75518856,
+    "run_number": "213"
   }
 }
