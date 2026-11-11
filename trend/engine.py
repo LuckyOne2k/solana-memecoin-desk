@@ -108,6 +108,19 @@ def yearly_returns(candles, start_index, equity, capital):
     return {year: (v["end"] / v["start"] - 1) * 100 for year, v in result.items()}
 
 
+def weeks_positive_pct(candles, start_index, equity):
+    """Anteil der Kalenderwochen (ISO, UTC), in denen der Depotwert gestiegen
+    ist: Wochenschluss gegen Schluss der Vorwoche. Die erste (Teil-)Woche
+    hat keine Vorwoche und zählt nicht."""
+    week_end = {}
+    for k, value in enumerate(equity):
+        week = datetime.fromtimestamp(candles[start_index + k]["time"], timezone.utc).isocalendar()[:2]
+        week_end[week] = value
+    values = [week_end[w] for w in sorted(week_end)]
+    changes = [b > a for a, b in zip(values, values[1:])]
+    return round(100 * sum(changes) / len(changes), 1) if changes else None
+
+
 def summarize(candles, start_index, equity, trades, days_invested, capital):
     days = len(equity)
     total = equity[-1] / capital - 1
@@ -123,25 +136,29 @@ def summarize(candles, start_index, equity, trades, days_invested, capital):
         "trades": len(trades),
         "win_rate_pct": round(100 * sum(t > 0 for t in trades) / len(trades), 1) if trades else None,
         "invested_pct": round(100 * days_invested / days, 1),
+        "weeks_positive_pct": weeks_positive_pct(candles, start_index, equity),
         "yearly_pct": {y: round(r, 1) for y, r in yearly_returns(candles, start_index, equity, capital).items()},
     }
 
 
-def backtest_product(candles, cfg):
-    """Alle Regeln für ein Handelspaar. Gibt Ergebnis-Dict und Kurven zurück."""
-    start = warmup_days(cfg)
+def backtest_rules(candles, rules, start, cost_pct, capital):
+    """Rechnet die Regeln (Schlüssel → (Text, Regel)) ab ``start``."""
     if len(candles) <= start + 30:
         raise ValueError("zu wenig lückenlose Historie für den Backtest")
     results, curves = {}, {}
-    for key, (label, rule) in make_rules(cfg).items():
-        equity, trades, invested = run_rule(
-            candles, rule, start, cfg["cost_pct_per_trade"], cfg["start_capital_usd"]
-        )
-        summary = summarize(candles, start, equity, trades, invested, cfg["start_capital_usd"])
+    for key, (label, rule) in rules.items():
+        equity, trades, invested = run_rule(candles, rule, start, cost_pct, capital)
+        summary = summarize(candles, start, equity, trades, invested, capital)
         summary["label"] = label
         results[key] = summary
         curves[key] = {candles[start + k]["time"]: v for k, v in enumerate(equity)}
     return results, curves
+
+
+def backtest_product(candles, cfg):
+    """Alle Regeln für ein Handelspaar. Gibt Ergebnis-Dict und Kurven zurück."""
+    return backtest_rules(candles, make_rules(cfg), warmup_days(cfg),
+                          cfg["cost_pct_per_trade"], cfg["start_capital_usd"])
 
 
 def combine_portfolio(curves_by_product, cfg):

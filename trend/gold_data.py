@@ -45,18 +45,29 @@ def _price(raw):
     return value
 
 
-def _to_candle(raw):
+def _timestamp(text, interval):
+    if interval == "1day":
+        day = date.fromisoformat(text)  # nur Datum erlaubt
+        return int(datetime(day.year, day.month, day.day, tzinfo=timezone.utc).timestamp())
+    if len(text) != 19:
+        raise ValueError("Zeitangabe hat falsches Format")
+    moment = datetime.fromisoformat(text).replace(tzinfo=timezone.utc)
+    if moment.minute or moment.second:
+        raise ValueError("Stundenkerze beginnt nicht zur vollen Stunde")
+    return int(moment.timestamp())
+
+
+def _to_candle(raw, interval="1day"):
     if not isinstance(raw, dict) or not isinstance(raw.get("datetime"), str):
         raise ValueError("kein Datum")
-    day = date.fromisoformat(raw["datetime"])
+    ts = _timestamp(raw["datetime"], interval)
     open_, high, low, close = (_price(raw[k]) for k in ("open", "high", "low", "close"))
     if not low <= min(open_, close) <= max(open_, close) <= high:
         raise ValueError("low/high passt nicht zu open/close")
-    ts = int(datetime(day.year, day.month, day.day, tzinfo=timezone.utc).timestamp())
     return {"time": ts, "open": open_, "high": high, "low": low, "close": close}
 
 
-def parse_twelvedata(payload, today_start, max_gap_days):
+def parse_twelvedata(payload, today_start, max_gap_days, interval="1day"):
     """Gibt (kerzen, info) zurück oder wirft CandleDataError."""
     if not isinstance(payload, dict):
         raise CandleDataError("Antwort ist kein Objekt")
@@ -66,22 +77,22 @@ def parse_twelvedata(payload, today_start, max_gap_days):
     if (
         not isinstance(meta, dict)
         or meta.get("symbol") != "XAU/USD"
-        or meta.get("interval") != "1day"
+        or meta.get("interval") != interval
         or not isinstance(payload.get("values"), list)
     ):
-        raise CandleDataError("Antwort ist keine Tageskursliste für XAU/USD")
+        raise CandleDataError(f"Antwort ist keine {interval}-Kursliste für XAU/USD")
 
     candles, invalid_after = [], []
     for raw in reversed(payload["values"]):  # älteste zuerst
         try:
-            candle = _to_candle(raw)
+            candle = _to_candle(raw, interval)
         except (ValueError, KeyError, TypeError):
             invalid_after.append(len(candles))
             continue
         if candles and candle["time"] <= candles[-1]["time"]:
             raise CandleDataError("Datum doppelt oder nicht absteigend geliefert")
         if candle["time"] >= today_start:
-            continue  # laufender Tag
+            continue  # laufende Kerze
         candles.append(candle)
     if not candles:
         raise CandleDataError("keine abgeschlossenen Tageskurse")
@@ -96,7 +107,7 @@ def parse_twelvedata(payload, today_start, max_gap_days):
     if not series:
         raise CandleDataError("kein brauchbarer Abschnitt nach der letzten Fehlerstelle")
     info = {
-        "source": "Twelve Data, XAU/USD Tageskerzen (UTC)",
+        "source": f"Twelve Data, XAU/USD {interval} (UTC)",
         "candles_received": len(candles),
         "invalid_rows": len(invalid_after),
         "gaps_found": gaps_long,
@@ -108,13 +119,26 @@ def parse_twelvedata(payload, today_start, max_gap_days):
 
 
 def fetch_xauusd_daily(max_gap_days, now=None, session=None):
+    return fetch_xauusd(max_gap_days, "1day", now=now, session=session)
+
+
+def fetch_xauusd_hourly(max_gap_days, now=None, session=None):
+    return fetch_xauusd(max_gap_days, "1h", now=now, session=session)
+
+
+def fetch_xauusd(max_gap_days, interval, now=None, session=None):
+    if interval not in ("1day", "1h"):
+        raise ValueError("nur 1day oder 1h")
     key = (os.getenv(KEY_ENV) or "").strip()
     if not key:
         raise CandleDataError(f"{KEY_ENV} fehlt (GitHub-Secret anlegen)")
     now = now or datetime.now(timezone.utc)
-    today_start = int(now.replace(hour=0, minute=0, second=0, microsecond=0).timestamp())
+    if interval == "1day":
+        cutoff = int(now.replace(hour=0, minute=0, second=0, microsecond=0).timestamp())
+    else:
+        cutoff = int(now.replace(minute=0, second=0, microsecond=0).timestamp())
     session = session or requests.Session()
-    params = {"symbol": "XAU/USD", "interval": "1day", "outputsize": MAX_CANDLES,
+    params = {"symbol": "XAU/USD", "interval": interval, "outputsize": MAX_CANDLES,
               "timezone": "UTC", "order": "desc"}
     headers = {"Authorization": f"apikey {key}"}
     last_error = None
@@ -129,7 +153,7 @@ def fetch_xauusd_daily(max_gap_days, now=None, session=None):
                 payload = response.json()
             except ValueError:
                 raise CandleDataError("Twelve-Data-Antwort ist kein JSON") from None
-            return parse_twelvedata(payload, today_start, max_gap_days)
+            return parse_twelvedata(payload, cutoff, max_gap_days, interval)
         last_error = f"HTTP {response.status_code}"
         if response.status_code != 429 and response.status_code < 500:
             break

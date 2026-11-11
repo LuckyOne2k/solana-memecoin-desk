@@ -10,16 +10,93 @@ import os
 import sys
 from datetime import datetime, timezone
 
-from trend.config import load_gold_config, load_trend_config
-from trend.data import CandleDataError, fetch_daily_candles
-from trend.gold_data import fetch_xauusd_daily
+from trend.config import load_gold_config, load_horizon_config, load_trend_config
+from trend.data import CandleDataError, fetch_daily_candles, fetch_hourly_candles
+from trend.engine import backtest_rules
+from trend.gold_data import fetch_xauusd_daily, fetch_xauusd_hourly
+from trend.horizons import fast_rules, medium_rules
 from trend.engine import backtest_product, combine_portfolio
 
 RESULT_FILE = "trend_backtest_result.json"
+GOLD = "XAUUSD (Gold)"
 
 
 def _fmt(value, suffix=" %"):
     return "–" if value is None else f"{value:+.1f}{suffix}" if suffix == " %" else f"{value}{suffix}"
+
+
+def _pct_or_dash(value):
+    return "–" if value is None else f"{value} %"
+
+
+HORIZON_TITLES = {
+    "fast": "Schnell (Stundenkerzen)",
+    "medium": "Mittel (Tageskerzen)",
+}
+
+
+def build_horizon_report(horizons):
+    lines = ["", "# Vergleich schnell / mittel / lang",
+             "", "„Lang“ sind die Tabellen oben (200-Tage-Regeln). "
+             "Wochen im Plus: Anteil der Kalenderwochen mit gestiegenem Depotwert."]
+    for key in ("fast", "medium"):
+        lines += ["", f"## {HORIZON_TITLES[key]}"]
+        for product, data in horizons.get(key, {}).items():
+            lines += ["", f"### {product}"]
+            if "error" in data:
+                lines.append(f"**Unvollständig:** {data['error']}")
+                continue
+            lines += [
+                f"Bewertet {data['test_start']} bis {data['test_end']} ({data['candles_used']} Kerzen), "
+                f"Kosten je Kauf/Verkauf {data['cost_pct_per_trade']} %.",
+                "",
+                "| Regel | Gesamt | pro Jahr | größter Einbruch | Trades | Gewinn-Trades | Wochen im Plus |",
+                "|---|---|---|---|---|---|---|",
+            ]
+            for rule in data["rules"].values():
+                lines.append(
+                    f"| {rule['label']} | {_fmt(rule['total_return_pct'])} | {_fmt(rule['cagr_pct'])} | "
+                    f"{rule['max_drawdown_pct']:.1f} % | {rule['trades']} | "
+                    f"{_pct_or_dash(rule['win_rate_pct'])} | {_pct_or_dash(rule['weeks_positive_pct'])} |"
+                )
+    return "\n".join(lines) + "\n"
+
+
+def _horizon_entry(candles, rules, warmup, cost, capital):
+    results, curves = backtest_rules(candles, rules, warmup, cost, capital)
+    times = sorted(next(iter(curves.values())))
+    day = lambda t: datetime.fromtimestamp(t, timezone.utc).date().isoformat()
+    return {"test_start": day(times[0]), "test_end": day(times[-1]), "candles_used": len(candles),
+            "cost_pct_per_trade": cost, "rules": results}
+
+
+def run_horizons(cfg, gold_cfg, hcfg, daily_candles, fetch_hourly=fetch_hourly_candles,
+                 fetch_gold_hourly=fetch_xauusd_hourly):
+    """Mittel aus den schon geladenen Tageskerzen, schnell aus Stundenkerzen."""
+    products = list(cfg["products"]) + [GOLD]
+    cost = {p: cfg["cost_pct_per_trade"] for p in cfg["products"]}
+    cost[GOLD] = gold_cfg["cost_pct_per_trade"]
+    capital = cfg["start_capital_usd"]
+    out = {"medium": {}, "fast": {}}
+    for product in products:
+        if product not in daily_candles:
+            out["medium"][product] = {"error": "Tageskerzen fehlen (siehe oben)"}
+        else:
+            rules, warmup = medium_rules(hcfg["medium"])  # frisch je Coin (Ausbruchsregel hat Zustand)
+            try:
+                out["medium"][product] = _horizon_entry(daily_candles[product], rules, warmup, cost[product], capital)
+            except ValueError as exc:
+                out["medium"][product] = {"error": str(exc)}
+        try:
+            if product == GOLD:
+                candles, _info = fetch_gold_hourly(gold_cfg["max_gap_days"])
+            else:
+                candles, _info = fetch_hourly(product, hcfg["fast"]["history_days"])
+            rules, warmup = fast_rules(hcfg["fast"])
+            out["fast"][product] = _horizon_entry(candles, rules, warmup, cost[product], capital)
+        except (CandleDataError, ValueError) as exc:
+            out["fast"][product] = {"error": str(exc)}
+    return out
 
 
 def build_report(result):
@@ -51,15 +128,15 @@ def build_report(result):
         )
         lines += [
             "",
-            "| Regel | Gesamt | pro Jahr | größter Einbruch | Trades | Gewinn-Trades | investiert |",
-            "|---|---|---|---|---|---|---|",
+            "| Regel | Gesamt | pro Jahr | größter Einbruch | Trades | Gewinn-Trades | investiert | Wochen im Plus |",
+            "|---|---|---|---|---|---|---|---|",
         ]
         for rule in data["rules"].values():
             lines.append(
                 f"| {rule['label']} | {_fmt(rule['total_return_pct'])} | {_fmt(rule['cagr_pct'])} | "
                 f"{rule['max_drawdown_pct']:.1f} % | {rule['trades']} | "
                 f"{'–' if rule['win_rate_pct'] is None else str(rule['win_rate_pct']) + ' %'} | "
-                f"{rule['invested_pct']} % |"
+                f"{rule['invested_pct']} % | {_pct_or_dash(rule.get('weeks_positive_pct'))} |"
             )
         years = sorted({y for r in data["rules"].values() for y in r["yearly_pct"]})
         lines += ["", "| Jahr | " + " | ".join(r["label"] for r in data["rules"].values()) + " |",
@@ -89,7 +166,7 @@ def build_report(result):
     return "\n".join(lines) + "\n"
 
 
-def run(cfg, fetch=fetch_daily_candles):
+def run(cfg, fetch=fetch_daily_candles, candles_out=None):
     result = {
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "mode": "paper",
@@ -104,6 +181,8 @@ def run(cfg, fetch=fetch_daily_candles):
         except (CandleDataError, ValueError) as exc:
             result["products"][product] = {"error": str(exc)}
             continue
+        if candles_out is not None:
+            candles_out[product] = candles
         info["candles_used"] = len(candles)
         start = len(candles) - len(next(iter(product_curves.values())))
         result["products"][product] = {
@@ -119,13 +198,15 @@ def run(cfg, fetch=fetch_daily_candles):
     return result
 
 
-def run_gold(gold_cfg, fetch=fetch_xauusd_daily):
+def run_gold(gold_cfg, fetch=fetch_xauusd_daily, candles_out=None):
     """Backtest XAUUSD mit eigenen Kosten. Gibt den Eintrag für den Bericht zurück."""
     try:
         candles, info = fetch(gold_cfg["max_gap_days"])
         rules, curves = backtest_product(candles, gold_cfg)
     except (CandleDataError, ValueError) as exc:
         return {"error": str(exc)}
+    if candles_out is not None:
+        candles_out[GOLD] = candles
     info["candles_used"] = len(candles)
     start = len(candles) - len(next(iter(curves.values())))
     return {
@@ -138,11 +219,15 @@ def run_gold(gold_cfg, fetch=fetch_xauusd_daily):
 
 def main():
     cfg = load_trend_config()
-    result = run(cfg)
     gold_cfg = load_gold_config()
+    hcfg = load_horizon_config()
+    daily = {}
+    result = run(cfg, candles_out=daily)
     result["gold_config"] = gold_cfg
-    result["products"]["XAUUSD (Gold)"] = run_gold(gold_cfg)
-    report = build_report(result)
+    result["products"][GOLD] = run_gold(gold_cfg, candles_out=daily)
+    result["horizon_config"] = hcfg
+    result["horizons"] = run_horizons(cfg, gold_cfg, hcfg, daily)
+    report = build_report(result) + build_horizon_report(result["horizons"])
     print(report)
     summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
     if summary_path:
@@ -150,7 +235,10 @@ def main():
             handle.write(report)
     with open(RESULT_FILE, "w", encoding="utf-8") as handle:
         json.dump(result, handle, ensure_ascii=False, indent=2)
-    return 1 if any("error" in d for d in result["products"].values()) else 0
+    failed = any("error" in d for d in result["products"].values()) or any(
+        "error" in d for group in result["horizons"].values() for d in group.values()
+    )
+    return 1 if failed else 0
 
 
 if __name__ == "__main__":

@@ -150,3 +150,20 @@ gold_backtest:
   momentum_days: 90
   # Längere Lücke (Kalendertage) gilt als Datenfehler; Wochenende/Feiertage sind normal
   max_gap_days: 5
+
+horizon_backtest:
+  # Vergleich schnell / mittel / lang (nur Backtest, kein Handel), gleiche
+  # Coins und Kosten wie trend_backtest bzw. gold_backtest. Regeln vorab
+  # festgelegt (Nutzerauftrag 2026-11-11), nicht optimiert. „Lang“ sind die
+  # Regeln aus trend_backtest.
+  fast:
+    # Stundenkerzen der letzten Tage (Gold: höchstens 5000 Stunden von Twelve Data)
+    history_days: 365
+    sma_hours: 24
+    cross_short_hours: 12
+    cross_long_hours: 48
+  medium:
+    breakout_entry_days: 20
+    breakout_exit_days: 10
+    cross_short_days: 10
+    cross_long_days: 30

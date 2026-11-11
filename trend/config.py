@@ -122,3 +122,38 @@ def load_gold_config(path=None):
     path = Path(path) if path else CONFIG_PATH
     with path.open(encoding="utf-8") as handle:
         return validate_gold_config(yaml.safe_load(handle))
+
+
+_HORIZON_FIELDS = {
+    "fast": {"history_days": (30, 730), "sma_hours": (2, 500),
+             "cross_short_hours": (2, 500), "cross_long_hours": (2, 500)},
+    "medium": {"breakout_entry_days": (2, 200), "breakout_exit_days": (2, 200),
+               "cross_short_days": (2, 200), "cross_long_days": (2, 200)},
+}
+
+
+def validate_horizon_config(config):
+    if not isinstance(config, dict) or config.get("mode") != ALLOWED_MODE:
+        raise TrendConfigError("mode muss 'paper' sein, Live-Trading ist nicht freigegeben")
+    section = config.get("horizon_backtest")
+    if not isinstance(section, dict):
+        raise TrendConfigError("Abschnitt 'horizon_backtest' fehlt")
+    for group, fields in _HORIZON_FIELDS.items():
+        values = section.get(group)
+        if not isinstance(values, dict):
+            raise TrendConfigError(f"horizon_backtest.{group} fehlt")
+        for key, (low, high) in fields.items():
+            value = values.get(key)
+            if isinstance(value, bool) or not isinstance(value, int) or not low <= value <= high:
+                raise TrendConfigError(f"horizon_backtest.{group}.{key} muss eine ganze Zahl von {low} bis {high} sein")
+    if section["fast"]["cross_short_hours"] >= section["fast"]["cross_long_hours"]:
+        raise TrendConfigError("horizon_backtest.fast: kurzer Durchschnitt muss kürzer als der lange sein")
+    if section["medium"]["cross_short_days"] >= section["medium"]["cross_long_days"]:
+        raise TrendConfigError("horizon_backtest.medium: kurzer Durchschnitt muss kürzer als der lange sein")
+    return section
+
+
+def load_horizon_config(path=None):
+    path = Path(path) if path else CONFIG_PATH
+    with path.open(encoding="utf-8") as handle:
+        return validate_horizon_config(yaml.safe_load(handle))

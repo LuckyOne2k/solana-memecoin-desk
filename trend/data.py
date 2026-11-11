@@ -25,7 +25,7 @@ class CandleDataError(RuntimeError):
     pass
 
 
-def parse_candles(payload):
+def parse_candles(payload, step=DAY):
     """Prüft eine Coinbase-Antwort und gibt Kerzen als Dicts zurück."""
     if not isinstance(payload, list):
         raise CandleDataError("Antwort ist keine Liste")
@@ -36,8 +36,8 @@ def parse_candles(payload):
         if any(isinstance(v, bool) or not isinstance(v, (int, float)) for v in row):
             raise CandleDataError("Kerze enthält keine Zahl")
         ts, low, high, open_, close, volume = row
-        if not isinstance(ts, int) or ts % DAY != 0:
-            raise CandleDataError("Zeitstempel ist kein Tagesbeginn (UTC)")
+        if not isinstance(ts, int) or ts % step != 0:
+            raise CandleDataError("Zeitstempel passt nicht zum Kerzenraster (UTC)")
         if min(low, high, open_, close) <= 0 or volume < 0:
             raise CandleDataError("Preis ≤ 0 oder negatives Volumen")
         if not low <= min(open_, close) <= max(open_, close) <= high:
@@ -49,7 +49,7 @@ def parse_candles(payload):
     return candles
 
 
-def clean_series(candles, today_start):
+def clean_series(candles, today_start, step=DAY):
     """Sortiert, prüft Doppelte, entfernt den laufenden Tag, kürzt auf den
     längsten lückenlosen Abschnitt bis zum Ende.
 
@@ -67,7 +67,7 @@ def clean_series(candles, today_start):
     start_index = 0
     gaps = 0
     for i in range(1, len(series)):
-        if series[i]["time"] - series[i - 1]["time"] != DAY:
+        if series[i]["time"] - series[i - 1]["time"] != step:
             gaps += 1
             start_index = i
     info = {
@@ -129,3 +129,41 @@ def fetch_daily_candles(product, now=None, session=None):
 
 def _day(ts):
     return (datetime(1970, 1, 1, tzinfo=timezone.utc) + timedelta(seconds=ts)).date().isoformat()
+
+
+HOUR = 3600
+
+
+def fetch_hourly_candles(product, days, now=None, session=None):
+    """Stundenkerzen der letzten ``days`` Tage (laufende Stunde ausgeschlossen).
+
+    Gleiche Prüfregeln wie bei Tageskerzen: Lücken kürzen auf den längsten
+    lückenlosen Abschnitt bis zum Ende, nie Auffüllen.
+    """
+    now = now or datetime.now(timezone.utc)
+    hour_start = int(now.replace(minute=0, second=0, microsecond=0).timestamp())
+    first = hour_start - days * DAY
+    session = session or requests.Session()
+    url = BASE_URL.format(product=product)
+
+    collected = []
+    end = hour_start
+    requests_needed = -(-(days * 24) // MAX_CANDLES_PER_REQUEST)
+    for _ in range(requests_needed):
+        start = max(first, end - MAX_CANDLES_PER_REQUEST * HOUR)
+        params = {
+            "granularity": HOUR,
+            "start": datetime.fromtimestamp(start, timezone.utc).isoformat(),
+            "end": datetime.fromtimestamp(end - HOUR, timezone.utc).isoformat(),
+        }
+        batch = parse_candles(_get_with_retries(session, url, params), step=HOUR)
+        collected.extend(c for c in batch if start <= c["time"] < end)
+        end = start
+        if end <= first:
+            break
+        time.sleep(0.4)  # öffentliche Schnittstelle schonen
+
+    series, info = clean_series(collected, hour_start, step=HOUR)
+    info["first_day"] = _day(series[0]["time"])
+    info["last_day"] = _day(series[-1]["time"])
+    return series, info
