@@ -53,6 +53,7 @@
 | `desk/paper.py` | Paper-Broker (nur Simulation): `after-scan` (Ausstiege, dann Einstiege) und `monitor` (Kurse + Ausstiege); Depot `paper_state.json`, Protokoll `paper_trades.jsonl` in `desk-data`; Regeln in `docs/paper_broker.md` |
 | `desk/shadow.py` | Schattendepot (nur Lernen): Kursveränderung aller geprüften Token nach 1/6/24 h, Zusammenfassung je Status/Grund in `shadow_summary.json`, nie eine Entscheidung |
 | `desk/notify.py` | optionale Telegram-Meldungen (nur mit Secrets `TELEGRAM_BOT_TOKEN`/`TELEGRAM_CHAT_ID`, Token nie in Ausgaben) |
+| `trend/` | Trend-Bot große Coins (BTC/ETH/SOL), bisher nur Backtest: Coinbase-Tageskerzen, Regeln aus `config.yaml` (`trend_backtest`), Workflow `trend-backtest.yml` (nur lesend) |
 | `desk/risk.py`, `debate.py` | behalten, nicht angeschlossen (Broker rechnet selbst; Debatte bräuchte kostenpflichtige KI) |
 
 ## Prüfregeln (Kurzfassung, Details im README)
