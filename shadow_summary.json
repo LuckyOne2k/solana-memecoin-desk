@@ -1,14 +1,14 @@
 {
   "schema_version": 1,
   "purpose": "learning_only_no_trading",
-  "generated_at": "2026-11-11T04:09:29.057813+00:00",
+  "generated_at": "2026-11-11T05:09:26.607850+00:00",
   "note": "Kursveränderung ohne Kosten seit erster Beobachtung; keine Kaufempfehlung.",
-  "observations_total": 90,
-  "observations_open": 90,
+  "observations_total": 94,
+  "observations_open": 94,
   "by_status": [
     {
       "group": "rejected",
-      "observations": 43,
+      "observations": 46,
       "1h": {
         "count": 41,
         "mean_pct": 1.77,
@@ -42,7 +42,7 @@
     },
     {
       "group": "ready_for_full_risk_screen",
-      "observations": 4,
+      "observations": 5,
       "1h": {
         "count": 4,
         "mean_pct": 4.37,
@@ -78,7 +78,7 @@
     },
     {
       "group": "rejected:lp_burn_or_lock_not_verified",
-      "observations": 11,
+      "observations": 12,
       "1h": {
         "count": 11,
         "mean_pct": 1.75,
@@ -112,7 +112,7 @@
     },
     {
       "group": "rejected:market_cap_below_minimum",
-      "observations": 7,
+      "observations": 8,
       "1h": {
         "count": 7,
         "mean_pct": 0.0,
@@ -146,7 +146,7 @@
     },
     {
       "group": "ready_for_full_risk_screen",
-      "observations": 4,
+      "observations": 5,
       "1h": {
         "count": 4,
         "mean_pct": 4.37,
@@ -196,20 +196,8 @@
       "24h": null
     },
     {
-      "group": "rejected:top10_holder_share_above_limit",
-      "observations": 2,
-      "1h": {
-        "count": 2,
-        "mean_pct": 13.23,
-        "median_pct": 13.23,
-        "positive_share_pct": 100.0
-      },
-      "6h": null,
-      "24h": null
-    },
-    {
       "group": "rejected:creator_share_above_limit",
-      "observations": 1,
+      "observations": 2,
       "1h": {
         "count": 1,
         "mean_pct": 1.8,
@@ -222,6 +210,18 @@
         "median_pct": 7.44,
         "positive_share_pct": 100.0
       },
+      "24h": null
+    },
+    {
+      "group": "rejected:top10_holder_share_above_limit",
+      "observations": 2,
+      "1h": {
+        "count": 2,
+        "mean_pct": 13.23,
+        "median_pct": 13.23,
+        "positive_share_pct": 100.0
+      },
+      "6h": null,
       "24h": null
     }
   ]
