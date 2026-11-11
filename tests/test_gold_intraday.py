@@ -8,11 +8,14 @@ import pytest
 from trend.__main__ import GOLD, build_intraday_report, run_gold_intraday
 from trend.config import TrendConfigError, load_gold_intraday_config, validate_gold_intraday_config
 from trend.data import HOUR
-from trend.gold_intraday import backtest_gold_intraday, london_breakout, mean_reversion, simulate
+from trend.data import DAY
+from trend.gold_intraday import (backtest_gold_intraday, london_breakout, mean_reversion, narrow_filter,
+                                 simulate, trend_filter)
 
 MONDAY = int(datetime(2024, 1, 1, tzinfo=timezone.utc).timestamp())  # Montag 00:00 UTC
 MR = {"window_hours": 4, "entry_z": 1.0, "max_hold_hours": 3, "stop_pct": 2.0}
-LB = {"range_start_hour": 0, "range_end_hour": 7, "close_hour": 20}
+LB = {"range_start_hour": 0, "range_end_hour": 7, "close_hour": 20,
+      "trend_sma_days": 3, "narrow_lookback_days": 2}
 ICFG = {"mean_reversion": MR, "london_breakout": LB}
 
 
@@ -150,39 +153,39 @@ def day_candles(day_start, range_hl=(101, 99), after=None, skip_hours=()):
 
 
 def test_breakout_long_closed_at_close_hour():
-    _, decide, _ = london_breakout(LB)
     candles = day_candles(MONDAY, after={8: 102, 12: 105})
+    _, decide, _ = london_breakout(LB, candles)
     _, trades, _ = run(candles, decide)
     assert trades == [(1, pytest.approx(105 / 102 - 1))]  # Einstieg Eröffnung 9 Uhr, Ausstieg 20 Uhr
 
 
 def test_breakout_short_and_only_one_trade_per_day():
-    _, decide, _ = london_breakout(LB)
     candles = day_candles(MONDAY, after={8: 98, 10: 101.5, 11: 98, 13: 97})
+    _, decide, _ = london_breakout(LB, candles)
     _, trades, _ = run(candles, decide)
     # Short ab 98, Stop bei Schluss über 101 (10 Uhr) → Ausstieg 101.5; kein zweiter Trade
     assert trades == [(-1, pytest.approx(1 - 101.5 / 98))]
 
 
 def test_breakout_no_trade_without_full_range():
-    _, decide, ranges = london_breakout(LB)
     candles = day_candles(MONDAY, after={8: 102}, skip_hours=(3,))
+    _, decide, ranges = london_breakout(LB, candles)
     _, trades, _ = run(candles, decide)
     assert trades == [] and ranges[MONDAY] is None
 
 
 def test_breakout_range_uses_only_range_hours():
-    _, decide, _ = london_breakout(LB)
     # 7-Uhr-Kerze mit hohem Hoch darf die Spanne nicht verändern
     candles = day_candles(MONDAY, after={8: 102})
     candles[7]["high"] = 200
+    _, decide, _ = london_breakout(LB, candles)
     _, trades, _ = run(candles, decide)
     assert trades and trades[0][0] == 1
 
 
 def test_breakout_no_entry_after_last_entry_hour():
-    _, decide, _ = london_breakout(LB)
     candles = day_candles(MONDAY, after={19: 103})
+    _, decide, _ = london_breakout(LB, candles)
     _, trades, _ = run(candles, decide)
     assert trades == []
 
@@ -199,7 +202,9 @@ def long_series():
 
 def test_backtest_has_all_rules_and_counts():
     data = backtest_gold_intraday(long_series(), ICFG, 0.1, 10000)
-    assert set(data["rules"]) == {"buy_and_hold", "mean_reversion", "london_breakout"}
+    assert set(data["rules"]) == {"buy_and_hold", "mean_reversion", "london_breakout",
+                                  "london_breakout_narrow"}
+    assert "london_breakout_trend" in data["errors"]  # ohne Tageskerzen nie ersetzt
     lb = data["rules"]["london_breakout"]
     assert lb["trades"] == lb["long_trades"] + lb["short_trades"]
     assert lb["trades_per_day"] is not None
@@ -211,13 +216,69 @@ def test_too_little_history_is_error():
 
 
 def test_run_without_hourly_is_incomplete():
-    out = run_gold_intraday({"cost_pct_per_trade": 0.1, "start_capital_usd": 10000}, ICFG, {})
+    out = run_gold_intraday({"cost_pct_per_trade": 0.1, "start_capital_usd": 10000, "max_gap_days": 5}, ICFG, {})
     assert "error" in out
     assert "Unvollständig" in build_intraday_report(out)
 
 
 def test_report_renders():
-    out = run_gold_intraday({"cost_pct_per_trade": 0.1, "start_capital_usd": 10000}, ICFG,
+    out = run_gold_intraday({"cost_pct_per_trade": 0.1, "start_capital_usd": 10000, "max_gap_days": 5}, ICFG,
                             {GOLD: long_series()})
     report = build_intraday_report(out)
     assert "London-Ausbruch" in report and "Long/Short" in report
+
+
+# --- Filter für den London-Ausbruch -------------------------------------------------
+
+def daily(closes, end_day):
+    """Tageskerzen, deren letzte am Vortag von ``end_day`` liegt."""
+    n = len(closes)
+    return [bar(end_day - (n - k) * DAY, c) for k, c in enumerate(closes)]
+
+
+def test_trend_filter_uses_only_days_before():
+    day = MONDAY + 10 * DAY
+    up = daily([100, 101, 102, 110], day)
+    assert trend_filter(up, 3, 5)(day) == {1}
+    down = daily([110, 105, 104, 90], day)
+    assert trend_filter(down, 3, 5)(day) == {-1}
+    # Kerze vom Tag selbst darf nicht zählen
+    with_today = up + [bar(day, 50)]
+    assert trend_filter(with_today, 3, 5)(day) == {1}
+
+
+def test_trend_filter_without_enough_or_stale_data_allows_nothing():
+    day = MONDAY + 30 * DAY
+    assert trend_filter(daily([100, 101], day), 3, 5)(day) == set()
+    stale = daily([100, 101, 102, 110], day - 10 * DAY)
+    assert trend_filter(stale, 3, 5)(day) == set()
+
+
+def test_breakout_trend_filter_blocks_counter_trend_trade():
+    candles = day_candles(MONDAY, after={8: 98, 12: 97})  # Ausbruch nach unten
+    up = daily([100, 101, 102, 110], MONDAY)
+    _, decide, _ = london_breakout(LB, candles, trend_filter(up, 3, 5))
+    _, trades, _ = run(candles, decide)
+    assert trades == []
+    down = daily([110, 105, 104, 90], MONDAY)
+    _, decide, _ = london_breakout(LB, candles, trend_filter(down, 3, 5))
+    _, trades, _ = run(candles, decide)
+    assert trades and trades[0][0] == -1
+
+
+def test_narrow_filter():
+    ranges = {MONDAY: (104, 100), MONDAY + DAY: (102, 100), MONDAY + 2 * DAY: (101, 100),
+              MONDAY + 3 * DAY: (110, 100), MONDAY + 4 * DAY: None}
+    allowed = narrow_filter(ranges, 2)
+    assert allowed(MONDAY + DAY) == set()            # zu wenig Vortage
+    assert allowed(MONDAY + 2 * DAY) == {1, -1}      # 1 % < Ø(4 %, 2 %)
+    assert allowed(MONDAY + 3 * DAY) == set()        # 10 % breiter
+    assert allowed(MONDAY + 4 * DAY) == set()        # Spanne unvollständig
+
+
+def test_backtest_with_daily_has_trend_variant():
+    candles = long_series()
+    days = daily([100 + k for k in range(300)], candles[0]["time"]) + [
+        bar(candles[0]["time"] + d * DAY, 400) for d in range(30)]
+    data = backtest_gold_intraday(candles, ICFG, 0.1, 10000, days, 5)
+    assert "london_breakout_trend" in data["rules"] and data["errors"] == {}

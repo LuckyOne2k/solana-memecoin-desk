@@ -163,7 +163,8 @@ _INTRADAY_FIELDS = {
     "mean_reversion": {"window_hours": (int, 4, 500), "entry_z": (float, 0.5, 5.0),
                        "max_hold_hours": (int, 1, 48), "stop_pct": (float, 0.1, 10.0)},
     "london_breakout": {"range_start_hour": (int, 0, 23), "range_end_hour": (int, 1, 23),
-                        "close_hour": (int, 2, 24)},
+                        "close_hour": (int, 2, 24), "trend_sma_days": (int, 10, 400),
+                        "narrow_lookback_days": (int, 5, 100)},
 }
 
 
@@ -192,3 +193,29 @@ def load_gold_intraday_config(path=None):
     path = Path(path) if path else CONFIG_PATH
     with path.open(encoding="utf-8") as handle:
         return validate_gold_intraday_config(yaml.safe_load(handle))
+
+
+_PULLBACK_FIELDS = {"sma_days": (2, 400), "low_days": (2, 30), "exit_sma_days": (2, 30),
+                    "rsi_days": (2, 30), "rsi_entry": (1, 50), "rsi_exit": (50, 99),
+                    "max_hold_days": (1, 60)}
+
+
+def validate_gold_pullback_config(config):
+    if not isinstance(config, dict) or config.get("mode") != ALLOWED_MODE:
+        raise TrendConfigError("mode muss 'paper' sein, Live-Trading ist nicht freigegeben")
+    section = config.get("gold_pullback")
+    if not isinstance(section, dict):
+        raise TrendConfigError("Abschnitt 'gold_pullback' fehlt")
+    for key, (low, high) in _PULLBACK_FIELDS.items():
+        value = section.get(key)
+        if isinstance(value, bool) or not isinstance(value, int) or not low <= value <= high:
+            raise TrendConfigError(f"gold_pullback.{key} muss eine ganze Zahl von {low} bis {high} sein")
+    if section["low_days"] >= section["sma_days"] or section["exit_sma_days"] >= section["sma_days"]:
+        raise TrendConfigError("gold_pullback: kurze Zeiträume müssen kürzer als sma_days sein")
+    return section
+
+
+def load_gold_pullback_config(path=None):
+    path = Path(path) if path else CONFIG_PATH
+    with path.open(encoding="utf-8") as handle:
+        return validate_gold_pullback_config(yaml.safe_load(handle))
