@@ -97,3 +97,98 @@ def load_trend_paper_config(path=None):
     path = Path(path) if path else CONFIG_PATH
     with path.open(encoding="utf-8") as handle:
         return validate_trend_paper_config(yaml.safe_load(handle))
+
+
+def validate_gold_config(config):
+    """Prüft ``gold_backtest`` mit denselben Regeln wie ``trend_backtest``."""
+    if not isinstance(config, dict) or config.get("mode") != ALLOWED_MODE:
+        raise TrendConfigError("mode muss 'paper' sein, Live-Trading ist nicht freigegeben")
+    section = config.get("gold_backtest")
+    if not isinstance(section, dict):
+        raise TrendConfigError("Abschnitt 'gold_backtest' fehlt")
+    gap = section.get("max_gap_days")
+    if isinstance(gap, bool) or not isinstance(gap, int) or not 3 <= gap <= 10:
+        raise TrendConfigError("gold_backtest.max_gap_days muss eine ganze Zahl von 3 bis 10 sein")
+    probe = {k: v for k, v in section.items() if k != "max_gap_days"}
+    probe["products"] = ["XAU-USD"]
+    try:
+        validate_trend_config({"mode": ALLOWED_MODE, "trend_backtest": probe})
+    except TrendConfigError as exc:
+        raise TrendConfigError(str(exc).replace("trend_backtest", "gold_backtest")) from None
+    return dict(section)
+
+
+def load_gold_config(path=None):
+    path = Path(path) if path else CONFIG_PATH
+    with path.open(encoding="utf-8") as handle:
+        return validate_gold_config(yaml.safe_load(handle))
+
+
+_HORIZON_FIELDS = {
+    "fast": {"history_days": (30, 730), "sma_hours": (2, 500),
+             "cross_short_hours": (2, 500), "cross_long_hours": (2, 500)},
+    "medium": {"breakout_entry_days": (2, 200), "breakout_exit_days": (2, 200),
+               "cross_short_days": (2, 200), "cross_long_days": (2, 200)},
+}
+
+
+def validate_horizon_config(config):
+    if not isinstance(config, dict) or config.get("mode") != ALLOWED_MODE:
+        raise TrendConfigError("mode muss 'paper' sein, Live-Trading ist nicht freigegeben")
+    section = config.get("horizon_backtest")
+    if not isinstance(section, dict):
+        raise TrendConfigError("Abschnitt 'horizon_backtest' fehlt")
+    for group, fields in _HORIZON_FIELDS.items():
+        values = section.get(group)
+        if not isinstance(values, dict):
+            raise TrendConfigError(f"horizon_backtest.{group} fehlt")
+        for key, (low, high) in fields.items():
+            value = values.get(key)
+            if isinstance(value, bool) or not isinstance(value, int) or not low <= value <= high:
+                raise TrendConfigError(f"horizon_backtest.{group}.{key} muss eine ganze Zahl von {low} bis {high} sein")
+    if section["fast"]["cross_short_hours"] >= section["fast"]["cross_long_hours"]:
+        raise TrendConfigError("horizon_backtest.fast: kurzer Durchschnitt muss kürzer als der lange sein")
+    if section["medium"]["cross_short_days"] >= section["medium"]["cross_long_days"]:
+        raise TrendConfigError("horizon_backtest.medium: kurzer Durchschnitt muss kürzer als der lange sein")
+    return section
+
+
+def load_horizon_config(path=None):
+    path = Path(path) if path else CONFIG_PATH
+    with path.open(encoding="utf-8") as handle:
+        return validate_horizon_config(yaml.safe_load(handle))
+
+
+_INTRADAY_FIELDS = {
+    "mean_reversion": {"window_hours": (int, 4, 500), "entry_z": (float, 0.5, 5.0),
+                       "max_hold_hours": (int, 1, 48), "stop_pct": (float, 0.1, 10.0)},
+    "london_breakout": {"range_start_hour": (int, 0, 23), "range_end_hour": (int, 1, 23),
+                        "close_hour": (int, 2, 24)},
+}
+
+
+def validate_gold_intraday_config(config):
+    if not isinstance(config, dict) or config.get("mode") != ALLOWED_MODE:
+        raise TrendConfigError("mode muss 'paper' sein, Live-Trading ist nicht freigegeben")
+    section = config.get("gold_intraday")
+    if not isinstance(section, dict):
+        raise TrendConfigError("Abschnitt 'gold_intraday' fehlt")
+    for group, fields in _INTRADAY_FIELDS.items():
+        values = section.get(group)
+        if not isinstance(values, dict):
+            raise TrendConfigError(f"gold_intraday.{group} fehlt")
+        for key, (kind, low, high) in fields.items():
+            value = values.get(key)
+            allowed = (int, float) if kind is float else (int,)
+            if isinstance(value, bool) or not isinstance(value, allowed) or not low <= value <= high:
+                raise TrendConfigError(f"gold_intraday.{group}.{key} muss zwischen {low} und {high} liegen")
+    lb = section["london_breakout"]
+    if not lb["range_start_hour"] < lb["range_end_hour"] < lb["close_hour"] - 1:
+        raise TrendConfigError("gold_intraday.london_breakout: Spanne muss vor dem Schließen liegen")
+    return section
+
+
+def load_gold_intraday_config(path=None):
+    path = Path(path) if path else CONFIG_PATH
+    with path.open(encoding="utf-8") as handle:
+        return validate_gold_intraday_config(yaml.safe_load(handle))

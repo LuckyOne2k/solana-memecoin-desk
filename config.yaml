@@ -134,3 +134,52 @@ trend_paper:
   max_price_deviation_pct: 1.0
   # Tageskerze erst so viele Minuten nach Mitternacht (UTC) verwenden
   min_minutes_after_midnight: 15
+
+gold_backtest:
+  # Gold (XAUUSD, Kassakurs) – nur Backtest/Simulation, kein Handel.
+  # Gleiche, vorab festgelegte Regeln wie trend_backtest (nicht optimiert).
+  # Tageskurse: Twelve Data (XAU/USD, Tage in UTC, kostenloser Schlüssel), nur
+  # Kursabfrage, Schlüssel als GitHub-Secret TWELVEDATA_API_KEY.
+  # Kosten je Kauf bzw. Verkauf (Spread + Schlupf, konservativ). Nicht
+  # enthalten: Übernachtgebühren (Swap) bei CFDs, die je nach Broker
+  # mehrere Prozent pro Jahr kosten können.
+  cost_pct_per_trade: 0.1
+  start_capital_usd: 10000
+  sma_short_days: 50
+  sma_long_days: 200
+  momentum_days: 90
+  # Längere Lücke (Kalendertage) gilt als Datenfehler; Wochenende/Feiertage sind normal
+  max_gap_days: 5
+
+horizon_backtest:
+  # Vergleich schnell / mittel / lang (nur Backtest, kein Handel), gleiche
+  # Coins und Kosten wie trend_backtest bzw. gold_backtest. Regeln vorab
+  # festgelegt (Nutzerauftrag 2026-11-11), nicht optimiert. „Lang“ sind die
+  # Regeln aus trend_backtest.
+  fast:
+    # Stundenkerzen der letzten Tage (Gold: höchstens 5000 Stunden von Twelve Data)
+    history_days: 365
+    sma_hours: 24
+    cross_short_hours: 12
+    cross_long_hours: 48
+  medium:
+    breakout_entry_days: 20
+    breakout_exit_days: 10
+    cross_short_days: 10
+    cross_long_days: 30
+
+gold_intraday:
+  # Gold intraday, Long und Short auf Stundenkerzen (nur Backtest, kein Handel).
+  # Regeln vorab festgelegt (Nutzerauftrag 2026-11-11), nicht an die Daten
+  # angepasst. Kosten aus gold_backtest (0,1 % je Eröffnung und Schließung),
+  # Daten: Twelve Data XAU/USD 1h (höchstens 5000 Stunden, ca. 10 Monate).
+  # Swap/Übernachtgebühren nicht enthalten.
+  mean_reversion:
+    window_hours: 24
+    entry_z: 2.0         # Abstand vom Durchschnitt in Standardabweichungen
+    max_hold_hours: 6
+    stop_pct: 1.0
+  london_breakout:
+    range_start_hour: 0  # UTC
+    range_end_hour: 7
+    close_hour: 20
