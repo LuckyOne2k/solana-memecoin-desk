@@ -10,12 +10,13 @@ import os
 import sys
 from datetime import datetime, timezone
 
-from trend.config import (load_gold_config, load_gold_intraday_config, load_horizon_config,
-                          load_trend_config)
+from trend.config import (load_gold_config, load_gold_intraday_config, load_gold_pullback_config,
+                          load_horizon_config, load_trend_config)
 from trend.data import CandleDataError, fetch_daily_candles, fetch_hourly_candles
 from trend.engine import backtest_rules
 from trend.gold_data import fetch_xauusd_daily, fetch_xauusd_hourly
 from trend.gold_intraday import backtest_gold_intraday
+from trend.gold_pullback import backtest_gold_pullback
 from trend.horizons import fast_rules, medium_rules
 from trend.engine import backtest_product, combine_portfolio
 
@@ -124,14 +125,50 @@ def build_intraday_report(data):
             f"{rule['long_trades']}/{rule['short_trades']} | "
             f"{_pct_or_dash(rule['win_rate_pct'])} | {_pct_or_dash(rule['weeks_positive_pct'])} |"
         )
+    for key, reason in data.get("errors", {}).items():
+        lines.append(f"\n**Unvollständig ({key}):** {reason}")
     return "\n".join(lines) + "\n"
 
 
-def run_gold_intraday(gold_cfg, icfg, hourly):
+def build_pullback_report(data):
+    lines = ["", "# Gold: Rücksetzer im Aufwärtstrend (Tageskerzen, nur Long, nur Simulation)", ""]
+    if "error" in data:
+        return "\n".join(lines + [f"**Unvollständig:** {data['error']}"]) + "\n"
+    lines += [
+        f"Bewertet {data['test_start']} bis {data['test_end']} ({data['candles_used']} Handelstage), "
+        f"Kosten je Kauf/Verkauf {data['cost_pct_per_trade']} %, ohne Swap.",
+        "",
+        "| Regel | Gesamt | pro Jahr | größter Einbruch | Trades | Gewinn-Trades | Ø je Trade | "
+        "investiert | Wochen im Plus |",
+        "|---|---|---|---|---|---|---|---|---|",
+    ]
+    for rule in data["rules"].values():
+        avg = rule.get("avg_trade_pct")
+        lines.append(
+            f"| {rule['label']} | {_fmt(rule['total_return_pct'])} | {_fmt(rule['cagr_pct'])} | "
+            f"{rule['max_drawdown_pct']:.1f} % | {rule['trades']} | {_pct_or_dash(rule['win_rate_pct'])} | "
+            f"{'–' if avg is None else f'{avg:+.2f} %'} | {rule['invested_pct']} % | "
+            f"{_pct_or_dash(rule['weeks_positive_pct'])} |"
+        )
+    return "\n".join(lines) + "\n"
+
+
+def run_gold_intraday(gold_cfg, icfg, hourly, daily=None):
     if GOLD not in hourly:
         return {"error": "Gold-Stundenkerzen fehlen (siehe Vergleich schnell)"}
     try:
         return backtest_gold_intraday(hourly[GOLD], icfg, gold_cfg["cost_pct_per_trade"],
+                                      gold_cfg["start_capital_usd"], (daily or {}).get(GOLD),
+                                      gold_cfg["max_gap_days"])
+    except ValueError as exc:
+        return {"error": str(exc)}
+
+
+def run_gold_pullback(gold_cfg, pcfg, daily):
+    if GOLD not in daily:
+        return {"error": "Gold-Tageskerzen fehlen (siehe oben)"}
+    try:
+        return backtest_gold_pullback(daily[GOLD], pcfg, gold_cfg["cost_pct_per_trade"],
                                       gold_cfg["start_capital_usd"])
     except ValueError as exc:
         return {"error": str(exc)}
@@ -260,6 +297,7 @@ def main():
     gold_cfg = load_gold_config()
     hcfg = load_horizon_config()
     icfg = load_gold_intraday_config()
+    pcfg = load_gold_pullback_config()
     daily, hourly = {}, {}
     result = run(cfg, candles_out=daily)
     result["gold_config"] = gold_cfg
@@ -267,9 +305,12 @@ def main():
     result["horizon_config"] = hcfg
     result["horizons"] = run_horizons(cfg, gold_cfg, hcfg, daily, gold_hourly_out=hourly)
     result["gold_intraday_config"] = icfg
-    result["gold_intraday"] = run_gold_intraday(gold_cfg, icfg, hourly)
+    result["gold_intraday"] = run_gold_intraday(gold_cfg, icfg, hourly, daily)
+    result["gold_pullback_config"] = pcfg
+    result["gold_pullback"] = run_gold_pullback(gold_cfg, pcfg, daily)
     report = (build_report(result) + build_horizon_report(result["horizons"])
-              + build_intraday_report(result["gold_intraday"]))
+              + build_intraday_report(result["gold_intraday"])
+              + build_pullback_report(result["gold_pullback"]))
     print(report)
     summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
     if summary_path:
@@ -279,7 +320,8 @@ def main():
         json.dump(result, handle, ensure_ascii=False, indent=2)
     failed = any("error" in d for d in result["products"].values()) or any(
         "error" in d for group in result["horizons"].values() for d in group.values()
-    ) or "error" in result["gold_intraday"]
+    ) or "error" in result["gold_intraday"] or bool(result["gold_intraday"].get("errors")) \
+        or "error" in result["gold_pullback"]
     return 1 if failed else 0
 
 

@@ -183,3 +183,19 @@ gold_intraday:
     range_start_hour: 0  # UTC
     range_end_hour: 7
     close_hour: 20
+    # Varianten (Nutzerauftrag „Gold vertiefen“): nur in Richtung des
+    # Tagestrends bzw. nur bei Spanne schmaler als der Schnitt der letzten Tage
+    trend_sma_days: 200
+    narrow_lookback_days: 20
+
+gold_pullback:
+  # Gold: Rücksetzer im Aufwärtstrend auf Tageskerzen, nur Long (nur Backtest,
+  # kein Handel). Regeln vorab festgelegt (Nutzerauftrag 2026-11-11), nicht
+  # optimiert. Kosten aus gold_backtest, Swap nicht enthalten.
+  sma_days: 200        # Trendfilter: nur kaufen, wenn Schluss darüber
+  low_days: 5          # Regel 1: tiefster Schluss seit 5 Tagen
+  exit_sma_days: 5     # Regel 1: Verkauf bei Schluss über 5-Tage-Ø
+  rsi_days: 2          # Regel 2: RSI(2)
+  rsi_entry: 10        # Kauf unter 10
+  rsi_exit: 70         # Verkauf über 70
+  max_hold_days: 10    # beide: spätestens nach 10 Handelstagen verkaufen
