@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "mode": "paper",
+  "live_trading": false,
+  "rule": "close_above_sma",
+  "sma_days": 200,
+  "cost_pct_per_trade": 0.5,
+  "starting_balance_usd": 9999.99,
+  "created_at": "2026-11-11T06:32:56+00:00",
+  "updated_at": "2026-11-11T06:32:56+00:00",
+  "products": {
+    "BTC-USD": {
+      "cash_usd": 0.0,
+      "units": 0.04495873394090492,
+      "entry_price_usd": 73771.28,
+      "cost_basis_usd": 3333.33,
+      "opened_at": "2026-11-11T06:32:56+00:00",
+      "signal_day": "2026-11-10",
+      "signal": {
+        "close_usd": 73697.87,
+        "sma_usd": 73134.9834,
+        "long": true
+      },
+      "last_close_usd": 73697.87,
+      "status": "ok",
+      "reason": null
+    },
+    "ETH-USD": {
+      "cash_usd": 3333.33,
+      "units": 0.0,
+      "entry_price_usd": null,
+      "cost_basis_usd": null,
+      "opened_at": null,
+      "signal_day": "2026-11-10",
+      "signal": {
+        "close_usd": 2050.58,
+        "sma_usd": 2152.19195,
+        "long": false
+      },
+      "last_close_usd": 2050.58,
+      "status": "ok",
+      "reason": null
+    },
+    "SOL-USD": {
+      "cash_usd": 3333.33,
+      "units": 0.0,
+      "entry_price_usd": null,
+      "cost_basis_usd": null,
+      "opened_at": null,
+      "signal_day": "2026-11-10",
+      "signal": {
+        "close_usd": 83.24,
+        "sma_usd": 88.97835,
+        "long": false
+      },
+      "last_close_usd": 83.24,
+      "status": "ok",
+      "reason": null
+    }
+  },
+  "equity_history": [
+    {
+      "day": "2026-11-10",
+      "equity_usd": 9980.02
+    }
+  ],
+  "stats": {
+    "trades_closed": 0,
+    "wins": 0,
+    "realized_pnl_usd": 0.0
+  },
+  "last_run": {
+    "at": "2026-11-11T06:32:56+00:00",
+    "decisions": {
+      "BTC-USD": "buy",
+      "ETH-USD": "hold_cash",
+      "SOL-USD": "hold_cash"
+    }
+  }
+}
