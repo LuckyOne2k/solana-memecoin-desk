@@ -4,9 +4,9 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-11T12:02:16.217617+00:00",
+  "updated_at": "2026-11-11T12:09:23.321654+00:00",
   "starting_balance_usd": 10000.0,
-  "cash_usd": 8215.02219552,
+  "cash_usd": 7646.37590852,
   "open_positions": [
     {
       "token_symbol": "PAWKET",
@@ -24,10 +24,10 @@
       "initial_stop_usd": 0.00047844467872535675,
       "highest_price_usd": 0.0005089837007716562,
       "last_price_usd": 0.0004883253037904131,
-      "last_price_at": "2026-11-11T12:02:16.217617+00:00",
+      "last_price_at": "2026-11-11T12:09:23.321654+00:00",
       "current_stop_usd": 0.00047844467872535675,
       "last_quote": {
-        "at": "2026-11-11T12:02:16.217617+00:00",
+        "at": "2026-11-11T12:09:23.321654+00:00",
         "status": "confirmed",
         "price_low_usd": 0.0004883253037904131,
         "price_high_usd": 0.000488598442780414,
@@ -51,20 +51,39 @@
       "token_amount": 247577.37572978443,
       "cost_basis_usd": 760.86711888,
       "initial_stop_usd": 0.0028888548060539,
-      "highest_price_usd": 0.003335646009502264,
-      "last_price_usd": 0.003335646009502264,
-      "last_price_at": "2026-11-11T12:02:16.217617+00:00",
+      "highest_price_usd": 0.0033433263623477046,
+      "last_price_usd": 0.0033433263623477046,
+      "last_price_at": "2026-11-11T12:09:23.321654+00:00",
       "current_stop_usd": 0.003132245640309593,
       "last_quote": {
-        "at": "2026-11-11T12:02:16.217617+00:00",
+        "at": "2026-11-11T12:09:23.321654+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.003335646009502264,
-        "price_high_usd": 0.0033364372441876187,
-        "deviation_pct": 0.0237,
+        "price_low_usd": 0.0033433263623477046,
+        "price_high_usd": 0.0033439880896955977,
+        "deviation_pct": 0.0198,
         "errors": {}
       },
-      "last_liquidity_usd": 180436.4117293551,
+      "last_liquidity_usd": 180688.42208273755,
       "current_stop_kind": "profit_lock"
+    },
+    {
+      "token_symbol": "BORLY",
+      "token_name": "Borly",
+      "token_address": "BBRgG2GifeKNB1hSmzD2BwHMPK8wnDtcuE4NzxgHpump",
+      "pool_address": "GHe3AhhjJXCz9Equ7gbA1Au5dYwP4CmyzdWhkWWTafih",
+      "dex_name": "PumpSwap",
+      "opened_at": "2026-11-11T12:09:23.321654+00:00",
+      "entry_price_usd": 0.0005886221462217689,
+      "entry_mark_price_usd": 0.000571477811865795,
+      "entry_cost_pct": 3.0,
+      "entry_liquidity_usd": 56864.6287,
+      "token_amount": 966063.357707505,
+      "cost_basis_usd": 568.646287,
+      "initial_stop_usd": 0.0005533048174484627,
+      "highest_price_usd": 0.0005886221462217689,
+      "last_price_usd": 0.0005711934263005993,
+      "last_price_at": "2026-11-11T12:09:23.321654+00:00",
+      "current_stop_usd": 0.0005533048174484627
     }
   ],
   "closed_trades": [
@@ -152,7 +171,7 @@
     "HzQQyPcBZgqiarw9R8jYDqb89xLUsyHAwezk8CvEpump": "2026-11-11T03:52:16.420375+00:00"
   },
   "stats": {
-    "trades_opened": 6,
+    "trades_opened": 7,
     "trades_closed": 4,
     "wins": 0,
     "losses": 4,
@@ -408,18 +427,44 @@
       "equity_usd": 9572.54764114
     },
     {
-      "at": "2026-11-11T12:02:16.217617+00:00",
-      "equity_usd": 9574.20969225
+      "at": "2026-11-11T12:09:23.321654+00:00",
+      "equity_usd": 9559.27392617
     }
   ],
   "last_run": {
-    "at": "2026-11-11T12:02:16.217617+00:00",
-    "mode": "monitor",
-    "scan_status": "not_requested",
-    "scan_at": null,
-    "entry_decisions": [],
-    "open_positions": 2,
-    "equity_usd": 9574.20969225,
-    "run_number": "157"
+    "at": "2026-11-11T12:09:23.321654+00:00",
+    "mode": "after-scan",
+    "scan_status": "ok",
+    "scan_at": "2026-11-11T12:09:23.148939+00:00",
+    "entry_decisions": [
+      {
+        "token_symbol": "BORLY",
+        "token_address": "BBRgG2GifeKNB1hSmzD2BwHMPK8wnDtcuE4NzxgHpump",
+        "decision": "open"
+      },
+      {
+        "token_symbol": "ConConAI",
+        "token_address": "PyYAqGgWFLvhVWdZst7hR7pehr7weenFHSLM7FGpump",
+        "decision": "already_open"
+      },
+      {
+        "token_symbol": "TTP",
+        "token_address": "E5c1JvHbwEf3ud2m4PXPMugcMDevLrnskq7sj1FTpump",
+        "decision": "reentry_cooldown"
+      },
+      {
+        "token_symbol": "BRUH",
+        "token_address": "PgFtGGquvnv2zEkjG2N2QPvBTBrafuExGYEqahRpump",
+        "decision": "reentry_cooldown"
+      },
+      {
+        "token_symbol": "PAWKET",
+        "token_address": "ECNQSQA7Y5bnXzbotgv6XcG15c6jpJ6V2BFbYzJrpump",
+        "decision": "already_open"
+      }
+    ],
+    "open_positions": 3,
+    "equity_usd": 9559.27392617,
+    "run_number": "76"
   }
 }
