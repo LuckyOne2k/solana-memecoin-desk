@@ -4,9 +4,9 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-11T18:02:23.675310+00:00",
+  "updated_at": "2026-11-11T18:09:46.331424+00:00",
   "starting_balance_usd": 10000.0,
-  "cash_usd": 8163.74915245,
+  "cash_usd": 7481.92057946,
   "open_positions": [
     {
       "token_symbol": "ConConAI",
@@ -23,18 +23,18 @@
       "cost_basis_usd": 760.86711888,
       "initial_stop_usd": 0.0028888548060539,
       "highest_price_usd": 0.0036329044929789443,
-      "last_price_usd": 0.0035983192352307984,
-      "last_price_at": "2026-11-11T18:02:23.675310+00:00",
+      "last_price_usd": 0.0035963294069725022,
+      "last_price_at": "2026-11-11T18:09:46.331424+00:00",
       "current_stop_usd": 0.0034420397689152856,
       "last_quote": {
-        "at": "2026-11-11T18:02:23.675310+00:00",
+        "at": "2026-11-11T18:09:46.331424+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.0035983192352307984,
-        "price_high_usd": 0.003633789676158074,
-        "deviation_pct": 0.9858,
+        "price_low_usd": 0.0035963294069725022,
+        "price_high_usd": 0.0036381471298544904,
+        "deviation_pct": 1.1628,
         "errors": {}
       },
-      "last_liquidity_usd": 188457.5833,
+      "last_liquidity_usd": 188649.28248335165,
       "current_stop_kind": "profit_lock"
     },
     {
@@ -53,18 +53,37 @@
       "initial_stop_usd": 0.0005533048174484627,
       "highest_price_usd": 0.0005886221462217689,
       "last_price_usd": 0.0005827355808767775,
-      "last_price_at": "2026-11-11T18:02:23.675310+00:00",
+      "last_price_at": "2026-11-11T18:09:46.331424+00:00",
       "current_stop_usd": 0.0005533048174484627,
       "last_quote": {
-        "at": "2026-11-11T18:02:23.675310+00:00",
+        "at": "2026-11-11T18:09:46.331424+00:00",
         "status": "confirmed",
         "price_low_usd": 0.0005827355808767775,
         "price_high_usd": 0.0005827981484595609,
         "deviation_pct": 0.0107,
         "errors": {}
       },
-      "last_liquidity_usd": 58041.1986,
+      "last_liquidity_usd": 57962.2843,
       "current_stop_kind": "initial"
+    },
+    {
+      "token_symbol": "BAGEL",
+      "token_name": "BAGELGATOR",
+      "token_address": "Gb7gExpwNdth2iq3Ppio6c423jEP6TYkWPkRkAUpump",
+      "pool_address": "Bujoy6WMmYaAVcUG7RUra4XudX6xZJe5ZbSnqVXFbQ7g",
+      "dex_name": "PumpSwap",
+      "opened_at": "2026-11-11T18:09:46.331424+00:00",
+      "entry_price_usd": 0.000758261540548738,
+      "entry_mark_price_usd": 0.0007361762529599398,
+      "entry_cost_pct": 3.0,
+      "entry_liquidity_usd": 68182.85729924335,
+      "token_amount": 899199.7306055835,
+      "cost_basis_usd": 681.82857299,
+      "initial_stop_usd": 0.0007127658481158137,
+      "highest_price_usd": 0.000758261540548738,
+      "last_price_usd": 0.0007329473536297259,
+      "last_price_at": "2026-11-11T18:09:46.331424+00:00",
+      "current_stop_usd": 0.0007127658481158137
     }
   ],
   "closed_trades": [
@@ -172,7 +191,7 @@
     "ECNQSQA7Y5bnXzbotgv6XcG15c6jpJ6V2BFbYzJrpump": "2026-11-11T16:09:14.090134+00:00"
   },
   "stats": {
-    "trades_opened": 7,
+    "trades_opened": 8,
     "trades_closed": 5,
     "wins": 0,
     "losses": 5,
@@ -524,18 +543,74 @@
       "equity_usd": 9627.31485383
     },
     {
-      "at": "2026-11-11T18:02:23.675310+00:00",
-      "equity_usd": 9617.57107766
+      "at": "2026-11-11T18:09:46.331424+00:00",
+      "equity_usd": 9594.31593115
     }
   ],
   "last_run": {
-    "at": "2026-11-11T18:02:23.675310+00:00",
-    "mode": "monitor",
-    "scan_status": "not_requested",
-    "scan_at": null,
-    "entry_decisions": [],
-    "open_positions": 2,
-    "equity_usd": 9617.57107766,
-    "run_number": "223"
+    "at": "2026-11-11T18:09:46.331424+00:00",
+    "mode": "after-scan",
+    "scan_status": "ok",
+    "scan_at": "2026-11-11T18:09:46.115981+00:00",
+    "entry_decisions": [
+      {
+        "token_symbol": "USOE",
+        "token_address": "ivEE94cN5GxXzLJVYby8AJByRBH9tUy6zUHZZt2pump",
+        "decision": "not_ready_in_previous_scan"
+      },
+      {
+        "token_symbol": "UCI",
+        "token_address": "ggYm1j1MDUdj9nn9673Cb43wFRsVnEHBWL5Kv9Mpump",
+        "decision": "not_ready_in_previous_scan"
+      },
+      {
+        "token_symbol": "USOI",
+        "token_address": "usoi4eW13p1pwo9B8u2kNbmhPGH482xta1BG2BxZPBg",
+        "decision": "not_ready_in_previous_scan"
+      },
+      {
+        "token_symbol": "USWR",
+        "token_address": "DK8brTRwuYF5P6FumuqWJ1Fnf4GEpNwSWuwvpNYpump",
+        "decision": "not_ready_in_previous_scan"
+      },
+      {
+        "token_symbol": "BORLY",
+        "token_address": "BBRgG2GifeKNB1hSmzD2BwHMPK8wnDtcuE4NzxgHpump",
+        "decision": "already_open"
+      },
+      {
+        "token_symbol": "ConConAI",
+        "token_address": "PyYAqGgWFLvhVWdZst7hR7pehr7weenFHSLM7FGpump",
+        "decision": "already_open"
+      },
+      {
+        "token_symbol": "TTP",
+        "token_address": "E5c1JvHbwEf3ud2m4PXPMugcMDevLrnskq7sj1FTpump",
+        "decision": "reentry_cooldown"
+      },
+      {
+        "token_symbol": "BRUH",
+        "token_address": "PgFtGGquvnv2zEkjG2N2QPvBTBrafuExGYEqahRpump",
+        "decision": "reentry_cooldown"
+      },
+      {
+        "token_symbol": "NATF",
+        "token_address": "8nytata1aMp19E6FtCf4Sy2iCV9hY6M5Y49JHPJQpump",
+        "decision": "fresh_price_disagree"
+      },
+      {
+        "token_symbol": "BAGEL",
+        "token_address": "Gb7gExpwNdth2iq3Ppio6c423jEP6TYkWPkRkAUpump",
+        "decision": "open"
+      },
+      {
+        "token_symbol": "UHI",
+        "token_address": "34As1e1Kop9zBvu5e84kjg452Uigq8krcoGEJiWRpump",
+        "decision": "reentry_cooldown"
+      }
+    ],
+    "open_positions": 3,
+    "equity_usd": 9594.31593115,
+    "run_number": "82"
   }
 }
