@@ -3,8 +3,8 @@ name: Trend-Bot Backtest
 # Backtest des Trend-Bots (BTC, ETH, SOL): lädt öffentliche Tageskerzen von
 # Coinbase (ohne Key) und rechnet die Regeln durch. Nur lesend, kein
 # Handel. Ergebnis in der Lauf-Zusammenfassung und als
-# Artefakt. Gold (XAUUSD) über das OANDA-Demokonto, nur Kursabfrage
-# (Secret OANDA_API_TOKEN, nur im Backtest-Schritt). Läuft manuell oder bei Änderungen am Trend-Bot.
+# Artefakt. Gold (XAUUSD) über Twelve Data, nur Kursabfrage
+# (Secret TWELVEDATA_API_KEY, nur im Backtest-Schritt). Läuft manuell oder bei Änderungen am Trend-Bot.
 
 on:
   workflow_dispatch:
@@ -43,8 +43,8 @@ jobs:
 
       - name: Backtest
         env:
-          # Nur Lesen von Goldkursen (OANDA-Demokonto); fehlt er, ist Gold „unvollständig“.
-          OANDA_API_TOKEN: ${{ secrets.OANDA_API_TOKEN }}
+          # Nur Lesen von Goldkursen (Twelve Data); fehlt er, ist Gold „unvollständig“.
+          TWELVEDATA_API_KEY: ${{ secrets.TWELVEDATA_API_KEY }}
         run: python -m trend
 
       - name: Ergebnis speichern

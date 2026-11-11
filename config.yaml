@@ -138,8 +138,8 @@ trend_paper:
 gold_backtest:
   # Gold (XAUUSD, Kassakurs) – nur Backtest/Simulation, kein Handel.
   # Gleiche, vorab festgelegte Regeln wie trend_backtest (nicht optimiert).
-  # Tageskurse: OANDA-Demokonto (XAU_USD Mittelkurs, Tage in UTC), nur Kursabfrage,
-  # Token als GitHub-Secret OANDA_API_TOKEN.
+  # Tageskurse: Twelve Data (XAU/USD, Tage in UTC, kostenloser Schlüssel), nur
+  # Kursabfrage, Schlüssel als GitHub-Secret TWELVEDATA_API_KEY.
   # Kosten je Kauf bzw. Verkauf (Spread + Schlupf, konservativ). Nicht
   # enthalten: Übernachtgebühren (Swap) bei CFDs, die je nach Broker
   # mehrere Prozent pro Jahr kosten können.
