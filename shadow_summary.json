@@ -1,14 +1,14 @@
 {
   "schema_version": 1,
   "purpose": "learning_only_no_trading",
-  "generated_at": "2026-11-11T15:09:37.651397+00:00",
+  "generated_at": "2026-11-11T16:09:17.896161+00:00",
   "note": "Kursveränderung ohne Kosten seit erster Beobachtung; keine Kaufempfehlung.",
-  "observations_total": 110,
-  "observations_open": 110,
+  "observations_total": 113,
+  "observations_open": 113,
   "by_status": [
     {
       "group": "rejected",
-      "observations": 59,
+      "observations": 62,
       "1h": {
         "count": 57,
         "mean_pct": 1.55,
@@ -78,7 +78,7 @@
     },
     {
       "group": "rejected:lp_burn_or_lock_not_verified",
-      "observations": 18,
+      "observations": 19,
       "1h": {
         "count": 18,
         "mean_pct": 1.36,
@@ -196,6 +196,23 @@
       "24h": null
     },
     {
+      "group": "rejected:freeze_authority_not_revoked",
+      "observations": 3,
+      "1h": {
+        "count": 1,
+        "mean_pct": 0.0,
+        "median_pct": 0.0,
+        "positive_share_pct": 0.0
+      },
+      "6h": {
+        "count": 1,
+        "mean_pct": -0.12,
+        "median_pct": -0.12,
+        "positive_share_pct": 0.0
+      },
+      "24h": null
+    },
+    {
       "group": "rejected:creator_share_above_limit",
       "observations": 2,
       "1h": {
@@ -226,23 +243,6 @@
         "mean_pct": 22.86,
         "median_pct": 22.86,
         "positive_share_pct": 100.0
-      },
-      "24h": null
-    },
-    {
-      "group": "rejected:freeze_authority_not_revoked",
-      "observations": 1,
-      "1h": {
-        "count": 1,
-        "mean_pct": 0.0,
-        "median_pct": 0.0,
-        "positive_share_pct": 0.0
-      },
-      "6h": {
-        "count": 1,
-        "mean_pct": -0.12,
-        "median_pct": -0.12,
-        "positive_share_pct": 0.0
       },
       "24h": null
     }
