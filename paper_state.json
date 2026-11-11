@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-11T13:12:28.127728+00:00",
+  "updated_at": "2026-11-11T13:17:32.094826+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 7646.37590852,
   "open_positions": [
@@ -24,10 +24,10 @@
       "initial_stop_usd": 0.00047844467872535675,
       "highest_price_usd": 0.0005089837007716562,
       "last_price_usd": 0.00048543380193082596,
-      "last_price_at": "2026-11-11T13:12:28.127728+00:00",
+      "last_price_at": "2026-11-11T13:17:32.094826+00:00",
       "current_stop_usd": 0.00047844467872535675,
       "last_quote": {
-        "at": "2026-11-11T13:12:28.127728+00:00",
+        "at": "2026-11-11T13:17:32.094826+00:00",
         "status": "confirmed",
         "price_low_usd": 0.00048543380193082596,
         "price_high_usd": 0.00048564009337334326,
@@ -52,18 +52,18 @@
       "cost_basis_usd": 760.86711888,
       "initial_stop_usd": 0.0028888548060539,
       "highest_price_usd": 0.003401708090068596,
-      "last_price_usd": 0.003366033585197847,
-      "last_price_at": "2026-11-11T13:12:28.127728+00:00",
+      "last_price_usd": 0.0033752931311834267,
+      "last_price_at": "2026-11-11T13:17:32.094826+00:00",
       "current_stop_usd": 0.003132245640309593,
       "last_quote": {
-        "at": "2026-11-11T13:12:28.127728+00:00",
+        "at": "2026-11-11T13:17:32.094826+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.003366033585197847,
-        "price_high_usd": 0.003406760410571542,
-        "deviation_pct": 1.2099,
+        "price_low_usd": 0.0033752931311834267,
+        "price_high_usd": 0.0034157000752432923,
+        "deviation_pct": 1.1971,
         "errors": {}
       },
-      "last_liquidity_usd": 183314.7358,
+      "last_liquidity_usd": 183587.41314162355,
       "current_stop_kind": "profit_lock"
     },
     {
@@ -82,17 +82,17 @@
       "initial_stop_usd": 0.0005533048174484627,
       "highest_price_usd": 0.0005886221462217689,
       "last_price_usd": 0.0005715581776031401,
-      "last_price_at": "2026-11-11T13:12:28.127728+00:00",
+      "last_price_at": "2026-11-11T13:17:32.094826+00:00",
       "current_stop_usd": 0.0005533048174484627,
       "last_quote": {
-        "at": "2026-11-11T13:12:28.127728+00:00",
+        "at": "2026-11-11T13:17:32.094826+00:00",
         "status": "confirmed",
         "price_low_usd": 0.0005715581776031401,
-        "price_high_usd": 0.0005723457141358844,
-        "deviation_pct": 0.1378,
+        "price_high_usd": 0.0005721849052551789,
+        "deviation_pct": 0.1097,
         "errors": {}
       },
-      "last_liquidity_usd": 56965.5896,
+      "last_liquidity_usd": 56986.19437359614,
       "current_stop_kind": "initial"
     }
   ],
@@ -455,16 +455,20 @@
     {
       "at": "2026-11-11T13:12:28.127728+00:00",
       "equity_usd": 9562.0899473
+    },
+    {
+      "at": "2026-11-11T13:17:32.094826+00:00",
+      "equity_usd": 9564.38240139
     }
   ],
   "last_run": {
-    "at": "2026-11-11T13:12:28.127728+00:00",
+    "at": "2026-11-11T13:17:32.094826+00:00",
     "mode": "monitor",
     "scan_status": "not_requested",
     "scan_at": null,
     "entry_decisions": [],
     "open_positions": 3,
-    "equity_usd": 9562.0899473,
-    "run_number": "169"
+    "equity_usd": 9564.38240139,
+    "run_number": "170"
   }
 }
