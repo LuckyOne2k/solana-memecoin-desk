@@ -1,62 +1,56 @@
-"""Tageskurse XAUUSD (Gold in US-Dollar, Kassakurs) von Stooq.
+"""Tageskurse Gold in US-Dollar: LBMA Gold Price (PM), die offizielle
+Referenz für den Goldpreis (entspricht XAUUSD am Nachmittag in London).
 
-Öffentliche CSV-Abfrage ohne API-Key:
-``https://stooq.com/q/d/l/?s=xauusd&i=d``, Kopfzeile
-``Date,Open,High,Low,Close`` (optional ``,Volume``), älteste Zeile zuerst.
+Öffentliche JSON-Datei ohne API-Key: ``https://prices.lbma.org.uk/json/gold_pm.json``,
+Form laut LBMA: Liste von ``{"d": "JJJJ-MM-TT", "v": [USD, GBP, EUR]}``,
+älteste zuerst. Es gibt je Handelstag genau einen Preis; Eröffnung und
+Schluss sind deshalb beide dieser Preis (Signal aus dem Preis von Tag t,
+Ausführung zum Preis von Tag t+1).
+
+(Stooq lieferte am 2026-11-11 HTTP 404 und wird nicht mehr genutzt.)
 
 Datenregeln (es wird nie etwas aufgefüllt oder geschätzt):
-- Jede andere Antwortform (keine CSV, andere Kopfzeile) ist ein Fehler.
-- Fehlerhafte Zeilen (keine Zahl, Preis ≤ 0, low/high passt nicht) sowie
+- Jede andere Antwortform ist ein Fehler.
+- Fehlerhafte Einträge (kein Datum, USD-Preis keine Zahl oder ≤ 0) sowie
   Lücken über ``max_gap_days`` Kalendertage beenden den brauchbaren
   Abschnitt: verwendet wird nur der Teil nach der letzten solchen Stelle.
   Wochenenden und Feiertage (Lücken bis ``max_gap_days``) sind normal.
-- Der laufende Tag wird nie verwendet (noch nicht abgeschlossen).
+- Der laufende Tag wird nie verwendet.
 """
 
-import csv
-import io
 from datetime import date, datetime, timezone
 
 import requests
 
 from trend.data import DAY, CandleDataError
 
-STOOQ_URL = "https://stooq.com/q/d/l/"
+LBMA_URL = "https://prices.lbma.org.uk/json/gold_pm.json"
 TIMEOUT_SECONDS = 30
-ALLOWED_HEADERS = (
-    ["Date", "Open", "High", "Low", "Close"],
-    ["Date", "Open", "High", "Low", "Close", "Volume"],
-)
 
 
-def _row_to_candle(row):
-    day = date.fromisoformat(row[0])
-    open_, high, low, close = (float(v) for v in row[1:5])
-    if not all(v == v and v != float("inf") for v in (open_, high, low, close)):
-        raise ValueError("keine endliche Zahl")
-    if min(open_, high, low, close) <= 0:
-        raise ValueError("Preis ≤ 0")
-    if not low <= min(open_, close) <= max(open_, close) <= high:
-        raise ValueError("low/high passt nicht zu open/close")
+def _entry_to_candle(entry):
+    if not isinstance(entry, dict) or not isinstance(entry.get("d"), str):
+        raise ValueError("kein Datum")
+    day = date.fromisoformat(entry["d"])
+    values = entry.get("v")
+    if not isinstance(values, list) or not values:
+        raise ValueError("keine Preise")
+    usd = values[0]
+    if isinstance(usd, bool) or not isinstance(usd, (int, float)) or usd != usd or not 0 < usd < float("inf"):
+        raise ValueError("USD-Preis ungültig")
     ts = int(datetime(day.year, day.month, day.day, tzinfo=timezone.utc).timestamp())
-    return {"time": ts, "open": open_, "high": high, "low": low, "close": close}
+    price = float(usd)
+    return {"time": ts, "open": price, "high": price, "low": price, "close": price}
 
 
-def parse_stooq_csv(text, today_start, max_gap_days):
+def parse_lbma_json(payload, today_start, max_gap_days):
     """Gibt (kerzen, info) zurück oder wirft CandleDataError."""
-    if not isinstance(text, str) or not text.strip():
-        raise CandleDataError("leere Antwort")
-    rows = list(csv.reader(io.StringIO(text.strip())))
-    if rows[0] not in ALLOWED_HEADERS:
-        raise CandleDataError("Antwort ist keine Stooq-Kurstabelle")
-
+    if not isinstance(payload, list) or not payload:
+        raise CandleDataError("Antwort ist keine LBMA-Preisliste")
     candles, invalid_after = [], []
-    for row in rows[1:]:
-        if len(row) != len(rows[0]):
-            invalid_after.append(len(candles))
-            continue
+    for entry in payload:
         try:
-            candle = _row_to_candle(row)
+            candle = _entry_to_candle(entry)
         except ValueError:
             invalid_after.append(len(candles))
             continue
@@ -78,6 +72,7 @@ def parse_stooq_csv(text, today_start, max_gap_days):
     if not series:
         raise CandleDataError("kein brauchbarer Abschnitt nach der letzten Fehlerstelle")
     info = {
+        "source": "LBMA Gold Price PM (USD)",
         "candles_received": len(candles),
         "invalid_rows": len(invalid_after),
         "gaps_found": gaps_long,
@@ -95,13 +90,17 @@ def fetch_xauusd_daily(max_gap_days, now=None, session=None):
     last_error = None
     for _attempt in range(3):
         try:
-            response = session.get(STOOQ_URL, params={"s": "xauusd", "i": "d"}, timeout=TIMEOUT_SECONDS)
+            response = session.get(LBMA_URL, timeout=TIMEOUT_SECONDS)
         except requests.RequestException as exc:
             last_error = f"Netzwerkfehler ({type(exc).__name__})"
             continue
         if response.status_code == 200:
-            return parse_stooq_csv(response.text, today_start, max_gap_days)
+            try:
+                payload = response.json()
+            except ValueError:
+                raise CandleDataError("LBMA-Antwort ist kein JSON") from None
+            return parse_lbma_json(payload, today_start, max_gap_days)
         last_error = f"HTTP {response.status_code}"
         if response.status_code != 429 and response.status_code < 500:
             break
-    raise CandleDataError(f"Stooq-Abfrage fehlgeschlagen: {last_error}")
+    raise CandleDataError(f"LBMA-Abfrage fehlgeschlagen: {last_error}")

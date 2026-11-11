@@ -138,7 +138,7 @@ trend_paper:
 gold_backtest:
   # Gold (XAUUSD, Kassakurs) – nur Backtest/Simulation, kein Handel.
   # Gleiche, vorab festgelegte Regeln wie trend_backtest (nicht optimiert).
-  # Tageskurse von Stooq (öffentlich, ohne Key).
+  # Tageskurse: LBMA Gold Price PM in USD (offizielle Referenz, öffentlich, ohne Key).
   # Kosten je Kauf bzw. Verkauf (Spread + Schlupf, konservativ). Nicht
   # enthalten: Übernachtgebühren (Swap) bei CFDs, die je nach Broker
   # mehrere Prozent pro Jahr kosten können.
