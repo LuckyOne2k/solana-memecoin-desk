@@ -167,3 +167,19 @@ horizon_backtest:
     breakout_exit_days: 10
     cross_short_days: 10
     cross_long_days: 30
+
+gold_intraday:
+  # Gold intraday, Long und Short auf Stundenkerzen (nur Backtest, kein Handel).
+  # Regeln vorab festgelegt (Nutzerauftrag 2026-11-11), nicht an die Daten
+  # angepasst. Kosten aus gold_backtest (0,1 % je Eröffnung und Schließung),
+  # Daten: Twelve Data XAU/USD 1h (höchstens 5000 Stunden, ca. 10 Monate).
+  # Swap/Übernachtgebühren nicht enthalten.
+  mean_reversion:
+    window_hours: 24
+    entry_z: 2.0         # Abstand vom Durchschnitt in Standardabweichungen
+    max_hold_hours: 6
+    stop_pct: 1.0
+  london_breakout:
+    range_start_hour: 0  # UTC
+    range_end_hour: 7
+    close_hour: 20

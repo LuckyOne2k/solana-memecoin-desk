@@ -56,6 +56,7 @@
 | `trend/` | Trend-Bot große Coins (BTC/ETH/SOL): Backtest (Coinbase-Tageskerzen, `trend_backtest`, Workflow `trend-backtest.yml`, nur lesend) und Paper-Trader `trend/paper.py` (Schluss über 200-Tage-Ø → investiert; Handel nur mit Coinbase- und Kraken-Kurs ≤ 1 % Abweichung; `trend_state.json`/`trend_trades.jsonl` in `desk-data`; Workflow `trend-paper.yml`) |
 | `trend/gold_data.py` | Gold-Backtest XAUUSD (Twelve Data, kostenloser Schlüssel, nur Kursabfrage, Secret `TWELVEDATA_API_KEY` nur im Backtest-Schritt, Schlüssel im Header; fehlerhafte Einträge/Lücken > 5 Tage kürzen die Reihe), Regeln wie Trend-Bot, `gold_backtest` in `config.yaml`, läuft im Workflow `trend-backtest.yml` mit |
 | `trend/horizons.py` | Backtest-Vergleich schnell (Stundenkerzen, 24-h-Ø, 12/48-h-Kreuzung) / mittel (20/10-Tage-Ausbruch, 10/30-Tage-Kreuzung) / lang (200-Tage-Regeln) für BTC/ETH/SOL/Gold, Kennzahl „Wochen im Plus“, Abschnitt `horizon_backtest` |
+| `trend/gold_intraday.py` | Gold-Intraday-Backtest Long/Short auf Stundenkerzen: Rückkehr zum 24-h-Ø (±2 Std.-Abw., max. 6 h, Stop 1 %) und London-Ausbruch (Spanne 00–07 UTC, schließen bis 20 Uhr), Abschnitt `gold_intraday`, nur Simulation |
 | `desk/risk.py`, `debate.py` | behalten, nicht angeschlossen (Broker rechnet selbst; Debatte bräuchte kostenpflichtige KI) |
 
 ## Prüfregeln (Kurzfassung, Details im README)

@@ -157,3 +157,38 @@ def load_horizon_config(path=None):
     path = Path(path) if path else CONFIG_PATH
     with path.open(encoding="utf-8") as handle:
         return validate_horizon_config(yaml.safe_load(handle))
+
+
+_INTRADAY_FIELDS = {
+    "mean_reversion": {"window_hours": (int, 4, 500), "entry_z": (float, 0.5, 5.0),
+                       "max_hold_hours": (int, 1, 48), "stop_pct": (float, 0.1, 10.0)},
+    "london_breakout": {"range_start_hour": (int, 0, 23), "range_end_hour": (int, 1, 23),
+                        "close_hour": (int, 2, 24)},
+}
+
+
+def validate_gold_intraday_config(config):
+    if not isinstance(config, dict) or config.get("mode") != ALLOWED_MODE:
+        raise TrendConfigError("mode muss 'paper' sein, Live-Trading ist nicht freigegeben")
+    section = config.get("gold_intraday")
+    if not isinstance(section, dict):
+        raise TrendConfigError("Abschnitt 'gold_intraday' fehlt")
+    for group, fields in _INTRADAY_FIELDS.items():
+        values = section.get(group)
+        if not isinstance(values, dict):
+            raise TrendConfigError(f"gold_intraday.{group} fehlt")
+        for key, (kind, low, high) in fields.items():
+            value = values.get(key)
+            allowed = (int, float) if kind is float else (int,)
+            if isinstance(value, bool) or not isinstance(value, allowed) or not low <= value <= high:
+                raise TrendConfigError(f"gold_intraday.{group}.{key} muss zwischen {low} und {high} liegen")
+    lb = section["london_breakout"]
+    if not lb["range_start_hour"] < lb["range_end_hour"] < lb["close_hour"] - 1:
+        raise TrendConfigError("gold_intraday.london_breakout: Spanne muss vor dem Schließen liegen")
+    return section
+
+
+def load_gold_intraday_config(path=None):
+    path = Path(path) if path else CONFIG_PATH
+    with path.open(encoding="utf-8") as handle:
+        return validate_gold_intraday_config(yaml.safe_load(handle))
