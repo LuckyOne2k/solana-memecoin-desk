@@ -134,3 +134,18 @@ trend_paper:
   max_price_deviation_pct: 1.0
   # Tageskerze erst so viele Minuten nach Mitternacht (UTC) verwenden
   min_minutes_after_midnight: 15
+
+gold_backtest:
+  # Gold (XAUUSD, Kassakurs) – nur Backtest/Simulation, kein Handel.
+  # Gleiche, vorab festgelegte Regeln wie trend_backtest (nicht optimiert).
+  # Tageskurse von Stooq (öffentlich, ohne Key).
+  # Kosten je Kauf bzw. Verkauf (Spread + Schlupf, konservativ). Nicht
+  # enthalten: Übernachtgebühren (Swap) bei CFDs, die je nach Broker
+  # mehrere Prozent pro Jahr kosten können.
+  cost_pct_per_trade: 0.1
+  start_capital_usd: 10000
+  sma_short_days: 50
+  sma_long_days: 200
+  momentum_days: 90
+  # Längere Lücke (Kalendertage) gilt als Datenfehler; Wochenende/Feiertage sind normal
+  max_gap_days: 5

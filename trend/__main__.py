@@ -10,8 +10,9 @@ import os
 import sys
 from datetime import datetime, timezone
 
-from trend.config import load_trend_config
+from trend.config import load_gold_config, load_trend_config
 from trend.data import CandleDataError, fetch_daily_candles
+from trend.gold_data import fetch_xauusd_daily
 from trend.engine import backtest_product, combine_portfolio
 
 RESULT_FILE = "trend_backtest_result.json"
@@ -37,6 +38,11 @@ def build_report(result):
             lines.append(f"**Unvollständig:** {data['error']}")
             continue
         info = data["data"]
+        if "cost_pct_per_trade" in data:
+            lines.append(
+                f"Eigene Kosten je Kauf/Verkauf: {data['cost_pct_per_trade']} % "
+                "(ohne Übernachtgebühren/Swap). Handelstage, keine Wochenenden."
+            )
         lines.append(
             f"Daten {info['first_day']} bis {info['last_day']} "
             f"({info['candles_used']} Tage, Lücken: {info['gaps_found']}, "
@@ -107,14 +113,35 @@ def run(cfg, fetch=fetch_daily_candles):
         }
         curves[product] = product_curves
     # Gesamtdepot nur, wenn alle Paare vollständig sind (sonst irreführend)
+    # (nur Krypto; Gold wird getrennt bewertet)
     if len(curves) == len(cfg["products"]) and len(curves) > 1:
         result["portfolio"] = combine_portfolio(curves, cfg)
     return result
 
 
+def run_gold(gold_cfg, fetch=fetch_xauusd_daily):
+    """Backtest XAUUSD mit eigenen Kosten. Gibt den Eintrag für den Bericht zurück."""
+    try:
+        candles, info = fetch(gold_cfg["max_gap_days"])
+        rules, curves = backtest_product(candles, gold_cfg)
+    except (CandleDataError, ValueError) as exc:
+        return {"error": str(exc)}
+    info["candles_used"] = len(candles)
+    start = len(candles) - len(next(iter(curves.values())))
+    return {
+        "data": info,
+        "cost_pct_per_trade": gold_cfg["cost_pct_per_trade"],
+        "test_start": datetime.fromtimestamp(candles[start]["time"], timezone.utc).date().isoformat(),
+        "rules": rules,
+    }
+
+
 def main():
     cfg = load_trend_config()
     result = run(cfg)
+    gold_cfg = load_gold_config()
+    result["gold_config"] = gold_cfg
+    result["products"]["XAUUSD (Gold)"] = run_gold(gold_cfg)
     report = build_report(result)
     print(report)
     summary_path = os.environ.get("GITHUB_STEP_SUMMARY")

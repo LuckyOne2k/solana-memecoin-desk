@@ -97,3 +97,28 @@ def load_trend_paper_config(path=None):
     path = Path(path) if path else CONFIG_PATH
     with path.open(encoding="utf-8") as handle:
         return validate_trend_paper_config(yaml.safe_load(handle))
+
+
+def validate_gold_config(config):
+    """Prüft ``gold_backtest`` mit denselben Regeln wie ``trend_backtest``."""
+    if not isinstance(config, dict) or config.get("mode") != ALLOWED_MODE:
+        raise TrendConfigError("mode muss 'paper' sein, Live-Trading ist nicht freigegeben")
+    section = config.get("gold_backtest")
+    if not isinstance(section, dict):
+        raise TrendConfigError("Abschnitt 'gold_backtest' fehlt")
+    gap = section.get("max_gap_days")
+    if isinstance(gap, bool) or not isinstance(gap, int) or not 3 <= gap <= 10:
+        raise TrendConfigError("gold_backtest.max_gap_days muss eine ganze Zahl von 3 bis 10 sein")
+    probe = {k: v for k, v in section.items() if k != "max_gap_days"}
+    probe["products"] = ["XAU-USD"]
+    try:
+        validate_trend_config({"mode": ALLOWED_MODE, "trend_backtest": probe})
+    except TrendConfigError as exc:
+        raise TrendConfigError(str(exc).replace("trend_backtest", "gold_backtest")) from None
+    return dict(section)
+
+
+def load_gold_config(path=None):
+    path = Path(path) if path else CONFIG_PATH
+    with path.open(encoding="utf-8") as handle:
+        return validate_gold_config(yaml.safe_load(handle))

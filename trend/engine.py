@@ -9,6 +9,8 @@ Vorlaufzeit), damit der Vergleich fair ist.
 
 from datetime import datetime, timezone
 
+DAY_SECONDS = 86400
+
 
 def sma(values, end_index, days):
     if end_index + 1 < days:
@@ -109,7 +111,9 @@ def yearly_returns(candles, start_index, equity, capital):
 def summarize(candles, start_index, equity, trades, days_invested, capital):
     days = len(equity)
     total = equity[-1] / capital - 1
-    years = days / 365
+    # Jahre aus der Kalenderspanne (nicht aus der Zahl der Kerzen), damit
+    # Märkte mit Handelspausen (Gold: keine Wochenenden) richtig zählen.
+    years = (candles[start_index + days - 1]["time"] - candles[start_index]["time"] + DAY_SECONDS) / (365.25 * DAY_SECONDS)
     cagr = (equity[-1] / capital) ** (1 / years) - 1 if years > 0 and equity[-1] > 0 else -1.0
     return {
         "end_value_usd": round(equity[-1], 2),
