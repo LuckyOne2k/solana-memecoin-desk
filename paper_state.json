@@ -4,39 +4,10 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-11T01:12:29.014601+00:00",
+  "updated_at": "2026-11-11T01:17:32.065199+00:00",
   "starting_balance_usd": 10000.0,
-  "cash_usd": 7989.85553326,
+  "cash_usd": 8525.47963805,
   "open_positions": [
-    {
-      "token_symbol": "TTP",
-      "token_name": "TrendTrader Pro",
-      "token_address": "E5c1JvHbwEf3ud2m4PXPMugcMDevLrnskq7sj1FTpump",
-      "pool_address": "9eTpuokzkShkz9GSFrQ1cPpow8beSx1ZXE7UtTQUrAFT",
-      "dex_name": "PumpSwap",
-      "opened_at": "2026-11-10T21:35:11.806604+00:00",
-      "entry_price_usd": 0.007096715970136361,
-      "entry_mark_price_usd": 0.006971438063374197,
-      "entry_cost_pct": 1.797,
-      "entry_liquidity_usd": 200748.61475886605,
-      "token_amount": 112728.19757285964,
-      "cost_basis_usd": 800.0,
-      "initial_stop_usd": 0.006670913011928179,
-      "highest_price_usd": 0.007185883819429664,
-      "last_price_usd": 0.007185883819429664,
-      "last_price_at": "2026-11-11T01:12:29.014601+00:00",
-      "current_stop_usd": 0.006670913011928179,
-      "last_quote": {
-        "at": "2026-11-11T01:12:29.014601+00:00",
-        "status": "confirmed",
-        "price_low_usd": 0.007185883819429664,
-        "price_high_usd": 0.0071932326459180265,
-        "deviation_pct": 0.1023,
-        "errors": {}
-      },
-      "last_liquidity_usd": 203841.9078181178,
-      "current_stop_kind": "initial"
-    },
     {
       "token_symbol": "PAWKET",
       "token_name": "Pocket Money for your AI Agent",
@@ -53,10 +24,10 @@
       "initial_stop_usd": 0.00047844467872535675,
       "highest_price_usd": 0.0005089837007716562,
       "last_price_usd": 0.0004960021822889055,
-      "last_price_at": "2026-11-11T01:12:29.014601+00:00",
+      "last_price_at": "2026-11-11T01:17:32.065199+00:00",
       "current_stop_usd": 0.00047844467872535675,
       "last_quote": {
-        "at": "2026-11-11T01:12:29.014601+00:00",
+        "at": "2026-11-11T01:17:32.065199+00:00",
         "status": "confirmed",
         "price_low_usd": 0.0004960021822889055,
         "price_high_usd": 0.0004961886104524049,
@@ -82,17 +53,17 @@
       "initial_stop_usd": 0.000533124922623151,
       "highest_price_usd": 0.0005671541730033521,
       "last_price_usd": 0.000540853811107053,
-      "last_price_at": "2026-11-11T01:12:29.014601+00:00",
+      "last_price_at": "2026-11-11T01:17:32.065199+00:00",
       "current_stop_usd": 0.000533124922623151,
       "last_quote": {
-        "at": "2026-11-11T01:12:29.014601+00:00",
+        "at": "2026-11-11T01:17:32.065199+00:00",
         "status": "confirmed",
         "price_low_usd": 0.000540853811107053,
         "price_high_usd": 0.00054106430556641,
         "deviation_pct": 0.0389,
         "errors": {}
       },
-      "last_liquidity_usd": 58476.8985,
+      "last_liquidity_usd": 58529.8835,
       "current_stop_kind": "initial"
     }
   ],
@@ -115,17 +86,37 @@
       "pnl_pct": -8.6366,
       "exit_reason": "stop_loss",
       "highest_price_usd": 0.002656557754904207
+    },
+    {
+      "token_symbol": "TTP",
+      "token_address": "E5c1JvHbwEf3ud2m4PXPMugcMDevLrnskq7sj1FTpump",
+      "pool_address": "9eTpuokzkShkz9GSFrQ1cPpow8beSx1ZXE7UtTQUrAFT",
+      "opened_at": "2026-11-10T21:35:11.806604+00:00",
+      "closed_at": "2026-11-11T01:17:32.065199+00:00",
+      "holding_hours": 3.706,
+      "entry_price_usd": 0.007096715970136361,
+      "exit_mark_price_usd": 0.0048313055781990305,
+      "exit_price_usd": 0.004751465173107643,
+      "exit_cost_pct": 1.6526,
+      "token_amount": 112728.19757285964,
+      "cost_basis_usd": 800.0,
+      "proceeds_usd": 535.62410479,
+      "pnl_usd": -264.37589521,
+      "pnl_pct": -33.047,
+      "exit_reason": "stop_loss",
+      "highest_price_usd": 0.007185883819429664
     }
   ],
   "last_exit_at": {
-    "PgFtGGquvnv2zEkjG2N2QPvBTBrafuExGYEqahRpump": "2026-11-10T21:52:28.069348+00:00"
+    "PgFtGGquvnv2zEkjG2N2QPvBTBrafuExGYEqahRpump": "2026-11-10T21:52:28.069348+00:00",
+    "E5c1JvHbwEf3ud2m4PXPMugcMDevLrnskq7sj1FTpump": "2026-11-11T01:17:32.065199+00:00"
   },
   "stats": {
     "trades_opened": 4,
-    "trades_closed": 1,
+    "trades_closed": 2,
     "wins": 0,
-    "losses": 1,
-    "realized_pnl_usd": -68.99103894
+    "losses": 2,
+    "realized_pnl_usd": -333.36693415
   },
   "equity_history": [
     {
@@ -203,16 +194,20 @@
     {
       "at": "2026-11-11T01:12:29.014601+00:00",
       "equity_usd": 9899.74334063
+    },
+    {
+      "at": "2026-11-11T01:17:32.065199+00:00",
+      "equity_usd": 9625.31571449
     }
   ],
   "last_run": {
-    "at": "2026-11-11T01:12:29.014601+00:00",
+    "at": "2026-11-11T01:17:32.065199+00:00",
     "mode": "monitor",
     "scan_status": "not_requested",
     "scan_at": null,
     "entry_decisions": [],
-    "open_positions": 3,
-    "equity_usd": 9899.74334063,
-    "run_number": "36"
+    "open_positions": 2,
+    "equity_usd": 9625.31571449,
+    "run_number": "37"
   }
 }
