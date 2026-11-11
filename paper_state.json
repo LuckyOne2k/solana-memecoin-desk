@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-11T15:02:26.956491+00:00",
+  "updated_at": "2026-11-11T15:09:33.480638+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 7646.37590852,
   "open_positions": [
@@ -24,10 +24,10 @@
       "initial_stop_usd": 0.00047844467872535675,
       "highest_price_usd": 0.0005089837007716562,
       "last_price_usd": 0.0004900313850363179,
-      "last_price_at": "2026-11-11T15:02:26.956491+00:00",
+      "last_price_at": "2026-11-11T15:09:33.480638+00:00",
       "current_stop_usd": 0.00047844467872535675,
       "last_quote": {
-        "at": "2026-11-11T15:02:26.956491+00:00",
+        "at": "2026-11-11T15:09:33.480638+00:00",
         "status": "confirmed",
         "price_low_usd": 0.0004900313850363179,
         "price_high_usd": 0.0004901854940903175,
@@ -52,18 +52,18 @@
       "cost_basis_usd": 760.86711888,
       "initial_stop_usd": 0.0028888548060539,
       "highest_price_usd": 0.003474184601376255,
-      "last_price_usd": 0.0034537200922206248,
-      "last_price_at": "2026-11-11T15:02:26.956491+00:00",
+      "last_price_usd": 0.0034602074883051267,
+      "last_price_at": "2026-11-11T15:09:33.480638+00:00",
       "current_stop_usd": 0.0032657335252936795,
       "last_quote": {
-        "at": "2026-11-11T15:02:26.956491+00:00",
+        "at": "2026-11-11T15:09:33.480638+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.0034537200922206248,
-        "price_high_usd": 0.0034539361154441862,
-        "deviation_pct": 0.0063,
+        "price_low_usd": 0.0034602074883051267,
+        "price_high_usd": 0.0034978614911958528,
+        "deviation_pct": 1.0882,
         "errors": {}
       },
-      "last_liquidity_usd": 184631.7769,
+      "last_liquidity_usd": 184913.3563,
       "current_stop_kind": "trailing"
     },
     {
@@ -82,17 +82,17 @@
       "initial_stop_usd": 0.0005533048174484627,
       "highest_price_usd": 0.0005886221462217689,
       "last_price_usd": 0.0005730330741510082,
-      "last_price_at": "2026-11-11T15:02:26.956491+00:00",
+      "last_price_at": "2026-11-11T15:09:33.480638+00:00",
       "current_stop_usd": 0.0005533048174484627,
       "last_quote": {
-        "at": "2026-11-11T15:02:26.956491+00:00",
+        "at": "2026-11-11T15:09:33.480638+00:00",
         "status": "confirmed",
         "price_low_usd": 0.0005730330741510082,
         "price_high_usd": 0.000573179318880365,
         "deviation_pct": 0.0255,
         "errors": {}
       },
-      "last_liquidity_usd": 56717.3445,
+      "last_liquidity_usd": 56603.2191,
       "current_stop_kind": "initial"
     }
   ],
@@ -485,18 +485,49 @@
       "equity_usd": 9587.92960043
     },
     {
-      "at": "2026-11-11T15:02:26.956491+00:00",
-      "equity_usd": 9590.24554277
+      "at": "2026-11-11T15:09:33.480638+00:00",
+      "equity_usd": 9591.85167527
     }
   ],
   "last_run": {
-    "at": "2026-11-11T15:02:26.956491+00:00",
-    "mode": "monitor",
-    "scan_status": "not_requested",
-    "scan_at": null,
-    "entry_decisions": [],
+    "at": "2026-11-11T15:09:33.480638+00:00",
+    "mode": "after-scan",
+    "scan_status": "ok",
+    "scan_at": "2026-11-11T15:09:33.211813+00:00",
+    "entry_decisions": [
+      {
+        "token_symbol": "BORLY",
+        "token_address": "BBRgG2GifeKNB1hSmzD2BwHMPK8wnDtcuE4NzxgHpump",
+        "decision": "already_open"
+      },
+      {
+        "token_symbol": "ConConAI",
+        "token_address": "PyYAqGgWFLvhVWdZst7hR7pehr7weenFHSLM7FGpump",
+        "decision": "already_open"
+      },
+      {
+        "token_symbol": "BRUH",
+        "token_address": "PgFtGGquvnv2zEkjG2N2QPvBTBrafuExGYEqahRpump",
+        "decision": "reentry_cooldown"
+      },
+      {
+        "token_symbol": "NATF",
+        "token_address": "8nytata1aMp19E6FtCf4Sy2iCV9hY6M5Y49JHPJQpump",
+        "decision": "fresh_price_disagree"
+      },
+      {
+        "token_symbol": "PAWKET",
+        "token_address": "ECNQSQA7Y5bnXzbotgv6XcG15c6jpJ6V2BFbYzJrpump",
+        "decision": "already_open"
+      },
+      {
+        "token_symbol": "UHI",
+        "token_address": "34As1e1Kop9zBvu5e84kjg452Uigq8krcoGEJiWRpump",
+        "decision": "reentry_cooldown"
+      }
+    ],
     "open_positions": 3,
-    "equity_usd": 9590.24554277,
-    "run_number": "190"
+    "equity_usd": 9591.85167527,
+    "run_number": "79"
   }
 }
