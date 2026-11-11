@@ -54,7 +54,7 @@
 | `desk/shadow.py` | Schattendepot (nur Lernen): Kursveränderung aller geprüften Token nach 1/6/24 h, Zusammenfassung je Status/Grund in `shadow_summary.json`, nie eine Entscheidung |
 | `desk/notify.py` | optionale Telegram-Meldungen (nur mit Secrets `TELEGRAM_BOT_TOKEN`/`TELEGRAM_CHAT_ID`, Token nie in Ausgaben) |
 | `trend/` | Trend-Bot große Coins (BTC/ETH/SOL): Backtest (Coinbase-Tageskerzen, `trend_backtest`, Workflow `trend-backtest.yml`, nur lesend) und Paper-Trader `trend/paper.py` (Schluss über 200-Tage-Ø → investiert; Handel nur mit Coinbase- und Kraken-Kurs ≤ 1 % Abweichung; `trend_state.json`/`trend_trades.jsonl` in `desk-data`; Workflow `trend-paper.yml`) |
-| `trend/gold_data.py` | Gold-Backtest XAUUSD (LBMA Gold Price PM in USD, ohne Key; ein Preis je Handelstag; fehlerhafte Einträge/Lücken > 5 Tage kürzen die Reihe), Regeln wie Trend-Bot, `gold_backtest` in `config.yaml`, läuft im Workflow `trend-backtest.yml` mit |
+| `trend/gold_data.py` | Gold-Backtest XAUUSD (OANDA-Demokonto, nur Demo-Server und Kursabfrage, Secret `OANDA_API_TOKEN` nur im Backtest-Schritt; fehlerhafte Einträge/Lücken > 5 Tage kürzen die Reihe), Regeln wie Trend-Bot, `gold_backtest` in `config.yaml`, läuft im Workflow `trend-backtest.yml` mit |
 | `desk/risk.py`, `debate.py` | behalten, nicht angeschlossen (Broker rechnet selbst; Debatte bräuchte kostenpflichtige KI) |
 
 ## Prüfregeln (Kurzfassung, Details im README)

@@ -260,3 +260,15 @@ def test_trend_paper_uses_no_trading_or_rpc_secrets():
     assert names.index("Tests des Trend-Bots") < names.index("Trend-Depot prüfen")
     save = next(s for s in steps if s["name"] == "Depot speichern")
     assert save["if"] == "${{ steps.trend.outcome == 'success' }}"
+
+
+def test_backtest_uses_oanda_token_only_in_backtest_step():
+    workflow = load("trend-backtest.yml")
+    text = (WORKFLOW_DIR / "trend-backtest.yml").read_text(encoding="utf-8")
+
+    assert workflow["permissions"] == {"contents": "read"}
+    assert set(re.findall(r"secrets\.([A-Z_]+)", text)) == {"OANDA_API_TOKEN"}
+    for step in workflow["jobs"]["backtest"]["steps"]:
+        env = step.get("env", {})
+        if "OANDA_API_TOKEN" in env:
+            assert step["name"] == "Backtest"
