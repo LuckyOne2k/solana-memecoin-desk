@@ -1,5 +1,6 @@
 """Statische Prüfung der GitHub-Workflows (ohne sie auszuführen)."""
 
+import re
 from pathlib import Path
 
 import yaml
@@ -66,7 +67,7 @@ def test_write_permission_only_for_scan_job():
 
 
 def test_checkout_does_not_store_credentials():
-    for name in ("scan.yml", "tests.yml", "paper-monitor.yml"):
+    for name in ("scan.yml", "tests.yml", "paper-monitor.yml", "trend-paper.yml"):
         workflow = load(name)
 
         for job in workflow["jobs"].values():
@@ -210,6 +211,7 @@ def test_clock_only_dispatches_known_workflows():
     assert workflow["concurrency"] == {"group": "taktgeber", "cancel-in-progress": False}
     assert not any("uses" in step for step in steps)
     assert "07) dispatch scan.yml" in text
+    assert "05) dispatch trend-paper.yml" in text
     assert "02|12|17|22|27|32|37|42|47|52|57) dispatch paper-monitor.yml" in text
     assert "workflows/clock.yml/dispatches" in text
     assert '{"ref":"main"}' in text
@@ -224,3 +226,37 @@ def test_clock_restarts_itself_within_job_limit():
 
     assert int(job["env"]["RUN_SECONDS"]) < job["timeout-minutes"] * 60 < 6 * 3600
     assert job["steps"][-1]["if"] == "${{ !cancelled() }}"
+
+
+# Trend-Bot Paper-Trader
+# --------------------------------------------------
+
+def test_trend_paper_writes_only_its_files_to_data_branch():
+    text = (WORKFLOW_DIR / "trend-paper.yml").read_text(encoding="utf-8")
+    workflow = load("trend-paper.yml")
+
+    assert set(triggers_of(workflow)) == {"workflow_dispatch"}
+    assert workflow["permissions"] == {"contents": "read"}
+    assert workflow["jobs"]["trend"]["permissions"] == {"contents": "write"}
+    assert workflow["concurrency"] == load("scan.yml")["concurrency"]
+    assert workflow["env"]["DATA_BRANCH"] == "desk-data"
+    for script in all_run_scripts(workflow):
+        for line in script.splitlines():
+            if "git" in line and " push" in line:
+                assert "refs/heads/$DATA_BRANCH" in line
+                assert "main" not in line
+    assert "for file in trend_state.json trend_trades.jsonl; do" in text
+    assert "paper_state" not in text and "events.jsonl" not in text
+    assert BOT_EMAIL in text
+
+
+def test_trend_paper_uses_no_trading_or_rpc_secrets():
+    text = (WORKFLOW_DIR / "trend-paper.yml").read_text(encoding="utf-8")
+    secrets = set(re.findall(r"secrets\.([A-Z_]+)", text))
+
+    assert secrets == {"GITHUB_TOKEN", "TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID"}
+    steps = load("trend-paper.yml")["jobs"]["trend"]["steps"]
+    names = [s["name"] for s in steps]
+    assert names.index("Tests des Trend-Bots") < names.index("Trend-Depot prüfen")
+    save = next(s for s in steps if s["name"] == "Depot speichern")
+    assert save["if"] == "${{ steps.trend.outcome == 'success' }}"

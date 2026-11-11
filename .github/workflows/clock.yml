@@ -6,6 +6,7 @@ name: Taktgeber
 #   - scan.yml (Scan + Paper-Broker + Schattendepot) zu jeder Minute 07
 #   - paper-monitor.yml (nur Kurse/Ausstiege) alle 5 Minuten außer zur
 #     Scan-Minute: 02, 12, 17, 22, 27, 32, 37, 42, 47, 52, 57
+#   - trend-paper.yml (Trend-Bot, einmal je Tag wirksam) zu jeder Minute 05
 # Danach startet er sich selbst neu (workflow_dispatch ist mit dem
 # GITHUB_TOKEN ausdrücklich erlaubt). Reißt die Kette ab, startet ihn der
 # Zeitplan alle 6 Stunden oder ein manueller Start neu.
@@ -56,6 +57,7 @@ jobs:
             if [ "$key" != "$last" ]; then
               case "$minute" in
                 07) dispatch scan.yml; last=$key ;;
+                05) dispatch trend-paper.yml; last=$key ;;
                 02|12|17|22|27|32|37|42|47|52|57) dispatch paper-monitor.yml; last=$key ;;
               esac
             fi

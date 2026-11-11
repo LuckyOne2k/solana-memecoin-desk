@@ -63,3 +63,37 @@ def load_trend_config(path=None):
     path = Path(path) if path else CONFIG_PATH
     with path.open(encoding="utf-8") as handle:
         return validate_trend_config(yaml.safe_load(handle))
+
+
+# Kraken-Paare für die Kursgegenprobe des Paper-Traders (öffentlich, ohne Key)
+KRAKEN_PAIRS = {"BTC-USD": "XBTUSD", "ETH-USD": "ETHUSD", "SOL-USD": "SOLUSD"}
+
+
+def validate_trend_paper_config(config):
+    """Prüft ``trend_backtest`` und ``trend_paper`` und gibt beide zusammen zurück."""
+    base = validate_trend_config(config)
+    section = config.get("trend_paper")
+    if not isinstance(section, dict):
+        raise TrendConfigError("Abschnitt 'trend_paper' fehlt")
+
+    deviation = section.get("max_price_deviation_pct")
+    if isinstance(deviation, bool) or not isinstance(deviation, (int, float)) or not 0 < deviation <= 5:
+        raise TrendConfigError("trend_paper.max_price_deviation_pct muss eine Zahl über 0 und höchstens 5 sein")
+
+    minutes = section.get("min_minutes_after_midnight")
+    if isinstance(minutes, bool) or not isinstance(minutes, int) or not 0 <= minutes <= 180:
+        raise TrendConfigError("trend_paper.min_minutes_after_midnight muss eine ganze Zahl von 0 bis 180 sein")
+
+    missing = [p for p in base["products"] if p not in KRAKEN_PAIRS]
+    if missing:
+        raise TrendConfigError(f"keine Kraken-Gegenprobe für {', '.join(missing)}")
+
+    merged = dict(base)
+    merged.update(section)
+    return merged
+
+
+def load_trend_paper_config(path=None):
+    path = Path(path) if path else CONFIG_PATH
+    with path.open(encoding="utf-8") as handle:
+        return validate_trend_paper_config(yaml.safe_load(handle))

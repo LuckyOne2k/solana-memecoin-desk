@@ -1,0 +1,92 @@
+name: Trend-Bot Paper-Trader
+
+# Paper-Trader des Trend-Bots (BTC, ETH, SOL): einmal je Tag wird das
+# Signal des Vortags ausgewertet (Schluss über 200-Tage-Durchschnitt →
+# investiert). Der Taktgeber startet ihn stündlich zu Minute 05; ist der
+# Tag schon erledigt, passiert nichts (kein Abruf, kein Commit), schlägt
+# etwas fehl, versucht es der nächste Lauf erneut.
+# Nur Simulation: öffentliche Kurse von Coinbase und Kraken ohne Key, keine
+# Wallet, kein Börsen-Konto. Schreibt ausschließlich trend_state.json und
+# trend_trades.jsonl in den Branch desk-data, nie auf main.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Gemeinsame Gruppe mit scan.yml und paper-monitor.yml: nie zwei Schreiber gleichzeitig.
+concurrency:
+  group: desk-data-write
+  cancel-in-progress: false
+
+env:
+  DATA_BRANCH: desk-data
+  DATA_DIR: desk-data
+
+jobs:
+  trend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      # Nur für den Push in den Protokoll-Branch.
+      contents: write
+
+    steps:
+      - name: Repository herunterladen
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Python einrichten
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+
+      - name: Abhängigkeiten installieren
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Tests des Trend-Bots
+        run: python -m pytest -q tests/test_trend.py tests/test_trend_paper.py
+
+      - name: Protokoll-Branch laden
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          auth="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          git -c http.extraheader="$auth" fetch --depth=1 origin "$DATA_BRANCH"
+          git worktree add --detach "$DATA_DIR" FETCH_HEAD
+
+      - name: Trend-Depot prüfen
+        id: trend
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python -m trend.paper --data-dir desk-data
+
+      - name: Depot speichern
+        if: ${{ steps.trend.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        working-directory: desk-data
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          for file in trend_state.json trend_trades.jsonl; do
+            if [ -f "$file" ]; then git add "$file"; fi
+          done
+
+          if git diff --cached --quiet; then
+            echo "Keine Änderungen am Trend-Depot."
+            exit 0
+          fi
+
+          git commit -m "Update trend paper portfolio"
+
+          auth="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          git -c http.extraheader="$auth" push origin "HEAD:refs/heads/$DATA_BRANCH"
