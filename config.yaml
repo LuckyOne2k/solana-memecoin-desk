@@ -109,3 +109,16 @@ paper_trading:
 debate:
   bear_objections_required: 3
   unresolved_objection_veto: true
+
+trend_backtest:
+  # Trend-Bot für große Coins (nur Backtest/Simulation, kein Handel).
+  # Regeln und Werte vorab festgelegt, nicht nachträglich optimiert
+  # (sonst passt man die Regel an die Vergangenheit an).
+  # Coinbase-Handelspaare (Tageskerzen, öffentliche Schnittstelle ohne Key)
+  products: [BTC-USD, ETH-USD, SOL-USD]
+  # Kosten je Kauf bzw. Verkauf (Gebühr + Spread/Schlupf, konservativ)
+  cost_pct_per_trade: 0.5
+  start_capital_usd: 10000
+  sma_short_days: 50
+  sma_long_days: 200
+  momentum_days: 90

@@ -1,0 +1,51 @@
+name: Trend-Bot Backtest
+
+# Backtest des Trend-Bots (BTC, ETH, SOL): lädt öffentliche Tageskerzen von
+# Coinbase (ohne Key) und rechnet die Regeln durch. Nur lesend, keine
+# Secrets, kein Handel. Ergebnis in der Lauf-Zusammenfassung und als
+# Artefakt. Läuft manuell oder bei Änderungen am Trend-Bot.
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "trend/**"
+      - ".github/workflows/trend-backtest.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Repository herunterladen
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Python einrichten
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+
+      - name: Abhängigkeiten installieren
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Tests des Trend-Bots
+        run: python -m pytest -q tests/test_trend.py
+
+      - name: Backtest
+        run: python -m trend
+
+      - name: Ergebnis speichern
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trend-backtest-result
+          path: trend_backtest_result.json
+          if-no-files-found: ignore
