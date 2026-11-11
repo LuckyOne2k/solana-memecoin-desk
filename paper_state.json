@@ -4,9 +4,9 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-11T06:02:23.410287+00:00",
+  "updated_at": "2026-11-11T06:09:14.265643+00:00",
   "starting_balance_usd": 10000.0,
-  "cash_usd": 8975.8893144,
+  "cash_usd": 8215.02219552,
   "open_positions": [
     {
       "token_symbol": "PAWKET",
@@ -24,10 +24,10 @@
       "initial_stop_usd": 0.00047844467872535675,
       "highest_price_usd": 0.0005089837007716562,
       "last_price_usd": 0.0004897834946711641,
-      "last_price_at": "2026-11-11T06:02:23.410287+00:00",
+      "last_price_at": "2026-11-11T06:09:14.265643+00:00",
       "current_stop_usd": 0.00047844467872535675,
       "last_quote": {
-        "at": "2026-11-11T06:02:23.410287+00:00",
+        "at": "2026-11-11T06:09:14.265643+00:00",
         "status": "confirmed",
         "price_low_usd": 0.0004897834946711641,
         "price_high_usd": 0.0004898369544132376,
@@ -36,6 +36,25 @@
       },
       "last_liquidity_usd": 55947.2749,
       "current_stop_kind": "initial"
+    },
+    {
+      "token_symbol": "ConConAI",
+      "token_name": "ConConAI",
+      "token_address": "PyYAqGgWFLvhVWdZst7hR7pehr7weenFHSLM7FGpump",
+      "pool_address": "7234rsjxvsjdEpuQbQNaaDGjdQt8suv6kL4KUd2n9Wpm",
+      "dex_name": "PumpSwap",
+      "opened_at": "2026-11-11T06:09:14.265643+00:00",
+      "entry_price_usd": 0.003073249793674362,
+      "entry_mark_price_usd": 0.0030164345042677674,
+      "entry_cost_pct": 1.8835,
+      "entry_liquidity_usd": 172234.48439379619,
+      "token_amount": 247577.37572978443,
+      "cost_basis_usd": 760.86711888,
+      "initial_stop_usd": 0.0028888548060539,
+      "highest_price_usd": 0.003073249793674362,
+      "last_price_usd": 0.0030140078153986357,
+      "last_price_at": "2026-11-11T06:09:14.265643+00:00",
+      "current_stop_usd": 0.0028888548060539
     }
   ],
   "closed_trades": [
@@ -123,7 +142,7 @@
     "HzQQyPcBZgqiarw9R8jYDqb89xLUsyHAwezk8CvEpump": "2026-11-11T03:52:16.420375+00:00"
   },
   "stats": {
-    "trades_opened": 5,
+    "trades_opened": 6,
     "trades_closed": 4,
     "wins": 0,
     "losses": 4,
@@ -283,18 +302,54 @@
       "equity_usd": 9510.83898605
     },
     {
-      "at": "2026-11-11T06:02:23.410287+00:00",
-      "equity_usd": 9510.83898605
+      "at": "2026-11-11T06:09:14.265643+00:00",
+      "equity_usd": 9496.17201253
     }
   ],
   "last_run": {
-    "at": "2026-11-11T06:02:23.410287+00:00",
-    "mode": "monitor",
-    "scan_status": "not_requested",
-    "scan_at": null,
-    "entry_decisions": [],
-    "open_positions": 1,
-    "equity_usd": 9510.83898605,
-    "run_number": "91"
+    "at": "2026-11-11T06:09:14.265643+00:00",
+    "mode": "after-scan",
+    "scan_status": "ok",
+    "scan_at": "2026-11-11T06:09:14.095978+00:00",
+    "entry_decisions": [
+      {
+        "token_symbol": "ConConAI",
+        "token_address": "PyYAqGgWFLvhVWdZst7hR7pehr7weenFHSLM7FGpump",
+        "decision": "open"
+      },
+      {
+        "token_symbol": "TTP",
+        "token_address": "E5c1JvHbwEf3ud2m4PXPMugcMDevLrnskq7sj1FTpump",
+        "decision": "reentry_cooldown"
+      },
+      {
+        "token_symbol": "BRUH",
+        "token_address": "PgFtGGquvnv2zEkjG2N2QPvBTBrafuExGYEqahRpump",
+        "decision": "reentry_cooldown"
+      },
+      {
+        "token_symbol": "PAWKET",
+        "token_address": "ECNQSQA7Y5bnXzbotgv6XcG15c6jpJ6V2BFbYzJrpump",
+        "decision": "already_open"
+      },
+      {
+        "token_symbol": "BTX",
+        "token_address": "GNggUoCrkgcshssMFn1AxRGEeiNpS7fFaLJMEbSWpump",
+        "decision": "fresh_price_disagree"
+      },
+      {
+        "token_symbol": "UHI",
+        "token_address": "34As1e1Kop9zBvu5e84kjg452Uigq8krcoGEJiWRpump",
+        "decision": "reentry_cooldown"
+      },
+      {
+        "token_symbol": "MBG",
+        "token_address": "HzQQyPcBZgqiarw9R8jYDqb89xLUsyHAwezk8CvEpump",
+        "decision": "reentry_cooldown"
+      }
+    ],
+    "open_positions": 2,
+    "equity_usd": 9496.17201253,
+    "run_number": "70"
   }
 }
