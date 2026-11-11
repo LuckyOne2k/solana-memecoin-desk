@@ -4,9 +4,9 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-11T02:02:24.590395+00:00",
+  "updated_at": "2026-11-11T02:09:33.415455+00:00",
   "starting_balance_usd": 10000.0,
-  "cash_usd": 8525.47963805,
+  "cash_usd": 7757.69350016,
   "open_positions": [
     {
       "token_symbol": "PAWKET",
@@ -24,17 +24,17 @@
       "initial_stop_usd": 0.00047844467872535675,
       "highest_price_usd": 0.0005089837007716562,
       "last_price_usd": 0.0004897834946711641,
-      "last_price_at": "2026-11-11T02:02:24.590395+00:00",
+      "last_price_at": "2026-11-11T02:09:33.415455+00:00",
       "current_stop_usd": 0.00047844467872535675,
       "last_quote": {
-        "at": "2026-11-11T02:02:24.590395+00:00",
+        "at": "2026-11-11T02:09:33.415455+00:00",
         "status": "confirmed",
         "price_low_usd": 0.0004897834946711641,
         "price_high_usd": 0.0004898369544132376,
         "deviation_pct": 0.0109,
         "errors": {}
       },
-      "last_liquidity_usd": 55869.1391,
+      "last_liquidity_usd": 55827.1942,
       "current_stop_kind": "initial"
     },
     {
@@ -53,18 +53,37 @@
       "initial_stop_usd": 0.000533124922623151,
       "highest_price_usd": 0.0005671541730033521,
       "last_price_usd": 0.0005372520841432993,
-      "last_price_at": "2026-11-11T02:02:24.590395+00:00",
+      "last_price_at": "2026-11-11T02:09:33.415455+00:00",
       "current_stop_usd": 0.000533124922623151,
       "last_quote": {
-        "at": "2026-11-11T02:02:24.590395+00:00",
+        "at": "2026-11-11T02:09:33.415455+00:00",
         "status": "confirmed",
         "price_low_usd": 0.0005372520841432993,
         "price_high_usd": 0.0005374587313153618,
         "deviation_pct": 0.0385,
         "errors": {}
       },
-      "last_liquidity_usd": 58149.22091831619,
+      "last_liquidity_usd": 58148.0281,
       "current_stop_kind": "initial"
+    },
+    {
+      "token_symbol": "UHI",
+      "token_name": "Universal High Income",
+      "token_address": "34As1e1Kop9zBvu5e84kjg452Uigq8krcoGEJiWRpump",
+      "pool_address": "9tgif1sJTBM7AGRax1FzbtZcWFrsn84FSfPgZM3JAkuk",
+      "dex_name": "PumpSwap",
+      "opened_at": "2026-11-11T02:09:33.415455+00:00",
+      "entry_price_usd": 0.0010020010187077606,
+      "entry_mark_price_usd": 0.0009728165230172433,
+      "entry_cost_pct": 3.0,
+      "entry_liquidity_usd": 76778.61378873489,
+      "token_amount": 766252.8515990754,
+      "cost_basis_usd": 767.78613789,
+      "initial_stop_usd": 0.0009418809575852949,
+      "highest_price_usd": 0.0010020010187077606,
+      "last_price_usd": 0.0009727064122579753,
+      "last_price_at": "2026-11-11T02:09:33.415455+00:00",
+      "current_stop_usd": 0.0009418809575852949
     }
   ],
   "closed_trades": [
@@ -112,7 +131,7 @@
     "E5c1JvHbwEf3ud2m4PXPMugcMDevLrnskq7sj1FTpump": "2026-11-11T01:17:32.065199+00:00"
   },
   "stats": {
-    "trades_opened": 4,
+    "trades_opened": 5,
     "trades_closed": 2,
     "wins": 0,
     "losses": 2,
@@ -208,18 +227,59 @@
       "equity_usd": 9614.8070237
     },
     {
-      "at": "2026-11-11T02:02:24.590395+00:00",
-      "equity_usd": 9614.8070237
+      "at": "2026-11-11T02:09:33.415455+00:00",
+      "equity_usd": 9592.35994797
     }
   ],
   "last_run": {
-    "at": "2026-11-11T02:02:24.590395+00:00",
-    "mode": "monitor",
-    "scan_status": "not_requested",
-    "scan_at": null,
-    "entry_decisions": [],
-    "open_positions": 2,
-    "equity_usd": 9614.8070237,
-    "run_number": "46"
+    "at": "2026-11-11T02:09:33.415455+00:00",
+    "mode": "after-scan",
+    "scan_status": "ok",
+    "scan_at": "2026-11-11T02:09:33.183824+00:00",
+    "entry_decisions": [
+      {
+        "token_symbol": "TTP",
+        "token_address": "E5c1JvHbwEf3ud2m4PXPMugcMDevLrnskq7sj1FTpump",
+        "decision": "reentry_cooldown"
+      },
+      {
+        "token_symbol": "BRUH",
+        "token_address": "PgFtGGquvnv2zEkjG2N2QPvBTBrafuExGYEqahRpump",
+        "decision": "reentry_cooldown"
+      },
+      {
+        "token_symbol": "NATF",
+        "token_address": "8nytata1aMp19E6FtCf4Sy2iCV9hY6M5Y49JHPJQpump",
+        "decision": "not_ready_in_previous_scan"
+      },
+      {
+        "token_symbol": "BAGEL",
+        "token_address": "Gb7gExpwNdth2iq3Ppio6c423jEP6TYkWPkRkAUpump",
+        "decision": "price_changed_between_scans"
+      },
+      {
+        "token_symbol": "PAWKET",
+        "token_address": "ECNQSQA7Y5bnXzbotgv6XcG15c6jpJ6V2BFbYzJrpump",
+        "decision": "already_open"
+      },
+      {
+        "token_symbol": "BTX",
+        "token_address": "GNggUoCrkgcshssMFn1AxRGEeiNpS7fFaLJMEbSWpump",
+        "decision": "fresh_price_disagree"
+      },
+      {
+        "token_symbol": "UHI",
+        "token_address": "34As1e1Kop9zBvu5e84kjg452Uigq8krcoGEJiWRpump",
+        "decision": "open"
+      },
+      {
+        "token_symbol": "MBG",
+        "token_address": "HzQQyPcBZgqiarw9R8jYDqb89xLUsyHAwezk8CvEpump",
+        "decision": "already_open"
+      }
+    ],
+    "open_positions": 3,
+    "equity_usd": 9592.35994797,
+    "run_number": "66"
   }
 }
