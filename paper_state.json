@@ -4,9 +4,9 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-11T03:32:28.794234+00:00",
+  "updated_at": "2026-11-11T03:37:34.324514+00:00",
   "starting_balance_usd": 10000.0,
-  "cash_usd": 7757.69350016,
+  "cash_usd": 8446.64097722,
   "open_positions": [
     {
       "token_symbol": "PAWKET",
@@ -24,10 +24,10 @@
       "initial_stop_usd": 0.00047844467872535675,
       "highest_price_usd": 0.0005089837007716562,
       "last_price_usd": 0.0004897834946711641,
-      "last_price_at": "2026-11-11T03:32:28.794234+00:00",
+      "last_price_at": "2026-11-11T03:37:34.324514+00:00",
       "current_stop_usd": 0.00047844467872535675,
       "last_quote": {
-        "at": "2026-11-11T03:32:28.794234+00:00",
+        "at": "2026-11-11T03:37:34.324514+00:00",
         "status": "confirmed",
         "price_low_usd": 0.0004897834946711641,
         "price_high_usd": 0.0004898369544132376,
@@ -53,10 +53,10 @@
       "initial_stop_usd": 0.000533124922623151,
       "highest_price_usd": 0.0005671541730033521,
       "last_price_usd": 0.0005372520841432993,
-      "last_price_at": "2026-11-11T03:32:28.794234+00:00",
+      "last_price_at": "2026-11-11T03:37:34.324514+00:00",
       "current_stop_usd": 0.000533124922623151,
       "last_quote": {
-        "at": "2026-11-11T03:32:28.794234+00:00",
+        "at": "2026-11-11T03:37:34.324514+00:00",
         "status": "confirmed",
         "price_low_usd": 0.0005372520841432993,
         "price_high_usd": 0.0005374587313153618,
@@ -64,35 +64,6 @@
         "errors": {}
       },
       "last_liquidity_usd": 58149.22091831619,
-      "current_stop_kind": "initial"
-    },
-    {
-      "token_symbol": "UHI",
-      "token_name": "Universal High Income",
-      "token_address": "34As1e1Kop9zBvu5e84kjg452Uigq8krcoGEJiWRpump",
-      "pool_address": "9tgif1sJTBM7AGRax1FzbtZcWFrsn84FSfPgZM3JAkuk",
-      "dex_name": "PumpSwap",
-      "opened_at": "2026-11-11T02:09:33.415455+00:00",
-      "entry_price_usd": 0.0010020010187077606,
-      "entry_mark_price_usd": 0.0009728165230172433,
-      "entry_cost_pct": 3.0,
-      "entry_liquidity_usd": 76778.61378873489,
-      "token_amount": 766252.8515990754,
-      "cost_basis_usd": 767.78613789,
-      "initial_stop_usd": 0.0009418809575852949,
-      "highest_price_usd": 0.0010020010187077606,
-      "last_price_usd": 0.0009572206003196729,
-      "last_price_at": "2026-11-11T03:32:28.794234+00:00",
-      "current_stop_usd": 0.0009418809575852949,
-      "last_quote": {
-        "at": "2026-11-11T03:32:28.794234+00:00",
-        "status": "confirmed",
-        "price_low_usd": 0.0009572206003196729,
-        "price_high_usd": 0.000958139775201472,
-        "deviation_pct": 0.096,
-        "errors": {}
-      },
-      "last_liquidity_usd": 76331.8552,
       "current_stop_kind": "initial"
     }
   ],
@@ -134,18 +105,38 @@
       "pnl_pct": -33.047,
       "exit_reason": "stop_loss",
       "highest_price_usd": 0.007185883819429664
+    },
+    {
+      "token_symbol": "UHI",
+      "token_address": "34As1e1Kop9zBvu5e84kjg452Uigq8krcoGEJiWRpump",
+      "pool_address": "9tgif1sJTBM7AGRax1FzbtZcWFrsn84FSfPgZM3JAkuk",
+      "opened_at": "2026-11-11T02:09:33.415455+00:00",
+      "closed_at": "2026-11-11T03:37:34.324514+00:00",
+      "holding_hours": 1.467,
+      "entry_price_usd": 0.0010020010187077606,
+      "exit_mark_price_usd": 0.0009257624728807875,
+      "exit_price_usd": 0.0008991124478291454,
+      "exit_cost_pct": 2.8787,
+      "token_amount": 766252.8515990754,
+      "cost_basis_usd": 767.78613789,
+      "proceeds_usd": 688.94747706,
+      "pnl_usd": -78.83866083,
+      "pnl_pct": -10.2683,
+      "exit_reason": "stop_loss",
+      "highest_price_usd": 0.0010020010187077606
     }
   ],
   "last_exit_at": {
     "PgFtGGquvnv2zEkjG2N2QPvBTBrafuExGYEqahRpump": "2026-11-10T21:52:28.069348+00:00",
-    "E5c1JvHbwEf3ud2m4PXPMugcMDevLrnskq7sj1FTpump": "2026-11-11T01:17:32.065199+00:00"
+    "E5c1JvHbwEf3ud2m4PXPMugcMDevLrnskq7sj1FTpump": "2026-11-11T01:17:32.065199+00:00",
+    "34As1e1Kop9zBvu5e84kjg452Uigq8krcoGEJiWRpump": "2026-11-11T03:37:34.324514+00:00"
   },
   "stats": {
     "trades_opened": 5,
-    "trades_closed": 2,
+    "trades_closed": 3,
     "wins": 0,
-    "losses": 2,
-    "realized_pnl_usd": -333.36693415
+    "losses": 3,
+    "realized_pnl_usd": -412.20559498
   },
   "equity_history": [
     {
@@ -261,18 +252,18 @@
       "equity_usd": 9578.39402161
     },
     {
-      "at": "2026-11-11T03:32:28.794234+00:00",
-      "equity_usd": 9580.49390041
+      "at": "2026-11-11T03:37:34.324514+00:00",
+      "equity_usd": 9535.96836287
     }
   ],
   "last_run": {
-    "at": "2026-11-11T03:32:28.794234+00:00",
+    "at": "2026-11-11T03:37:34.324514+00:00",
     "mode": "monitor",
     "scan_status": "not_requested",
     "scan_at": null,
     "entry_decisions": [],
-    "open_positions": 3,
-    "equity_usd": 9580.49390041,
-    "run_number": "62"
+    "open_positions": 2,
+    "equity_usd": 9535.96836287,
+    "run_number": "63"
   }
 }
