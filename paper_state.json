@@ -4,9 +4,9 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-11T19:02:27.517623+00:00",
+  "updated_at": "2026-11-11T19:09:52.190838+00:00",
   "starting_balance_usd": 10000.0,
-  "cash_usd": 7481.92057946,
+  "cash_usd": 5944.98799159,
   "open_positions": [
     {
       "token_symbol": "ConConAI",
@@ -22,19 +22,19 @@
       "token_amount": 247577.37572978443,
       "cost_basis_usd": 760.86711888,
       "initial_stop_usd": 0.0028888548060539,
-      "highest_price_usd": 0.0036823879544522786,
-      "last_price_usd": 0.0036823879544522786,
-      "last_price_at": "2026-11-11T19:02:27.517623+00:00",
-      "current_stop_usd": 0.0034614446771851414,
+      "highest_price_usd": 0.0036860832561361684,
+      "last_price_usd": 0.0036860832561361684,
+      "last_price_at": "2026-11-11T19:09:52.190838+00:00",
+      "current_stop_usd": 0.0034649182607679983,
       "last_quote": {
-        "at": "2026-11-11T19:02:27.517623+00:00",
+        "at": "2026-11-11T19:09:52.190838+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.0036823879544522786,
-        "price_high_usd": 0.003683606945632619,
-        "deviation_pct": 0.0331,
+        "price_low_usd": 0.0036860832561361684,
+        "price_high_usd": 0.003686309741379017,
+        "deviation_pct": 0.0061,
         "errors": {}
       },
-      "last_liquidity_usd": 189685.7961,
+      "last_liquidity_usd": 189862.0833,
       "current_stop_kind": "trailing"
     },
     {
@@ -53,17 +53,17 @@
       "initial_stop_usd": 0.0005533048174484627,
       "highest_price_usd": 0.0005886221462217689,
       "last_price_usd": 0.0005806456173977991,
-      "last_price_at": "2026-11-11T19:02:27.517623+00:00",
+      "last_price_at": "2026-11-11T19:09:52.190838+00:00",
       "current_stop_usd": 0.0005533048174484627,
       "last_quote": {
-        "at": "2026-11-11T19:02:27.517623+00:00",
+        "at": "2026-11-11T19:09:52.190838+00:00",
         "status": "confirmed",
         "price_low_usd": 0.0005806456173977991,
         "price_high_usd": 0.000580937107362866,
         "deviation_pct": 0.0502,
         "errors": {}
       },
-      "last_liquidity_usd": 57784.3553,
+      "last_liquidity_usd": 57600.3822,
       "current_stop_kind": "initial"
     },
     {
@@ -81,19 +81,57 @@
       "cost_basis_usd": 681.82857299,
       "initial_stop_usd": 0.0007127658481158137,
       "highest_price_usd": 0.00079915677525626,
-      "last_price_usd": 0.0007347814466402822,
-      "last_price_at": "2026-11-11T19:02:27.517623+00:00",
+      "last_price_usd": 0.000730070782215803,
+      "last_price_at": "2026-11-11T19:09:52.190838+00:00",
       "current_stop_usd": 0.0007127658481158137,
       "last_quote": {
-        "at": "2026-11-11T19:02:27.517623+00:00",
+        "at": "2026-11-11T19:09:52.190838+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.0007347814466402822,
-        "price_high_usd": 0.0007351552159205161,
-        "deviation_pct": 0.0509,
+        "price_low_usd": 0.000730070782215803,
+        "price_high_usd": 0.0007305031210320056,
+        "deviation_pct": 0.0592,
         "errors": {}
       },
-      "last_liquidity_usd": 68044.9408,
+      "last_liquidity_usd": 67557.482,
       "current_stop_kind": "initial"
+    },
+    {
+      "token_symbol": "USOE",
+      "token_name": "United States Oil Exchange",
+      "token_address": "ivEE94cN5GxXzLJVYby8AJByRBH9tUy6zUHZZt2pump",
+      "pool_address": "8HU3z5A8U3Jjas7hnthxwS5J4Q38vHRYf9kbDdZypWgt",
+      "dex_name": "PumpSwap",
+      "opened_at": "2026-11-11T19:09:52.190838+00:00",
+      "entry_price_usd": 0.008419876383177767,
+      "entry_mark_price_usd": 0.008292647590922811,
+      "entry_cost_pct": 1.5342,
+      "entry_liquidity_usd": 287870.6688,
+      "token_amount": 91326.10377467168,
+      "cost_basis_usd": 768.95450434,
+      "initial_stop_usd": 0.007914683800187101,
+      "highest_price_usd": 0.008419876383177767,
+      "last_price_usd": 0.008286231570431905,
+      "last_price_at": "2026-11-11T19:09:52.190838+00:00",
+      "current_stop_usd": 0.007914683800187101
+    },
+    {
+      "token_symbol": "USWR",
+      "token_name": "United States Water Reserve",
+      "token_address": "DK8brTRwuYF5P6FumuqWJ1Fnf4GEpNwSWuwvpNYpump",
+      "pool_address": "FjrBs1EdgxkWyBRfTwhAgq7ksMRLL685KxHSrPFVTUb6",
+      "dex_name": "PumpSwap",
+      "opened_at": "2026-11-11T19:09:52.190838+00:00",
+      "entry_price_usd": 0.0021120914301183255,
+      "entry_mark_price_usd": 0.002068914177427093,
+      "entry_cost_pct": 2.087,
+      "entry_liquidity_usd": 141308.51193709503,
+      "token_amount": 363610.2455502959,
+      "cost_basis_usd": 767.97808353,
+      "initial_stop_usd": 0.001985365944311226,
+      "highest_price_usd": 0.0021120914301183255,
+      "last_price_usd": 0.002044838978864713,
+      "last_price_at": "2026-11-11T19:09:52.190838+00:00",
+      "current_stop_usd": 0.001985365944311226
     }
   ],
   "closed_trades": [
@@ -201,7 +239,7 @@
     "ECNQSQA7Y5bnXzbotgv6XcG15c6jpJ6V2BFbYzJrpump": "2026-11-11T16:09:14.090134+00:00"
   },
   "stats": {
-    "trades_opened": 8,
+    "trades_opened": 10,
     "trades_closed": 5,
     "wins": 0,
     "losses": 5,
@@ -569,18 +607,74 @@
       "equity_usd": 9624.2940232
     },
     {
-      "at": "2026-11-11T19:02:27.517623+00:00",
-      "equity_usd": 9615.2522593
+      "at": "2026-11-11T19:09:52.190838+00:00",
+      "equity_usd": 9575.27236386
     }
   ],
   "last_run": {
-    "at": "2026-11-11T19:02:27.517623+00:00",
-    "mode": "monitor",
-    "scan_status": "not_requested",
-    "scan_at": null,
-    "entry_decisions": [],
-    "open_positions": 3,
-    "equity_usd": 9615.2522593,
-    "run_number": "234"
+    "at": "2026-11-11T19:09:52.190838+00:00",
+    "mode": "after-scan",
+    "scan_status": "ok",
+    "scan_at": "2026-11-11T19:09:51.994199+00:00",
+    "entry_decisions": [
+      {
+        "token_symbol": "UDTF",
+        "token_address": "Rob4tig8vz87fhM43w5hcuUnDprbiG9GueYoiiRpump",
+        "decision": "not_ready_in_previous_scan"
+      },
+      {
+        "token_symbol": "FOTF",
+        "token_address": "sNEhFo4z3cG5as5ieayBH4mC2iN72c7dH6mStSJpump",
+        "decision": "not_ready_in_previous_scan"
+      },
+      {
+        "token_symbol": "USPR",
+        "token_address": "Pb2TYdiAm6Hxyg5z2VYkXHuZJDb1iu1YHnyLiKfpump",
+        "decision": "not_ready_in_previous_scan"
+      },
+      {
+        "token_symbol": "USOE",
+        "token_address": "ivEE94cN5GxXzLJVYby8AJByRBH9tUy6zUHZZt2pump",
+        "decision": "open"
+      },
+      {
+        "token_symbol": "USWR",
+        "token_address": "DK8brTRwuYF5P6FumuqWJ1Fnf4GEpNwSWuwvpNYpump",
+        "decision": "open"
+      },
+      {
+        "token_symbol": "BORLY",
+        "token_address": "BBRgG2GifeKNB1hSmzD2BwHMPK8wnDtcuE4NzxgHpump",
+        "decision": "already_open"
+      },
+      {
+        "token_symbol": "TTP",
+        "token_address": "E5c1JvHbwEf3ud2m4PXPMugcMDevLrnskq7sj1FTpump",
+        "decision": "max_open_positions"
+      },
+      {
+        "token_symbol": "BRUH",
+        "token_address": "PgFtGGquvnv2zEkjG2N2QPvBTBrafuExGYEqahRpump",
+        "decision": "max_open_positions"
+      },
+      {
+        "token_symbol": "NATF",
+        "token_address": "8nytata1aMp19E6FtCf4Sy2iCV9hY6M5Y49JHPJQpump",
+        "decision": "max_open_positions"
+      },
+      {
+        "token_symbol": "BAGEL",
+        "token_address": "Gb7gExpwNdth2iq3Ppio6c423jEP6TYkWPkRkAUpump",
+        "decision": "already_open"
+      },
+      {
+        "token_symbol": "UHI",
+        "token_address": "34As1e1Kop9zBvu5e84kjg452Uigq8krcoGEJiWRpump",
+        "decision": "max_open_positions"
+      }
+    ],
+    "open_positions": 5,
+    "equity_usd": 9575.27236386,
+    "run_number": "83"
   }
 }
