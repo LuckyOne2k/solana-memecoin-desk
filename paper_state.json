@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-11T01:02:26.988302+00:00",
+  "updated_at": "2026-11-11T01:09:33.266523+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 7989.85553326,
   "open_positions": [
@@ -23,18 +23,18 @@
       "cost_basis_usd": 800.0,
       "initial_stop_usd": 0.006670913011928179,
       "highest_price_usd": 0.007184387192415016,
-      "last_price_usd": 0.007184387192415016,
-      "last_price_at": "2026-11-11T01:02:26.988302+00:00",
+      "last_price_usd": 0.007176218882212889,
+      "last_price_at": "2026-11-11T01:09:33.266523+00:00",
       "current_stop_usd": 0.006670913011928179,
       "last_quote": {
-        "at": "2026-11-11T01:02:26.988302+00:00",
+        "at": "2026-11-11T01:09:33.266523+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.007184387192415016,
-        "price_high_usd": 0.007184402049530401,
-        "deviation_pct": 0.0002,
+        "price_low_usd": 0.007176218882212889,
+        "price_high_usd": 0.007179737667958017,
+        "deviation_pct": 0.049,
         "errors": {}
       },
-      "last_liquidity_usd": 203947.3165,
+      "last_liquidity_usd": 203756.0249670979,
       "current_stop_kind": "initial"
     },
     {
@@ -53,17 +53,17 @@
       "initial_stop_usd": 0.00047844467872535675,
       "highest_price_usd": 0.0005089837007716562,
       "last_price_usd": 0.0004960021822889055,
-      "last_price_at": "2026-11-11T01:02:26.988302+00:00",
+      "last_price_at": "2026-11-11T01:09:33.266523+00:00",
       "current_stop_usd": 0.00047844467872535675,
       "last_quote": {
-        "at": "2026-11-11T01:02:26.988302+00:00",
+        "at": "2026-11-11T01:09:33.266523+00:00",
         "status": "confirmed",
         "price_low_usd": 0.0004960021822889055,
         "price_high_usd": 0.0004961886104524049,
         "deviation_pct": 0.0376,
         "errors": {}
       },
-      "last_liquidity_usd": 55559.706101827425,
+      "last_liquidity_usd": 55376.8867,
       "current_stop_kind": "initial"
     },
     {
@@ -82,17 +82,17 @@
       "initial_stop_usd": 0.000533124922623151,
       "highest_price_usd": 0.0005671541730033521,
       "last_price_usd": 0.000540853811107053,
-      "last_price_at": "2026-11-11T01:02:26.988302+00:00",
+      "last_price_at": "2026-11-11T01:09:33.266523+00:00",
       "current_stop_usd": 0.000533124922623151,
       "last_quote": {
-        "at": "2026-11-11T01:02:26.988302+00:00",
+        "at": "2026-11-11T01:09:33.266523+00:00",
         "status": "confirmed",
         "price_low_usd": 0.000540853811107053,
         "price_high_usd": 0.00054106430556641,
         "deviation_pct": 0.0389,
         "errors": {}
       },
-      "last_liquidity_usd": 58640.1354,
+      "last_liquidity_usd": 58476.8985,
       "current_stop_kind": "initial"
     }
   ],
@@ -201,18 +201,54 @@
       "equity_usd": 9908.93112151
     },
     {
-      "at": "2026-11-11T01:02:26.988302+00:00",
-      "equity_usd": 9899.57462856
+      "at": "2026-11-11T01:09:33.266523+00:00",
+      "equity_usd": 9898.65382968
     }
   ],
   "last_run": {
-    "at": "2026-11-11T01:02:26.988302+00:00",
-    "mode": "monitor",
-    "scan_status": "not_requested",
-    "scan_at": null,
-    "entry_decisions": [],
+    "at": "2026-11-11T01:09:33.266523+00:00",
+    "mode": "after-scan",
+    "scan_status": "ok",
+    "scan_at": "2026-11-11T01:09:33.075595+00:00",
+    "entry_decisions": [
+      {
+        "token_symbol": "TTP",
+        "token_address": "E5c1JvHbwEf3ud2m4PXPMugcMDevLrnskq7sj1FTpump",
+        "decision": "already_open"
+      },
+      {
+        "token_symbol": "BRUH",
+        "token_address": "PgFtGGquvnv2zEkjG2N2QPvBTBrafuExGYEqahRpump",
+        "decision": "reentry_cooldown"
+      },
+      {
+        "token_symbol": "BAGEL",
+        "token_address": "Gb7gExpwNdth2iq3Ppio6c423jEP6TYkWPkRkAUpump",
+        "decision": "price_changed_between_scans"
+      },
+      {
+        "token_symbol": "PAWKET",
+        "token_address": "ECNQSQA7Y5bnXzbotgv6XcG15c6jpJ6V2BFbYzJrpump",
+        "decision": "already_open"
+      },
+      {
+        "token_symbol": "BTX",
+        "token_address": "GNggUoCrkgcshssMFn1AxRGEeiNpS7fFaLJMEbSWpump",
+        "decision": "fresh_price_disagree"
+      },
+      {
+        "token_symbol": "UHI",
+        "token_address": "34As1e1Kop9zBvu5e84kjg452Uigq8krcoGEJiWRpump",
+        "decision": "not_ready_in_previous_scan"
+      },
+      {
+        "token_symbol": "MBG",
+        "token_address": "HzQQyPcBZgqiarw9R8jYDqb89xLUsyHAwezk8CvEpump",
+        "decision": "already_open"
+      }
+    ],
     "open_positions": 3,
-    "equity_usd": 9899.57462856,
-    "run_number": "35"
+    "equity_usd": 9898.65382968,
+    "run_number": "65"
   }
 }

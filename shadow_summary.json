@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "purpose": "learning_only_no_trading",
-  "generated_at": "2026-11-11T00:09:22.229603+00:00",
+  "generated_at": "2026-11-11T01:09:37.189621+00:00",
   "note": "Kursveränderung ohne Kosten seit erster Beobachtung; keine Kaufempfehlung.",
-  "observations_total": 81,
-  "observations_open": 81,
+  "observations_total": 83,
+  "observations_open": 83,
   "by_status": [
     {
       "group": "incomplete",
@@ -20,12 +20,12 @@
     },
     {
       "group": "rejected",
-      "observations": 36,
+      "observations": 38,
       "1h": {
-        "count": 35,
-        "mean_pct": 1.31,
+        "count": 36,
+        "mean_pct": 1.27,
         "median_pct": 0.0,
-        "positive_share_pct": 37.1
+        "positive_share_pct": 36.1
       },
       "6h": null,
       "24h": null
@@ -70,7 +70,7 @@
     },
     {
       "group": "rejected:no_24h_trading_activity",
-      "observations": 7,
+      "observations": 9,
       "1h": {
         "count": 7,
         "mean_pct": 1.94,
@@ -84,7 +84,7 @@
       "group": "rejected:market_cap_below_minimum",
       "observations": 7,
       "1h": {
-        "count": 6,
+        "count": 7,
         "mean_pct": 0.0,
         "median_pct": 0.0,
         "positive_share_pct": 0.0
