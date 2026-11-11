@@ -53,7 +53,7 @@
 | `desk/paper.py` | Paper-Broker (nur Simulation): `after-scan` (Ausstiege, dann Einstiege) und `monitor` (Kurse + Ausstiege); Depot `paper_state.json`, Protokoll `paper_trades.jsonl` in `desk-data`; Regeln in `docs/paper_broker.md` |
 | `desk/shadow.py` | Schattendepot (nur Lernen): Kursveränderung aller geprüften Token nach 1/6/24 h, Zusammenfassung je Status/Grund in `shadow_summary.json`, nie eine Entscheidung |
 | `desk/notify.py` | optionale Telegram-Meldungen (nur mit Secrets `TELEGRAM_BOT_TOKEN`/`TELEGRAM_CHAT_ID`, Token nie in Ausgaben) |
-| `trend/` | Trend-Bot große Coins (BTC/ETH/SOL), bisher nur Backtest: Coinbase-Tageskerzen, Regeln aus `config.yaml` (`trend_backtest`), Workflow `trend-backtest.yml` (nur lesend) |
+| `trend/` | Trend-Bot große Coins (BTC/ETH/SOL): Backtest (Coinbase-Tageskerzen, `trend_backtest`, Workflow `trend-backtest.yml`, nur lesend) und Paper-Trader `trend/paper.py` (Schluss über 200-Tage-Ø → investiert; Handel nur mit Coinbase- und Kraken-Kurs ≤ 1 % Abweichung; `trend_state.json`/`trend_trades.jsonl` in `desk-data`; Workflow `trend-paper.yml`) |
 | `desk/risk.py`, `debate.py` | behalten, nicht angeschlossen (Broker rechnet selbst; Debatte bräuchte kostenpflichtige KI) |
 
 ## Prüfregeln (Kurzfassung, Details im README)
@@ -90,6 +90,7 @@
 - `.github/workflows/pages.yml`: veröffentlicht nur `app/` auf GitHub Pages (nach Merge auf `main` oder manuell); einmalig in Settings → Pages „GitHub Actions“ wählen.
 - `.github/workflows/clock.yml` (Taktgeber): einzige Uhr, weil GitHub-`schedule` hier keine Läufe startete. Läuft ~5,5 h, startet `scan.yml` zu Minute 07 und `paper-monitor.yml` alle 5 Min. (02, 12, 17 … 57, nicht zur Scan-Minute), startet sich danach selbst neu (Neustart-Zeitplan alle 6 h, falls die Kette abreißt). Nur `actions: write`, kein Checkout.
 - `.github/workflows/scan.yml`: stündlich (Minute 7, über Taktgeber) und manuell; erst Tests, dann Scan, `latest.json`, Paper-Broker (`after-scan`).
+- `.github/workflows/trend-paper.yml`: stündlich zu Minute 05 (über Taktgeber) und manuell; wertet einmal je Tag das Vortagssignal aus, sonst kein Abruf/Commit; gleiche Concurrency-Gruppe `desk-data-write`, nur Telegram-Secrets.
 - `.github/workflows/paper-monitor.yml`: alle 5 Min. außer Minute 07 (über Taktgeber) und manuell; nur `python -m desk.paper monitor` (kein Scan, kein Helius). Gemeinsame Concurrency-Gruppe `desk-data-write` mit dem Scan.
 - Optionale Secrets `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` (Anleitung `docs/start_anleitung.md`).
 - Scan-Protokoll: geht in den Branch `desk-data` (`events.jsonl` + `latest.json`, dazu `paper_state.json` + `paper_trades.jsonl`), nie auf `main`. `data/events.jsonl` auf `main` ist nur noch Archiv.
@@ -112,6 +113,7 @@ Vollständiger Verlauf (Scans, PRs, Testzahlen, Begründungen): `docs/entscheidu
 - Scanner (2026-11-10, Claude im Rahmen der Delegation): Altersfenster 24 h–7 Tage (vorher 30–72 h), 30 Prüfungen je Lauf (vorher 10), DexPaprika mit begrenzten Wiederholungen (429/5xx/Netzwerk höchstens 3 Versuche). Sicherheitsprüfungen und ihre Grenzwerte unverändert. Schattendepot liefert die Datengrundlage für spätere Regelanpassungen.
 - `latest.json`: Scan fehlgeschlagen → `failed`, leere Listen, keine alten Ergebnisse; nicht geprüfte Pools nur als Anzahl; Datei wird entfernt, wenn sie nicht erzeugt werden konnte. Liegt im selben `desk-data`-Commit wie `events.jsonl`. Fall `failed` live noch nicht aufgetreten (nur Tests).
 - Web-App: einzige Quelle `latest.json`; nicht `ok`, HTTP-Fehler oder unplausible Datei → Meldung, keine Token. Offline nur letzter erfolgreich geladener Stand mit „Offline – Daten möglicherweise veraltet“; Scan-Alter immer sichtbar, ab 24 h gelbe Warnung. Service Worker speichert nur die App, nie Scan-Daten. Daten bis 5 Min. verzögert (GitHub-Cache).
+- Trend-Bot (2026-11-11, Nutzerfreigabe): Paper-Trader mit Regel „Schluss über 200-Tage-Durchschnitt“ für BTC/ETH/SOL, 10.000 virtuelle $ gleich verteilt ohne Umschichtung, Kosten 0,5 % je Kauf/Verkauf, Kauf zum höheren / Verkauf zum niedrigeren Kurs aus Coinbase und Kraken (≤ 1 % Abweichung, sonst kein Handel, nächster Lauf versucht erneut). Kein Stop-Loss innerhalb des Tages (wie im Backtest). Memecoin-Desk läuft unverändert weiter.
 - Agenten: keine eigenen Claude-Code-Agenten; wiederkehrende Aufgaben als Skills (vorhanden: `scan-auswertung`). Neu bewerten frühestens beim Paper-Broker bzw. bei den KI-Agenten.
 
 ## Offene Probleme

@@ -5,13 +5,14 @@
  */
 "use strict";
 
-const CACHE = "desk-app-v4";
+const CACHE = "desk-app-v5";
 const SHELL = [
   "./",
   "index.html",
   "style.css",
   "app.js",
   "paper.js",
+  "trend.js",
   "manifest.webmanifest",
   "icon-192.png",
   "icon-512.png",

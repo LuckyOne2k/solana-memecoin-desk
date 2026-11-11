@@ -122,3 +122,15 @@ trend_backtest:
   sma_short_days: 50
   sma_long_days: 200
   momentum_days: 90
+
+trend_paper:
+  # Paper-Trader des Trend-Bots (nur Simulation, kein echtes Geld).
+  # Regel aus dem Backtest (Nutzerfreigabe 2026-11-11): investiert, solange
+  # der letzte Tagesschluss über dem Durchschnitt von trend_backtest.
+  # sma_long_days liegt; Coins, Kosten und Startkapital ebenfalls aus
+  # trend_backtest. Startkapital gleich verteilt, ohne Umschichtung.
+  # Kauf/Verkauf nur mit aktuellem Kurs aus Coinbase UND Kraken; weichen
+  # sie stärker ab, wird nicht gehandelt (Wiederholung im nächsten Lauf).
+  max_price_deviation_pct: 1.0
+  # Tageskerze erst so viele Minuten nach Mitternacht (UTC) verwenden
+  min_minutes_after_midnight: 15

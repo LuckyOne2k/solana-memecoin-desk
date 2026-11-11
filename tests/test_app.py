@@ -19,6 +19,7 @@ FILES = [
     "style.css",
     "app.js",
     "paper.js",
+    "trend.js",
     "sw.js",
     "manifest.webmanifest",
     "icon-192.png",
@@ -74,7 +75,7 @@ def test_content_security_policy_limits_connections():
 
 
 def test_app_is_read_only_without_wallet():
-    for name in ("app.js", "paper.js", "sw.js", "index.html"):
+    for name in ("app.js", "paper.js", "trend.js", "sw.js", "index.html"):
         source = code(name).lower()
         for forbidden in (
             "method:",
@@ -92,7 +93,7 @@ def test_app_is_read_only_without_wallet():
 
 
 def test_external_data_is_never_inserted_as_html():
-    for name in ("app.js", "paper.js"):
+    for name in ("app.js", "paper.js", "trend.js"):
         script = text(name)
 
         assert "innerHTML" not in script
@@ -118,6 +119,7 @@ def test_service_worker_never_caches_scan_data():
     assert "raw.githubusercontent" not in worker
     assert "paper_state" not in worker
     assert "shadow_summary" not in worker
+    assert "trend_state" not in worker
     assert "url.origin !== self.location.origin) return;" in worker
 
 
@@ -171,3 +173,24 @@ def test_paper_view_reads_only_paper_state():
 def test_paper_script_is_loaded_and_cached_as_app_file():
     assert '<script src="paper.js"></script>' in text("index.html")
     assert '"paper.js"' in text("sw.js")
+
+
+TREND_URL = (
+    "https://raw.githubusercontent.com/LuckyOne2k/solana-memecoin-desk/"
+    "desk-data/trend_state.json"
+)
+
+
+def test_trend_view_reads_only_trend_state():
+    script = text("trend.js")
+
+    urls = set(re.findall(r"https?://[^\s\"'`]+", script))
+    assert urls == {TREND_URL}
+    assert script.count("fetch(") == 1
+    assert "localStorage" not in script
+    assert 'd.mode !== "paper" || d.live_trading !== false' in script
+
+
+def test_trend_script_is_loaded_and_cached_as_app_file():
+    assert '<script src="trend.js"></script>' in text("index.html")
+    assert '"trend.js"' in text("sw.js")
