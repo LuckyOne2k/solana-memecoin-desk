@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "purpose": "learning_only_no_trading",
-  "generated_at": "2026-11-12T02:10:10.070994+00:00",
+  "generated_at": "2026-11-12T03:09:47.836591+00:00",
   "note": "Kursveränderung ohne Kosten seit erster Beobachtung; keine Kaufempfehlung.",
-  "observations_total": 195,
-  "observations_open": 109,
+  "observations_total": 200,
+  "observations_open": 113,
   "by_status": [
     {
       "group": "incomplete",
@@ -30,7 +30,7 @@
     },
     {
       "group": "rejected",
-      "observations": 85,
+      "observations": 90,
       "1h": {
         "count": 84,
         "mean_pct": -0.86,
@@ -44,10 +44,10 @@
         "positive_share_pct": 46.2
       },
       "24h": {
-        "count": 40,
-        "mean_pct": -3.06,
+        "count": 41,
+        "mean_pct": -4.49,
         "median_pct": 0.0,
-        "positive_share_pct": 42.5
+        "positive_share_pct": 41.5
       }
     },
     {
@@ -98,7 +98,7 @@
     },
     {
       "group": "rejected:lp_burn_or_lock_not_verified",
-      "observations": 30,
+      "observations": 33,
       "1h": {
         "count": 29,
         "mean_pct": -5.01,
@@ -186,7 +186,7 @@
     },
     {
       "group": "rejected:market_cap_above_maximum_onchain_lower_bound",
-      "observations": 10,
+      "observations": 11,
       "1h": {
         "count": 10,
         "mean_pct": 2.16,
@@ -251,6 +251,23 @@
       }
     },
     {
+      "group": "rejected:freeze_authority_not_revoked",
+      "observations": 4,
+      "1h": {
+        "count": 3,
+        "mean_pct": -0.2,
+        "median_pct": 0.0,
+        "positive_share_pct": 0.0
+      },
+      "6h": {
+        "count": 3,
+        "mean_pct": -0.24,
+        "median_pct": -0.12,
+        "positive_share_pct": 0.0
+      },
+      "24h": null
+    },
+    {
       "group": "rejected:top10_holder_share_above_limit",
       "observations": 3,
       "1h": {
@@ -266,28 +283,11 @@
         "positive_share_pct": 100.0
       },
       "24h": {
-        "count": 1,
-        "mean_pct": -10.4,
-        "median_pct": -10.4,
+        "count": 2,
+        "mean_pct": -36.09,
+        "median_pct": -36.09,
         "positive_share_pct": 0.0
       }
-    },
-    {
-      "group": "rejected:freeze_authority_not_revoked",
-      "observations": 3,
-      "1h": {
-        "count": 3,
-        "mean_pct": -0.2,
-        "median_pct": 0.0,
-        "positive_share_pct": 0.0
-      },
-      "6h": {
-        "count": 3,
-        "mean_pct": -0.24,
-        "median_pct": -0.12,
-        "positive_share_pct": 0.0
-      },
-      "24h": null
     },
     {
       "group": "rejected:creator_share_above_limit",
