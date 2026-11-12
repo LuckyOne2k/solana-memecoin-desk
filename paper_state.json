@@ -4,9 +4,9 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-12T04:42:46.287789+00:00",
+  "updated_at": "2026-11-12T04:47:27.843121+00:00",
   "starting_balance_usd": 10000.0,
-  "cash_usd": 5944.98799159,
+  "cash_usd": 6873.17886382,
   "open_positions": [
     {
       "token_symbol": "ConConAI",
@@ -23,18 +23,18 @@
       "cost_basis_usd": 760.86711888,
       "initial_stop_usd": 0.0028888548060539,
       "highest_price_usd": 0.004203411114499636,
-      "last_price_usd": 0.004159915134281867,
-      "last_price_at": "2026-11-12T04:42:46.287789+00:00",
+      "last_price_usd": 0.004160045840123086,
+      "last_price_at": "2026-11-12T04:47:27.843121+00:00",
       "current_stop_usd": 0.003995224731776671,
       "last_quote": {
-        "at": "2026-11-12T04:42:46.287789+00:00",
+        "at": "2026-11-12T04:47:27.843121+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.004159915134281867,
-        "price_high_usd": 0.004160161698762107,
-        "deviation_pct": 0.0059,
+        "price_low_usd": 0.004160045840123086,
+        "price_high_usd": 0.0041620070740001685,
+        "deviation_pct": 0.0471,
         "errors": {}
       },
-      "last_liquidity_usd": 203219.26657517423,
+      "last_liquidity_usd": 203201.8849,
       "current_stop_kind": "profit_lock"
     },
     {
@@ -53,47 +53,18 @@
       "initial_stop_usd": 0.0005533048174484627,
       "highest_price_usd": 0.0005886221462217689,
       "last_price_usd": 0.0005670813643497433,
-      "last_price_at": "2026-11-12T04:42:46.287789+00:00",
+      "last_price_at": "2026-11-12T04:47:27.843121+00:00",
       "current_stop_usd": 0.0005533048174484627,
       "last_quote": {
-        "at": "2026-11-12T04:42:46.287789+00:00",
+        "at": "2026-11-12T04:47:27.843121+00:00",
         "status": "confirmed",
         "price_low_usd": 0.0005670813643497433,
         "price_high_usd": 0.0005677693352275321,
         "deviation_pct": 0.1213,
         "errors": {}
       },
-      "last_liquidity_usd": 56136.6238,
+      "last_liquidity_usd": 56146.0863,
       "current_stop_kind": "initial"
-    },
-    {
-      "token_symbol": "BAGEL",
-      "token_name": "BAGELGATOR",
-      "token_address": "Gb7gExpwNdth2iq3Ppio6c423jEP6TYkWPkRkAUpump",
-      "pool_address": "Bujoy6WMmYaAVcUG7RUra4XudX6xZJe5ZbSnqVXFbQ7g",
-      "dex_name": "PumpSwap",
-      "opened_at": "2026-11-11T18:09:46.331424+00:00",
-      "entry_price_usd": 0.000758261540548738,
-      "entry_mark_price_usd": 0.0007361762529599398,
-      "entry_cost_pct": 3.0,
-      "entry_liquidity_usd": 68182.85729924335,
-      "token_amount": 899199.7306055835,
-      "cost_basis_usd": 681.82857299,
-      "initial_stop_usd": 0.0007127658481158137,
-      "highest_price_usd": 0.0011483208147671307,
-      "last_price_usd": 0.0010972513090625564,
-      "last_price_at": "2026-11-12T04:42:46.287789+00:00",
-      "current_stop_usd": 0.0010794215658811027,
-      "last_quote": {
-        "at": "2026-11-12T04:42:46.287789+00:00",
-        "status": "confirmed",
-        "price_low_usd": 0.0010972513090625564,
-        "price_high_usd": 0.001097298146685161,
-        "deviation_pct": 0.0043,
-        "errors": {}
-      },
-      "last_liquidity_usd": 82211.7241,
-      "current_stop_kind": "trailing"
     },
     {
       "token_symbol": "USOE",
@@ -109,19 +80,19 @@
       "token_amount": 91326.10377467168,
       "cost_basis_usd": 768.95450434,
       "initial_stop_usd": 0.007914683800187101,
-      "highest_price_usd": 0.009832771825702746,
-      "last_price_usd": 0.009756811858522795,
-      "last_price_at": "2026-11-12T04:42:46.287789+00:00",
-      "current_stop_usd": 0.009242805516160581,
+      "highest_price_usd": 0.009835050698505706,
+      "last_price_usd": 0.009835050698505706,
+      "last_price_at": "2026-11-12T04:47:27.843121+00:00",
+      "current_stop_usd": 0.009244947656595363,
       "last_quote": {
-        "at": "2026-11-12T04:42:46.287789+00:00",
+        "at": "2026-11-12T04:47:27.843121+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.009756811858522795,
-        "price_high_usd": 0.009841158620703814,
-        "deviation_pct": 0.8645,
+        "price_low_usd": 0.009835050698505706,
+        "price_high_usd": 0.009908391993377149,
+        "deviation_pct": 0.7457,
         "errors": {}
       },
-      "last_liquidity_usd": 311635.5167,
+      "last_liquidity_usd": 312757.0381838395,
       "current_stop_kind": "trailing"
     },
     {
@@ -139,18 +110,18 @@
       "cost_basis_usd": 767.97808353,
       "initial_stop_usd": 0.001985365944311226,
       "highest_price_usd": 0.002237955212008746,
-      "last_price_usd": 0.002211477289151583,
-      "last_price_at": "2026-11-12T04:42:46.287789+00:00",
+      "last_price_usd": 0.002214624704650305,
+      "last_price_at": "2026-11-12T04:47:27.843121+00:00",
       "current_stop_usd": 0.001985365944311226,
       "last_quote": {
-        "at": "2026-11-12T04:42:46.287789+00:00",
+        "at": "2026-11-12T04:47:27.843121+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.002211477289151583,
-        "price_high_usd": 0.0022384088223532652,
-        "deviation_pct": 1.2178,
+        "price_low_usd": 0.002214624704650305,
+        "price_high_usd": 0.002241827593156314,
+        "deviation_pct": 1.2283,
         "errors": {}
       },
-      "last_liquidity_usd": 147290.9042,
+      "last_liquidity_usd": 147360.9737,
       "current_stop_kind": "initial"
     }
   ],
@@ -249,6 +220,25 @@
       "pnl_pct": -6.9339,
       "exit_reason": "security_rejected",
       "highest_price_usd": 0.0005089837007716562
+    },
+    {
+      "token_symbol": "BAGEL",
+      "token_address": "Gb7gExpwNdth2iq3Ppio6c423jEP6TYkWPkRkAUpump",
+      "pool_address": "Bujoy6WMmYaAVcUG7RUra4XudX6xZJe5ZbSnqVXFbQ7g",
+      "opened_at": "2026-11-11T18:09:46.331424+00:00",
+      "closed_at": "2026-11-12T04:47:27.843121+00:00",
+      "holding_hours": 10.628,
+      "entry_price_usd": 0.000758261540548738,
+      "exit_mark_price_usd": 0.0010678778006188597,
+      "exit_price_usd": 0.0010322410479449305,
+      "exit_cost_pct": 3.3372,
+      "token_amount": 899199.7306055835,
+      "cost_basis_usd": 681.82857299,
+      "proceeds_usd": 928.19087223,
+      "pnl_usd": 246.36229924,
+      "pnl_pct": 36.1326,
+      "exit_reason": "trailing_stop",
+      "highest_price_usd": 0.0011483208147671307
     }
   ],
   "last_exit_at": {
@@ -256,14 +246,15 @@
     "E5c1JvHbwEf3ud2m4PXPMugcMDevLrnskq7sj1FTpump": "2026-11-11T01:17:32.065199+00:00",
     "34As1e1Kop9zBvu5e84kjg452Uigq8krcoGEJiWRpump": "2026-11-11T03:37:34.324514+00:00",
     "HzQQyPcBZgqiarw9R8jYDqb89xLUsyHAwezk8CvEpump": "2026-11-11T03:52:16.420375+00:00",
-    "ECNQSQA7Y5bnXzbotgv6XcG15c6jpJ6V2BFbYzJrpump": "2026-11-11T16:09:14.090134+00:00"
+    "ECNQSQA7Y5bnXzbotgv6XcG15c6jpJ6V2BFbYzJrpump": "2026-11-11T16:09:14.090134+00:00",
+    "Gb7gExpwNdth2iq3Ppio6c423jEP6TYkWPkRkAUpump": "2026-11-12T04:47:27.843121+00:00"
   },
   "stats": {
     "trades_opened": 10,
-    "trades_closed": 5,
-    "wins": 0,
+    "trades_closed": 6,
+    "wins": 1,
     "losses": 5,
-    "realized_pnl_usd": -506.73744167
+    "realized_pnl_usd": -260.37514243
   },
   "equity_history": [
     {
@@ -777,16 +768,20 @@
     {
       "at": "2026-11-12T04:42:46.287789+00:00",
       "equity_usd": 10204.54088469
+    },
+    {
+      "at": "2026-11-12T04:47:27.843121+00:00",
+      "equity_usd": 10154.40571615
     }
   ],
   "last_run": {
-    "at": "2026-11-12T04:42:46.287789+00:00",
+    "at": "2026-11-12T04:47:27.843121+00:00",
     "mode": "monitor",
     "scan_status": "not_requested",
     "scan_at": null,
     "entry_decisions": [],
-    "open_positions": 5,
-    "equity_usd": 10204.54088469,
-    "run_number": "341"
+    "open_positions": 4,
+    "equity_usd": 10154.40571615,
+    "run_number": "342"
   }
 }
