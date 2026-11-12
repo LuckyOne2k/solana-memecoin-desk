@@ -1,19 +1,19 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-11-12T09:10:23.367419+00:00",
+  "generated_at": "2026-11-12T10:10:02.976011+00:00",
   "scan_status": "ok",
   "status_reason": null,
   "scan_outcome": "success",
   "run": {
-    "run_id": "43188602807",
-    "run_number": "97",
+    "run_id": "43197487545",
+    "run_number": "98",
     "commit": "dde1b11e95a7b8adb0fa32cb9075cc4f3774eacb"
   },
-  "scan_at": "2026-11-12T09:10:23.278473+00:00",
+  "scan_at": "2026-11-12T10:10:02.860946+00:00",
   "counts": {
-    "total_pools": 104,
-    "rejected_pools": 14,
-    "incomplete_pools": 75,
+    "total_pools": 99,
+    "rejected_pools": 17,
+    "incomplete_pools": 67,
     "ready_for_full_risk_screen": 15
   },
   "pools_not_listed": 0,
@@ -126,11 +126,11 @@
   ],
   "pools": [
     {
-      "token_symbol": "HongKong",
-      "token_name": "HongKong",
-      "token_address": "D9FQdQnbL9ayFoKhwT5iVp4qMpaPPqmqmm886uomgWiz",
-      "pool_address": "6ebtgPWScivcVQHvVfwxrrrj2UYZct7XgzsMPopdMpxA",
-      "dex_name": "Orca",
+      "token_symbol": "TP",
+      "token_name": "TP",
+      "token_address": "HkP5cjnJ8bB4VSaJ4qxT7i3Gt16denjwZ4EXpcB1JDBb",
+      "pool_address": "Bu2gXynkBnJoYGgqtZmpbjkQbV7kX6Qaxeg3A9YqD76r",
+      "dex_name": "Raydium CLMM",
       "status": "rejected",
       "security_check_status": "completed",
       "rejection_reasons": [
@@ -143,6 +143,83 @@
         "permanent_delegate_absent",
         "token_extensions_safe",
         "authority_cross_check"
+      ]
+    },
+    {
+      "token_symbol": "PEIDAY",
+      "token_name": "Pei Day",
+      "token_address": "5KQFm9bhZuDYTpHvmtCWFVGRJwULgqZWGwm24odupump",
+      "pool_address": "6khUHySJrgVXNyuTCYLcotGYZFifbeYiLsk5yoSoMaCk",
+      "dex_name": "Pump.fun",
+      "status": "rejected",
+      "security_check_status": "completed",
+      "rejection_reasons": [
+        "lp_burn_or_lock_not_verified"
+      ],
+      "missing_checks": [
+        "market_cap_usd",
+        "liquidity_cross_check",
+        "top10_share_pct",
+        "dev_share_pct",
+        "permanent_delegate_absent",
+        "token_extensions_safe",
+        "authority_cross_check"
+      ]
+    },
+    {
+      "token_symbol": "UODF",
+      "token_name": "United Oil Dividend Fund",
+      "token_address": "5Xczig7Rc4eziJXmUmjBKL2dzf8mcHoLoZB7LDx6RmBb",
+      "pool_address": "3Y4RXtkQWR7KvtoNnZ3NJCh2fc6hoKr7Suycw6fSVnKG",
+      "dex_name": "PumpSwap",
+      "status": "rejected",
+      "security_check_status": "completed",
+      "rejection_reasons": [
+        "lp_burn_or_lock_not_verified"
+      ],
+      "missing_checks": [
+        "market_cap_usd",
+        "top10_share_pct",
+        "dev_share_pct",
+        "permanent_delegate_absent",
+        "token_extensions_safe",
+        "authority_cross_check"
+      ]
+    },
+    {
+      "token_symbol": "Robinhood",
+      "token_name": "Robinhood",
+      "token_address": "4qrLwta3bAeJcJWjP3PVTbXR6nbAJbBauULtnZFfpump",
+      "pool_address": "CYCXsJFnoiNzirar8F3f45T2BmtewTuXQzwkC26Vx4xC",
+      "dex_name": "PumpSwap",
+      "status": "rejected",
+      "security_check_status": "completed",
+      "rejection_reasons": [
+        "market_cap_below_minimum"
+      ],
+      "missing_checks": [
+        "liquidity_cross_check"
+      ]
+    },
+    {
+      "token_symbol": "HongKong",
+      "token_name": "HongKong",
+      "token_address": "D9FQdQnbL9ayFoKhwT5iVp4qMpaPPqmqmm886uomgWiz",
+      "pool_address": "6ebtgPWScivcVQHvVfwxrrrj2UYZct7XgzsMPopdMpxA",
+      "dex_name": "Orca",
+      "status": "incomplete",
+      "security_check_status": "skipped_run_limit",
+      "rejection_reasons": [],
+      "missing_checks": [
+        "market_cap_usd",
+        "mint_authority_revoked",
+        "freeze_authority_revoked",
+        "lp_burned_or_locked",
+        "liquidity_cross_check",
+        "top10_share_pct",
+        "dev_share_pct",
+        "permanent_delegate_absent",
+        "token_extensions_safe"
       ]
     },
     {
@@ -178,46 +255,6 @@
       "security_check_status": "completed",
       "rejection_reasons": [],
       "missing_checks": []
-    },
-    {
-      "token_symbol": "DacityCoin",
-      "token_name": "AudaCity",
-      "token_address": "9d8eXLmxtgBBCrqprN9F2iPDBfX5TQbRhU3eKofBvRvw",
-      "pool_address": "E9geSUTck7VmADxScFQ8Da3yEBSueZJQRRTF8b28Pzeu",
-      "dex_name": "Orca",
-      "status": "rejected",
-      "security_check_status": "completed",
-      "rejection_reasons": [
-        "lp_burn_or_lock_not_verified"
-      ],
-      "missing_checks": [
-        "market_cap_usd",
-        "top10_share_pct",
-        "dev_share_pct",
-        "permanent_delegate_absent",
-        "token_extensions_safe",
-        "authority_cross_check"
-      ]
-    },
-    {
-      "token_symbol": "X",
-      "token_name": "apeonx",
-      "token_address": "HCe6iosLocx4wamK7YfPGGPfd5sjeGVGJYT2tCxha18s",
-      "pool_address": "5bENasVwtwt7PdnraiJczH1PxVWAo5GeuFqCKY7yv3FP",
-      "dex_name": "Orca",
-      "status": "rejected",
-      "security_check_status": "completed",
-      "rejection_reasons": [
-        "lp_burn_or_lock_not_verified"
-      ],
-      "missing_checks": [
-        "market_cap_usd",
-        "top10_share_pct",
-        "dev_share_pct",
-        "permanent_delegate_absent",
-        "token_extensions_safe",
-        "authority_cross_check"
-      ]
     },
     {
       "token_symbol": "NOBUSHIBA",
@@ -343,18 +380,19 @@
       "token_address": "4iJ7xEQrUvVUQH9KVStvw3FaY2PZDd7RtR4L9zx2pump",
       "pool_address": "GUsid5mPW6KiExjQDDggoTHrFv4ecGqqAgYwiHa4Ujbb",
       "dex_name": "PumpSwap",
-      "status": "rejected",
-      "security_check_status": "completed",
-      "rejection_reasons": [
-        "lp_burn_or_lock_not_verified"
-      ],
+      "status": "incomplete",
+      "security_check_status": "skipped_run_limit",
+      "rejection_reasons": [],
       "missing_checks": [
         "market_cap_usd",
+        "mint_authority_revoked",
+        "freeze_authority_revoked",
+        "lp_burned_or_locked",
+        "liquidity_cross_check",
         "top10_share_pct",
         "dev_share_pct",
         "permanent_delegate_absent",
-        "token_extensions_safe",
-        "authority_cross_check"
+        "token_extensions_safe"
       ]
     },
     {
@@ -606,7 +644,9 @@
       "rejection_reasons": [],
       "missing_checks": [
         "token_classification",
-        "market_cap_usd"
+        "market_cap_usd",
+        "top10_share_pct",
+        "dev_share_pct"
       ]
     },
     {
@@ -713,15 +753,14 @@
       "token_address": "7RJ5pHuMAb23ddFTPeNRgz89CWFpzQW3y7uJGLiHbY72",
       "pool_address": "6L2DtsjZ4SAGii3HBJ7cAGEx7b849yLXCjpCdPnthHmR",
       "dex_name": "Orca",
-      "status": "incomplete",
-      "security_check_status": "error",
-      "rejection_reasons": [],
+      "status": "rejected",
+      "security_check_status": "completed",
+      "rejection_reasons": [
+        "freeze_authority_not_revoked",
+        "lp_burn_or_lock_not_verified"
+      ],
       "missing_checks": [
         "market_cap_usd",
-        "mint_authority_revoked",
-        "freeze_authority_revoked",
-        "lp_burned_or_locked",
-        "liquidity_cross_check",
         "top10_share_pct",
         "dev_share_pct",
         "permanent_delegate_absent",
@@ -796,16 +835,14 @@
       ]
     },
     {
-      "token_symbol": "PokéMeal",
-      "token_name": "Pokémon Happy Meal",
-      "token_address": "X7Fk2APb7rjMnPDNjHhYvb2L8tWbNfVxXzr7RWspump",
-      "pool_address": "Fx7ut9LFZ3gm4RxcJzpG8ZoBWK7Am8LXtvCkWF59QEBx",
+      "token_symbol": "X TO",
+      "token_name": "XTO",
+      "token_address": "HhYoicFCdUqipDRAMkeGcKRrabNqABJ1XSEbmEXQpump",
+      "pool_address": "DfZ7FprAovim4sYS1LfsayBdcMhMWqCCFXbmDXByeEgv",
       "dex_name": "PumpSwap",
-      "status": "rejected",
-      "security_check_status": "skipped_pool_rejected",
-      "rejection_reasons": [
-        "no_24h_trading_activity"
-      ],
+      "status": "incomplete",
+      "security_check_status": "skipped_run_limit",
+      "rejection_reasons": [],
       "missing_checks": [
         "market_cap_usd",
         "mint_authority_revoked",
@@ -817,19 +854,6 @@
         "permanent_delegate_absent",
         "token_extensions_safe"
       ]
-    },
-    {
-      "token_symbol": "X TO",
-      "token_name": "XTO",
-      "token_address": "HhYoicFCdUqipDRAMkeGcKRrabNqABJ1XSEbmEXQpump",
-      "pool_address": "DfZ7FprAovim4sYS1LfsayBdcMhMWqCCFXbmDXByeEgv",
-      "dex_name": "PumpSwap",
-      "status": "rejected",
-      "security_check_status": "completed",
-      "rejection_reasons": [
-        "market_cap_above_maximum_onchain_lower_bound"
-      ],
-      "missing_checks": []
     },
     {
       "token_symbol": "BORLY",
@@ -841,48 +865,6 @@
       "security_check_status": "completed",
       "rejection_reasons": [],
       "missing_checks": []
-    },
-    {
-      "token_symbol": "Pepetide",
-      "token_name": "Pepetide",
-      "token_address": "J5LmsNpAjEcEuCqAwm2q6M2N8NnQrwUMWw77Qd5typHE",
-      "pool_address": "3avLPizBbbifUAKf87gkeB41VKu6N6aYPriSgY6a3EUj",
-      "dex_name": "Orca",
-      "status": "incomplete",
-      "security_check_status": "skipped_run_limit",
-      "rejection_reasons": [],
-      "missing_checks": [
-        "market_cap_usd",
-        "mint_authority_revoked",
-        "freeze_authority_revoked",
-        "lp_burned_or_locked",
-        "liquidity_cross_check",
-        "top10_share_pct",
-        "dev_share_pct",
-        "permanent_delegate_absent",
-        "token_extensions_safe"
-      ]
-    },
-    {
-      "token_symbol": "FAIR",
-      "token_name": "FAIR",
-      "token_address": "HXQdzhCYsgopdntuQsvjEGsYU6vuTAcpymMUqrPZatua",
-      "pool_address": "9cDGF6DkK7jfrEA3P3EwHLHoRcWk7t4YNtmExW26Evao",
-      "dex_name": "Orca",
-      "status": "incomplete",
-      "security_check_status": "skipped_run_limit",
-      "rejection_reasons": [],
-      "missing_checks": [
-        "market_cap_usd",
-        "mint_authority_revoked",
-        "freeze_authority_revoked",
-        "lp_burned_or_locked",
-        "liquidity_cross_check",
-        "top10_share_pct",
-        "dev_share_pct",
-        "permanent_delegate_absent",
-        "token_extensions_safe"
-      ]
     },
     {
       "token_symbol": "UODF",
@@ -951,27 +933,6 @@
       ]
     },
     {
-      "token_symbol": "Elysium",
-      "token_name": "Elysium",
-      "token_address": "BybgUNacyUnWnxmvks45UiGre7f6MvNEUU8bzoGW4fdm",
-      "pool_address": "4cHbJRNQPNs22kiav5h51eiXY1tCmAS4hXaDLPPd9jiU",
-      "dex_name": "Orca",
-      "status": "incomplete",
-      "security_check_status": "skipped_run_limit",
-      "rejection_reasons": [],
-      "missing_checks": [
-        "market_cap_usd",
-        "mint_authority_revoked",
-        "freeze_authority_revoked",
-        "lp_burned_or_locked",
-        "liquidity_cross_check",
-        "top10_share_pct",
-        "dev_share_pct",
-        "permanent_delegate_absent",
-        "token_extensions_safe"
-      ]
-    },
-    {
       "token_symbol": "PERPULATOR",
       "token_name": "Perpulator",
       "token_address": "CRWuYpESSNkgiKGcFyBJkqFwFgzGHUUNvZZJkMwppump",
@@ -998,19 +959,18 @@
       "token_address": "Auxu9UGuL7HkCitJ6wisePr8q3EHySjvUvkhWZyigpcv",
       "pool_address": "Hx2aKDnu6b9hWmwwuTHBNUMkpWEpEomCPx95EmtuXRV1",
       "dex_name": "Raydium CLMM",
-      "status": "incomplete",
-      "security_check_status": "skipped_run_limit",
-      "rejection_reasons": [],
+      "status": "rejected",
+      "security_check_status": "completed",
+      "rejection_reasons": [
+        "lp_burn_or_lock_not_verified"
+      ],
       "missing_checks": [
         "market_cap_usd",
-        "mint_authority_revoked",
-        "freeze_authority_revoked",
-        "lp_burned_or_locked",
-        "liquidity_cross_check",
         "top10_share_pct",
         "dev_share_pct",
         "permanent_delegate_absent",
-        "token_extensions_safe"
+        "token_extensions_safe",
+        "authority_cross_check"
       ]
     },
     {
@@ -1125,20 +1085,12 @@
       "token_address": "nDUSTtA3bAR4CT3MQqnatnjcbERV62LE7X1A3abpump",
       "pool_address": "3nYkqMizVuGYRHzAcSReprdZvm3sjLjZvSDzo3biP78W",
       "dex_name": "PumpSwap",
-      "status": "incomplete",
-      "security_check_status": "skipped_run_limit",
-      "rejection_reasons": [],
-      "missing_checks": [
-        "market_cap_usd",
-        "mint_authority_revoked",
-        "freeze_authority_revoked",
-        "lp_burned_or_locked",
-        "liquidity_cross_check",
-        "top10_share_pct",
-        "dev_share_pct",
-        "permanent_delegate_absent",
-        "token_extensions_safe"
-      ]
+      "status": "rejected",
+      "security_check_status": "completed",
+      "rejection_reasons": [
+        "market_cap_above_maximum_onchain_lower_bound"
+      ],
+      "missing_checks": []
     },
     {
       "token_symbol": "FOTF",
@@ -1279,6 +1231,26 @@
       ]
     },
     {
+      "token_symbol": "USZT",
+      "token_name": "USZT",
+      "token_address": "BUuCRzNU6TJpzuk59qe4XvZLuq1uq8pyDmJ8EpVVCaXN",
+      "pool_address": "7WSWpUQKGWfwgpAUPQtG71s7XDy5Y6ER8o5fzY4U8nJm",
+      "dex_name": "Orca",
+      "status": "rejected",
+      "security_check_status": "completed",
+      "rejection_reasons": [
+        "lp_burn_or_lock_not_verified"
+      ],
+      "missing_checks": [
+        "market_cap_usd",
+        "top10_share_pct",
+        "dev_share_pct",
+        "permanent_delegate_absent",
+        "token_extensions_safe",
+        "authority_cross_check"
+      ]
+    },
+    {
       "token_symbol": "JENVID",
       "token_name": "Jensen NVIDIA",
       "token_address": "2dzD7DJ7XTBmX9iykpDKNLv4TRZmF2NGPZQ1sm2Xpump",
@@ -1305,20 +1277,15 @@
       "token_address": "tURR6DoHhWLD7vHxdx8X8MSvBLYHzvGyQYFanSppump",
       "pool_address": "3qJ1atgCtqnGwwNxCzcZ1JtjehbW8gMdXTSzYWbVB6cz",
       "dex_name": "PumpSwap",
-      "status": "incomplete",
-      "security_check_status": "error",
-      "rejection_reasons": [],
+      "status": "rejected",
+      "security_check_status": "completed",
+      "rejection_reasons": [
+        "market_cap_below_minimum"
+      ],
       "missing_checks": [
-        "market_cap_usd",
-        "mint_authority_revoked",
-        "freeze_authority_revoked",
-        "lp_burned_or_locked",
         "liquidity_cross_check",
         "top10_share_pct",
-        "dev_share_pct",
-        "permanent_delegate_absent",
-        "token_extensions_safe",
-        "authority_cross_check"
+        "dev_share_pct"
       ]
     },
     {
@@ -1332,27 +1299,6 @@
       "rejection_reasons": [],
       "missing_checks": [
         "unambiguous_base_token",
-        "market_cap_usd",
-        "mint_authority_revoked",
-        "freeze_authority_revoked",
-        "lp_burned_or_locked",
-        "liquidity_cross_check",
-        "top10_share_pct",
-        "dev_share_pct",
-        "permanent_delegate_absent",
-        "token_extensions_safe"
-      ]
-    },
-    {
-      "token_symbol": "DLSS",
-      "token_name": "Dirty Little Sexy Spy",
-      "token_address": "5uZgW3nJZ1KYTXd9S9xwVvENhCi4CEvirkHznYHMpump",
-      "pool_address": "3EWVs63jMpzPtVPYXMKSpbVoYPr2BWQLr7R5dMMPDz3S",
-      "dex_name": "PumpSwap",
-      "status": "incomplete",
-      "security_check_status": "skipped_run_limit",
-      "rejection_reasons": [],
-      "missing_checks": [
         "market_cap_usd",
         "mint_authority_revoked",
         "freeze_authority_revoked",
@@ -1397,27 +1343,6 @@
       "rejection_reasons": [],
       "missing_checks": [
         "unambiguous_base_token",
-        "market_cap_usd",
-        "mint_authority_revoked",
-        "freeze_authority_revoked",
-        "lp_burned_or_locked",
-        "liquidity_cross_check",
-        "top10_share_pct",
-        "dev_share_pct",
-        "permanent_delegate_absent",
-        "token_extensions_safe"
-      ]
-    },
-    {
-      "token_symbol": "BTC",
-      "token_name": "Big Titty Coin",
-      "token_address": "AcdHA1QSA6u6LXwCMDkugA2BMfeyK6dbWXjvoN1N8u4q",
-      "pool_address": "CqA6r1D3AnZ47aA8aTF9epMjnBUeYoLziKDWJ4sYeV6B",
-      "dex_name": "Orca",
-      "status": "incomplete",
-      "security_check_status": "skipped_run_limit",
-      "rejection_reasons": [],
-      "missing_checks": [
         "market_cap_usd",
         "mint_authority_revoked",
         "freeze_authority_revoked",
@@ -1537,27 +1462,6 @@
       ]
     },
     {
-      "token_symbol": "MAGGIE",
-      "token_name": "Gargantuan Cat",
-      "token_address": "2KrKK6J1FMVib8QhuJc5Rxji4jZ7LqNgPtvJndf7doer",
-      "pool_address": "HuY2qDURi4A8jov2F4z3fJ67ugv2aArwJRJ5U1hrZvAq",
-      "dex_name": "Orca",
-      "status": "incomplete",
-      "security_check_status": "skipped_run_limit",
-      "rejection_reasons": [],
-      "missing_checks": [
-        "market_cap_usd",
-        "mint_authority_revoked",
-        "freeze_authority_revoked",
-        "lp_burned_or_locked",
-        "liquidity_cross_check",
-        "top10_share_pct",
-        "dev_share_pct",
-        "permanent_delegate_absent",
-        "token_extensions_safe"
-      ]
-    },
-    {
       "token_symbol": null,
       "token_name": null,
       "token_address": null,
@@ -1628,20 +1532,13 @@
       "token_address": "fhXy5ee42ntDfwm3aq9Q5QkUvpdkSmdFu3ZcGV8pump",
       "pool_address": "6fbHUsfgKdkR676NM5qnSKkm4ZRKGQY6DrZwka19JyBh",
       "dex_name": "PumpSwap",
-      "status": "incomplete",
-      "security_check_status": "error",
-      "rejection_reasons": [],
+      "status": "rejected",
+      "security_check_status": "completed",
+      "rejection_reasons": [
+        "market_cap_below_minimum"
+      ],
       "missing_checks": [
-        "market_cap_usd",
-        "mint_authority_revoked",
-        "freeze_authority_revoked",
-        "lp_burned_or_locked",
-        "liquidity_cross_check",
-        "top10_share_pct",
-        "dev_share_pct",
-        "permanent_delegate_absent",
-        "token_extensions_safe",
-        "authority_cross_check"
+        "liquidity_cross_check"
       ]
     },
     {
@@ -1671,12 +1568,20 @@
       "token_address": "9RZeokzHNXoRyJkWDFdvcQTAzUhKpXm7RrqkUM3Fpump",
       "pool_address": "GoM6pz6Nc2NATJvtR29Xa98GSQmJzt72rJNkEKypRZs8",
       "dex_name": "PumpSwap",
-      "status": "rejected",
-      "security_check_status": "completed",
-      "rejection_reasons": [
-        "top10_holder_share_above_limit"
-      ],
-      "missing_checks": []
+      "status": "incomplete",
+      "security_check_status": "skipped_run_limit",
+      "rejection_reasons": [],
+      "missing_checks": [
+        "market_cap_usd",
+        "mint_authority_revoked",
+        "freeze_authority_revoked",
+        "lp_burned_or_locked",
+        "liquidity_cross_check",
+        "top10_share_pct",
+        "dev_share_pct",
+        "permanent_delegate_absent",
+        "token_extensions_safe"
+      ]
     },
     {
       "token_symbol": "PEPE69",
@@ -1807,27 +1712,6 @@
       ]
     },
     {
-      "token_symbol": "Rocco",
-      "token_name": "Rocco",
-      "token_address": "AGMrCiJRZLGBXtQbnSzRAw4c7uDrwZLgGekDQG1BdqWB",
-      "pool_address": "GYHpsZo8U3MmdiU1Mt1QM95gKF3EyNzY3VCKGL5xRsD9",
-      "dex_name": "Orca",
-      "status": "incomplete",
-      "security_check_status": "skipped_run_limit",
-      "rejection_reasons": [],
-      "missing_checks": [
-        "market_cap_usd",
-        "mint_authority_revoked",
-        "freeze_authority_revoked",
-        "lp_burned_or_locked",
-        "liquidity_cross_check",
-        "top10_share_pct",
-        "dev_share_pct",
-        "permanent_delegate_absent",
-        "token_extensions_safe"
-      ]
-    },
-    {
       "token_symbol": null,
       "token_name": null,
       "token_address": null,
@@ -1876,11 +1760,18 @@
       "token_address": "ejrz94zR4A2ScS8LdvRaQih2xUxaE2ydreqUNKmpump",
       "pool_address": "AF5Cn9Mu1Y8Coh68xKBYpSjxXdk1LbNxgo76dPpRRoLB",
       "dex_name": "PumpSwap",
-      "status": "incomplete",
+      "status": "rejected",
       "security_check_status": "completed",
-      "rejection_reasons": [],
+      "rejection_reasons": [
+        "lp_burn_or_lock_not_verified"
+      ],
       "missing_checks": [
-        "market_cap_usd"
+        "market_cap_usd",
+        "top10_share_pct",
+        "dev_share_pct",
+        "permanent_delegate_absent",
+        "token_extensions_safe",
+        "authority_cross_check"
       ]
     },
     {
@@ -2107,18 +1998,19 @@
       "token_address": "HoqJaoes6yfL8YEsHGfENwVKT7LrAPy97ZDg9hmBu4Ep",
       "pool_address": "DJGcy9JUP8tzWyxLrB9GtV1RiJBdwupFSWY57qibt8oq",
       "dex_name": "Meteora DAAM V2",
-      "status": "rejected",
-      "security_check_status": "completed",
-      "rejection_reasons": [
-        "lp_burn_or_lock_not_verified"
-      ],
+      "status": "incomplete",
+      "security_check_status": "skipped_run_limit",
+      "rejection_reasons": [],
       "missing_checks": [
         "market_cap_usd",
+        "mint_authority_revoked",
+        "freeze_authority_revoked",
+        "lp_burned_or_locked",
+        "liquidity_cross_check",
         "top10_share_pct",
         "dev_share_pct",
         "permanent_delegate_absent",
-        "token_extensions_safe",
-        "authority_cross_check"
+        "token_extensions_safe"
       ]
     },
     {
