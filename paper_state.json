@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-13T08:42:19.907717+00:00",
+  "updated_at": "2026-11-13T08:47:19.213107+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 6959.47462045,
   "open_positions": [
@@ -23,18 +23,18 @@
       "cost_basis_usd": 760.86711888,
       "initial_stop_usd": 0.0028888548060539,
       "highest_price_usd": 0.005144077414456684,
-      "last_price_usd": 0.005144077414456684,
-      "last_price_at": "2026-11-13T08:42:19.907717+00:00",
+      "last_price_usd": 0.005095886715499711,
+      "last_price_at": "2026-11-13T08:47:19.213107+00:00",
       "current_stop_usd": 0.004917199669878979,
       "last_quote": {
-        "at": "2026-11-13T08:42:19.907717+00:00",
+        "at": "2026-11-13T08:47:19.213107+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.005144077414456684,
-        "price_high_usd": 0.005145245568713696,
-        "deviation_pct": 0.0227,
+        "price_low_usd": 0.005095886715499711,
+        "price_high_usd": 0.005146676528782966,
+        "deviation_pct": 0.9967,
         "errors": {}
       },
-      "last_liquidity_usd": 225523.46123061108,
+      "last_liquidity_usd": 225742.62262070808,
       "current_stop_kind": "profit_lock"
     },
     {
@@ -51,19 +51,19 @@
       "token_amount": 276668.25503651344,
       "cost_basis_usd": 785.22113317,
       "initial_stop_usd": 0.002667844437311349,
-      "highest_price_usd": 0.0030391652243919867,
-      "last_price_usd": 0.0030391652243919867,
-      "last_price_at": "2026-11-13T08:42:19.907717+00:00",
+      "highest_price_usd": 0.003045523525990782,
+      "last_price_usd": 0.003045523525990782,
+      "last_price_at": "2026-11-13T08:47:19.213107+00:00",
       "current_stop_usd": 0.0029043337639335577,
       "last_quote": {
-        "at": "2026-11-13T08:42:19.907717+00:00",
+        "at": "2026-11-13T08:47:19.213107+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.0030391652243919867,
-        "price_high_usd": 0.003042987191292268,
-        "deviation_pct": 0.1258,
+        "price_low_usd": 0.003045523525990782,
+        "price_high_usd": 0.00304773219129002,
+        "deviation_pct": 0.0725,
         "errors": {}
       },
-      "last_liquidity_usd": 129918.47341815726,
+      "last_liquidity_usd": 130141.3267160456,
       "current_stop_kind": "profit_lock"
     },
     {
@@ -80,19 +80,19 @@
       "token_amount": 1107228.5575062688,
       "cost_basis_usd": 786.20181396,
       "initial_stop_usd": 0.0006674590355462501,
-      "highest_price_usd": 0.0007204827748713573,
-      "last_price_usd": 0.0007204827748713573,
-      "last_price_at": "2026-11-13T08:42:19.907717+00:00",
+      "highest_price_usd": 0.0007245856435836048,
+      "last_price_usd": 0.0007245856435836048,
+      "last_price_at": "2026-11-13T08:47:19.213107+00:00",
       "current_stop_usd": 0.0006674590355462501,
       "last_quote": {
-        "at": "2026-11-13T08:42:19.907717+00:00",
+        "at": "2026-11-13T08:47:19.213107+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.0007204827748713573,
-        "price_high_usd": 0.0007216676633602208,
-        "deviation_pct": 0.1645,
+        "price_low_usd": 0.0007245856435836048,
+        "price_high_usd": 0.000726609797925366,
+        "deviation_pct": 0.2794,
         "errors": {}
       },
-      "last_liquidity_usd": 82616.2625,
+      "last_liquidity_usd": 83416.65180715757,
       "current_stop_kind": "initial"
     }
   ],
@@ -1367,16 +1367,20 @@
     {
       "at": "2026-11-13T08:42:19.907717+00:00",
       "equity_usd": 9871.6114502
+    },
+    {
+      "at": "2026-11-13T08:47:19.213107+00:00",
+      "equity_usd": 9865.98247703
     }
   ],
   "last_run": {
-    "at": "2026-11-13T08:42:19.907717+00:00",
+    "at": "2026-11-13T08:47:19.213107+00:00",
     "mode": "monitor",
     "scan_status": "not_requested",
     "scan_at": null,
     "entry_decisions": [],
     "open_positions": 3,
-    "equity_usd": 9871.6114502,
-    "run_number": "649"
+    "equity_usd": 9865.98247703,
+    "run_number": "650"
   }
 }
