@@ -27,6 +27,7 @@
     trailing_stop: "Trailing-Stop",
     profit_lock: "Gewinnsicherung",
     security_rejected: "Sicherheitsprüfung abgelehnt",
+    manual_exit: "Notausstieg",
     max_holding_time: "Maximale Haltedauer",
     price_unavailable_writeoff: "Kurs fehlt – abgeschrieben",
   };

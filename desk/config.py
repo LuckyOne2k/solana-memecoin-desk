@@ -193,6 +193,16 @@ def validate_config(config):
     if paper["max_position_pct"] <= 0:
         raise ConfigError("paper_trading.max_position_pct muss größer als 0 sein")
 
+    # Notausstieg: Liste von Mint-Adressen (darf leer sein, muss aber da sein)
+    manual = config["paper_trading"].get("manual_exit_tokens")
+    if not isinstance(manual, list) or not all(
+        isinstance(item, str) and 32 <= len(item) <= 44 and item.isalnum()
+        for item in manual
+    ):
+        raise ConfigError(
+            "paper_trading.manual_exit_tokens muss eine Liste von Mint-Adressen sein"
+        )
+
     # Nur das Veto-Verhalten ist implementiert. Ein anderer Wert würde
     # stillschweigend ignoriert und ist deshalb nicht erlaubt.
     if config["debate"]["unresolved_objection_veto"] is not True:
