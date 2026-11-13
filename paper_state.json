@@ -4,9 +4,9 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-13T08:02:22.644983+00:00",
+  "updated_at": "2026-11-13T08:09:41.143550+00:00",
   "starting_balance_usd": 10000.0,
-  "cash_usd": 7745.67643441,
+  "cash_usd": 6959.47462045,
   "open_positions": [
     {
       "token_symbol": "ConConAI",
@@ -23,18 +23,18 @@
       "cost_basis_usd": 760.86711888,
       "initial_stop_usd": 0.0028888548060539,
       "highest_price_usd": 0.005105535824790576,
-      "last_price_usd": 0.005066127997952706,
-      "last_price_at": "2026-11-13T08:02:22.644983+00:00",
+      "last_price_usd": 0.005067194065610419,
+      "last_price_at": "2026-11-13T08:09:41.143550+00:00",
       "current_stop_usd": 0.004917199669878979,
       "last_quote": {
-        "at": "2026-11-13T08:02:22.644983+00:00",
+        "at": "2026-11-13T08:09:41.143550+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.005066127997952706,
-        "price_high_usd": 0.005116166441366345,
-        "deviation_pct": 0.9877,
+        "price_low_usd": 0.005067194065610419,
+        "price_high_usd": 0.005117223929011536,
+        "deviation_pct": 0.9873,
         "errors": {}
       },
-      "last_liquidity_usd": 224881.0756,
+      "last_liquidity_usd": 224706.4028,
       "current_stop_kind": "profit_lock"
     },
     {
@@ -51,20 +51,39 @@
       "token_amount": 276668.25503651344,
       "cost_basis_usd": 785.22113317,
       "initial_stop_usd": 0.002667844437311349,
-      "highest_price_usd": 0.00297157722909605,
-      "last_price_usd": 0.00297157722909605,
-      "last_price_at": "2026-11-13T08:02:22.644983+00:00",
+      "highest_price_usd": 0.0029903092094371135,
+      "last_price_usd": 0.0029903092094371135,
+      "last_price_at": "2026-11-13T08:09:41.143550+00:00",
       "current_stop_usd": 0.002667844437311349,
       "last_quote": {
-        "at": "2026-11-13T08:02:22.644983+00:00",
+        "at": "2026-11-13T08:09:41.143550+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.00297157722909605,
-        "price_high_usd": 0.002975472594881374,
-        "deviation_pct": 0.1311,
+        "price_low_usd": 0.0029903092094371135,
+        "price_high_usd": 0.0029925422005608496,
+        "deviation_pct": 0.0747,
         "errors": {}
       },
-      "last_liquidity_usd": 128426.16671623205,
+      "last_liquidity_usd": 128862.0992,
       "current_stop_kind": "initial"
+    },
+    {
+      "token_symbol": "XTO",
+      "token_name": "XTO",
+      "token_address": "133srjwsjv2vvMcV5iMV9aVUnQeH2bPTCybbpqiipump",
+      "pool_address": "EnNBiVzRW6uqVKKFkzsj9n2SGEfRxtTduFupMR9jfRqx",
+      "dex_name": "PumpSwap",
+      "opened_at": "2026-11-13T08:09:41.143550+00:00",
+      "entry_price_usd": 0.0007100628037726065,
+      "entry_mark_price_usd": 0.0006897861982650121,
+      "entry_cost_pct": 2.9395,
+      "entry_liquidity_usd": 81070.5668,
+      "token_amount": 1107228.5575062688,
+      "cost_basis_usd": 786.20181396,
+      "initial_stop_usd": 0.0006674590355462501,
+      "highest_price_usd": 0.0007100628037726065,
+      "last_price_usd": 0.0006888351447750146,
+      "last_price_at": "2026-11-13T08:09:41.143550+00:00",
+      "current_stop_usd": 0.0006674590355462501
     }
   ],
   "closed_trades": [
@@ -372,7 +391,7 @@
     "sNEhFo4z3cG5as5ieayBH4mC2iN72c7dH6mStSJpump": "2026-11-13T06:37:14.186696+00:00"
   },
   "stats": {
-    "trades_opened": 17,
+    "trades_opened": 18,
     "trades_closed": 15,
     "wins": 6,
     "losses": 9,
@@ -1328,18 +1347,24 @@
       "equity_usd": 9820.95632685
     },
     {
-      "at": "2026-11-13T08:02:22.644983+00:00",
-      "equity_usd": 9822.07619593
+      "at": "2026-11-13T08:09:41.143550+00:00",
+      "equity_usd": 9804.01880423
     }
   ],
   "last_run": {
-    "at": "2026-11-13T08:02:22.644983+00:00",
-    "mode": "monitor",
-    "scan_status": "not_requested",
-    "scan_at": null,
-    "entry_decisions": [],
-    "open_positions": 2,
-    "equity_usd": 9822.07619593,
-    "run_number": "642"
+    "at": "2026-11-13T08:09:41.143550+00:00",
+    "mode": "after-scan",
+    "scan_status": "ok",
+    "scan_at": "2026-11-13T08:09:40.873258+00:00",
+    "entry_decisions": [
+      {
+        "token_symbol": "XTO",
+        "token_address": "133srjwsjv2vvMcV5iMV9aVUnQeH2bPTCybbpqiipump",
+        "decision": "open"
+      }
+    ],
+    "open_positions": 3,
+    "equity_usd": 9804.01880423,
+    "run_number": "120"
   }
 }
