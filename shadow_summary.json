@@ -1,19 +1,19 @@
 {
   "schema_version": 1,
   "purpose": "learning_only_no_trading",
-  "generated_at": "2026-11-13T04:09:35.991868+00:00",
+  "generated_at": "2026-11-13T05:09:47.174735+00:00",
   "note": "Kursveränderung ohne Kosten seit erster Beobachtung; keine Kaufempfehlung.",
-  "observations_total": 283,
-  "observations_open": 83,
+  "observations_total": 286,
+  "observations_open": 85,
   "by_status": [
     {
       "group": "rejected",
-      "observations": 128,
+      "observations": 129,
       "1h": {
-        "count": 127,
-        "mean_pct": -1.71,
+        "count": 128,
+        "mean_pct": -1.69,
         "median_pct": 0.0,
-        "positive_share_pct": 36.2
+        "positive_share_pct": 35.9
       },
       "6h": {
         "count": 120,
@@ -30,7 +30,7 @@
     },
     {
       "group": "incomplete",
-      "observations": 123,
+      "observations": 125,
       "1h": {
         "count": 123,
         "mean_pct": -0.94,
@@ -44,10 +44,10 @@
         "positive_share_pct": 33.3
       },
       "24h": {
-        "count": 92,
-        "mean_pct": -8.85,
+        "count": 93,
+        "mean_pct": -8.76,
         "median_pct": 0.0,
-        "positive_share_pct": 31.5
+        "positive_share_pct": 31.2
       }
     },
     {
@@ -76,7 +76,7 @@
   "by_reason": [
     {
       "group": "incomplete:market_cap_usd",
-      "observations": 122,
+      "observations": 124,
       "1h": {
         "count": 122,
         "mean_pct": -0.98,
@@ -90,15 +90,15 @@
         "positive_share_pct": 32.8
       },
       "24h": {
-        "count": 92,
-        "mean_pct": -8.85,
+        "count": 93,
+        "mean_pct": -8.76,
         "median_pct": 0.0,
-        "positive_share_pct": 31.5
+        "positive_share_pct": 31.2
       }
     },
     {
       "group": "rejected:lp_burn_or_lock_not_verified",
-      "observations": 55,
+      "observations": 56,
       "1h": {
         "count": 55,
         "mean_pct": -5.56,
@@ -144,10 +144,10 @@
       "group": "rejected:market_cap_below_minimum",
       "observations": 21,
       "1h": {
-        "count": 20,
-        "mean_pct": 0.37,
+        "count": 21,
+        "mean_pct": 0.36,
         "median_pct": 0.0,
-        "positive_share_pct": 10.0
+        "positive_share_pct": 9.5
       },
       "6h": {
         "count": 19,
