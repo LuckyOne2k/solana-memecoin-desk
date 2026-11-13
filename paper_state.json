@@ -4,9 +4,9 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-13T15:02:31.912204+00:00",
+  "updated_at": "2026-11-13T15:09:01.335559+00:00",
   "starting_balance_usd": 10000.0,
-  "cash_usd": 7854.04158538,
+  "cash_usd": 7303.43810519,
   "open_positions": [
     {
       "token_symbol": "XTO",
@@ -22,20 +22,39 @@
       "token_amount": 1107228.5575062688,
       "cost_basis_usd": 786.20181396,
       "initial_stop_usd": 0.0006674590355462501,
-      "highest_price_usd": 0.0011770742736807154,
-      "last_price_usd": 0.0011770742736807154,
-      "last_price_at": "2026-11-13T15:02:31.912204+00:00",
-      "current_stop_usd": 0.0011064498172598724,
+      "highest_price_usd": 0.0011834736828501724,
+      "last_price_usd": 0.0011834736828501724,
+      "last_price_at": "2026-11-13T15:09:01.335559+00:00",
+      "current_stop_usd": 0.0011361004860361704,
       "last_quote": {
-        "at": "2026-11-13T15:02:31.912204+00:00",
+        "at": "2026-11-13T15:09:01.335559+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.0011770742736807154,
-        "price_high_usd": 0.0011793734694157162,
-        "deviation_pct": 0.1953,
+        "price_low_usd": 0.0011834736828501724,
+        "price_high_usd": 0.001185718406245929,
+        "deviation_pct": 0.1897,
         "errors": {}
       },
-      "last_liquidity_usd": 106366.1159,
-      "current_stop_kind": "trailing"
+      "last_liquidity_usd": 106661.9012,
+      "current_stop_kind": "profit_lock"
+    },
+    {
+      "token_symbol": "BORLY",
+      "token_name": "Borly",
+      "token_address": "BBRgG2GifeKNB1hSmzD2BwHMPK8wnDtcuE4NzxgHpump",
+      "pool_address": "GHe3AhhjJXCz9Equ7gbA1Au5dYwP4CmyzdWhkWWTafih",
+      "dex_name": "PumpSwap",
+      "opened_at": "2026-11-13T15:09:01.335559+00:00",
+      "entry_price_usd": 0.0005737562804722806,
+      "entry_mark_price_usd": 0.0005570449324973598,
+      "entry_cost_pct": 3.0,
+      "entry_liquidity_usd": 55060.34801876014,
+      "token_amount": 959646.9771743106,
+      "cost_basis_usd": 550.60348019,
+      "initial_stop_usd": 0.0005393309036439437,
+      "highest_price_usd": 0.0005737562804722806,
+      "last_price_usd": 0.0005562610876127846,
+      "last_price_at": "2026-11-13T15:09:01.335559+00:00",
+      "current_stop_usd": 0.0005393309036439437
     }
   ],
   "closed_trades": [
@@ -382,7 +401,7 @@
     "PyYAqGgWFLvhVWdZst7hR7pehr7weenFHSLM7FGpump": "2026-11-13T09:57:22.029167+00:00"
   },
   "stats": {
-    "trades_opened": 18,
+    "trades_opened": 19,
     "trades_closed": 17,
     "wins": 7,
     "losses": 10,
@@ -1450,18 +1469,29 @@
       "equity_usd": 9150.63278103
     },
     {
-      "at": "2026-11-13T15:02:31.912204+00:00",
-      "equity_usd": 9157.33183551
+      "at": "2026-11-13T15:09:01.335559+00:00",
+      "equity_usd": 9147.62823515
     }
   ],
   "last_run": {
-    "at": "2026-11-13T15:02:31.912204+00:00",
-    "mode": "monitor",
-    "scan_status": "not_requested",
-    "scan_at": null,
-    "entry_decisions": [],
-    "open_positions": 1,
-    "equity_usd": 9157.33183551,
-    "run_number": "719"
+    "at": "2026-11-13T15:09:01.335559+00:00",
+    "mode": "after-scan",
+    "scan_status": "ok",
+    "scan_at": "2026-11-13T15:09:01.064857+00:00",
+    "entry_decisions": [
+      {
+        "token_symbol": "XTO",
+        "token_address": "133srjwsjv2vvMcV5iMV9aVUnQeH2bPTCybbpqiipump",
+        "decision": "already_open"
+      },
+      {
+        "token_symbol": "BORLY",
+        "token_address": "BBRgG2GifeKNB1hSmzD2BwHMPK8wnDtcuE4NzxgHpump",
+        "decision": "open"
+      }
+    ],
+    "open_positions": 2,
+    "equity_usd": 9147.62823515,
+    "run_number": "127"
   }
 }
