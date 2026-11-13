@@ -7,21 +7,21 @@
   "cost_pct_per_trade": 0.5,
   "starting_balance_usd": 9999.99,
   "created_at": "2026-11-11T06:32:56+00:00",
-  "updated_at": "2026-11-12T01:05:33+00:00",
+  "updated_at": "2026-11-13T01:05:22+00:00",
   "products": {
     "BTC-USD": {
-      "cash_usd": 0.0,
-      "units": 0.04495873394090492,
-      "entry_price_usd": 73771.28,
-      "cost_basis_usd": 3333.33,
-      "opened_at": "2026-11-11T06:32:56+00:00",
-      "signal_day": "2026-11-11",
+      "cash_usd": 3163.31,
+      "units": 0.0,
+      "entry_price_usd": null,
+      "cost_basis_usd": null,
+      "opened_at": null,
+      "signal_day": "2026-11-12",
       "signal": {
-        "close_usd": 73927.63,
-        "sma_usd": 73116.36795,
-        "long": true
+        "close_usd": 71369.9,
+        "sma_usd": 73079.8483,
+        "long": false
       },
-      "last_close_usd": 73927.63,
+      "last_close_usd": 71369.9,
       "status": "ok",
       "reason": null
     },
@@ -31,13 +31,13 @@
       "entry_price_usd": null,
       "cost_basis_usd": null,
       "opened_at": null,
-      "signal_day": "2026-11-11",
+      "signal_day": "2026-11-12",
       "signal": {
-        "close_usd": 2053.73,
-        "sma_usd": 2150.86075,
+        "close_usd": 2017.36,
+        "sma_usd": 2149.0952,
         "long": false
       },
-      "last_close_usd": 2053.73,
+      "last_close_usd": 2017.36,
       "status": "ok",
       "reason": null
     },
@@ -47,13 +47,13 @@
       "entry_price_usd": null,
       "cost_basis_usd": null,
       "opened_at": null,
-      "signal_day": "2026-11-11",
+      "signal_day": "2026-11-12",
       "signal": {
-        "close_usd": 83.18,
-        "sma_usd": 88.96325,
+        "close_usd": 81.62,
+        "sma_usd": 88.9366,
         "long": false
       },
-      "last_close_usd": 83.18,
+      "last_close_usd": 81.62,
       "status": "ok",
       "reason": null
     }
@@ -66,17 +66,21 @@
     {
       "day": "2026-11-11",
       "equity_usd": 9990.35
+    },
+    {
+      "day": "2026-11-12",
+      "equity_usd": 9829.97
     }
   ],
   "stats": {
-    "trades_closed": 0,
+    "trades_closed": 1,
     "wins": 0,
-    "realized_pnl_usd": 0.0
+    "realized_pnl_usd": -170.02
   },
   "last_run": {
-    "at": "2026-11-12T01:05:33+00:00",
+    "at": "2026-11-13T01:05:22+00:00",
     "decisions": {
-      "BTC-USD": "hold_invested",
+      "BTC-USD": "sell",
       "ETH-USD": "hold_cash",
       "SOL-USD": "hold_cash"
     }
