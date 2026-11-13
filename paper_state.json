@@ -4,39 +4,10 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-13T09:52:21.900640+00:00",
+  "updated_at": "2026-11-13T09:57:22.029167+00:00",
   "starting_balance_usd": 10000.0,
-  "cash_usd": 6959.47462045,
+  "cash_usd": 6960.11095577,
   "open_positions": [
-    {
-      "token_symbol": "ConConAI",
-      "token_name": "ConConAI",
-      "token_address": "PyYAqGgWFLvhVWdZst7hR7pehr7weenFHSLM7FGpump",
-      "pool_address": "7234rsjxvsjdEpuQbQNaaDGjdQt8suv6kL4KUd2n9Wpm",
-      "dex_name": "PumpSwap",
-      "opened_at": "2026-11-11T06:09:14.265643+00:00",
-      "entry_price_usd": 0.003073249793674362,
-      "entry_mark_price_usd": 0.0030164345042677674,
-      "entry_cost_pct": 1.8835,
-      "entry_liquidity_usd": 172234.48439379619,
-      "token_amount": 247577.37572978443,
-      "cost_basis_usd": 760.86711888,
-      "initial_stop_usd": 0.0028888548060539,
-      "highest_price_usd": 0.005173451770895203,
-      "last_price_usd": 0.005173451770895203,
-      "last_price_at": "2026-11-13T09:52:21.900640+00:00",
-      "current_stop_usd": 0.004917199669878979,
-      "last_quote": {
-        "at": "2026-11-13T09:52:21.900640+00:00",
-        "status": "confirmed",
-        "price_low_usd": 0.005173451770895203,
-        "price_high_usd": 0.005175141961730682,
-        "deviation_pct": 0.0327,
-        "errors": {}
-      },
-      "last_liquidity_usd": 226222.13755665047,
-      "current_stop_kind": "profit_lock"
-    },
     {
       "token_symbol": "TTP",
       "token_name": "TrendTrader Pro",
@@ -53,10 +24,10 @@
       "initial_stop_usd": 0.002667844437311349,
       "highest_price_usd": 0.0031196571200213744,
       "last_price_usd": 0.0031196571200213744,
-      "last_price_at": "2026-11-13T09:52:21.900640+00:00",
+      "last_price_at": "2026-11-13T09:57:22.029167+00:00",
       "current_stop_usd": 0.0029043337639335577,
       "last_quote": {
-        "at": "2026-11-13T09:52:21.900640+00:00",
+        "at": "2026-11-13T09:57:22.029167+00:00",
         "status": "confirmed",
         "price_low_usd": 0.0031196571200213744,
         "price_high_usd": 0.0031200846705506514,
@@ -80,20 +51,20 @@
       "token_amount": 1107228.5575062688,
       "cost_basis_usd": 786.20181396,
       "initial_stop_usd": 0.0006674590355462501,
-      "highest_price_usd": 0.0007961253961655954,
-      "last_price_usd": 0.0007961253961655954,
-      "last_price_at": "2026-11-13T09:52:21.900640+00:00",
-      "current_stop_usd": 0.000752666571998963,
+      "highest_price_usd": 0.00080451911555517,
+      "last_price_usd": 0.00080451911555517,
+      "last_price_at": "2026-11-13T09:57:22.029167+00:00",
+      "current_stop_usd": 0.0007562479686218597,
       "last_quote": {
-        "at": "2026-11-13T09:52:21.900640+00:00",
+        "at": "2026-11-13T09:57:22.029167+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.0007961253961655954,
-        "price_high_usd": 0.0007969697485940123,
-        "deviation_pct": 0.1061,
+        "price_low_usd": 0.00080451911555517,
+        "price_high_usd": 0.0008051880826818238,
+        "deviation_pct": 0.0832,
         "errors": {}
       },
-      "last_liquidity_usd": 87532.39178705565,
-      "current_stop_kind": "profit_lock"
+      "last_liquidity_usd": 87897.7835642383,
+      "current_stop_kind": "trailing"
     }
   ],
   "closed_trades": [
@@ -381,6 +352,25 @@
       "pnl_pct": -1.6871,
       "exit_reason": "manual_exit",
       "highest_price_usd": 0.008965594944570604
+    },
+    {
+      "token_symbol": "ConConAI",
+      "token_address": "PyYAqGgWFLvhVWdZst7hR7pehr7weenFHSLM7FGpump",
+      "pool_address": "7234rsjxvsjdEpuQbQNaaDGjdQt8suv6kL4KUd2n9Wpm",
+      "opened_at": "2026-11-11T06:09:14.265643+00:00",
+      "closed_at": "2026-11-13T09:57:22.029167+00:00",
+      "holding_hours": 51.802,
+      "entry_price_usd": 0.003073249793674362,
+      "exit_mark_price_usd": 2.5975775634480156e-06,
+      "exit_price_usd": 2.5702482545939745e-06,
+      "exit_cost_pct": 1.0521,
+      "token_amount": 247577.37572978443,
+      "cost_basis_usd": 760.86711888,
+      "proceeds_usd": 0.63633532,
+      "pnl_usd": -760.23078356,
+      "pnl_pct": -99.9164,
+      "exit_reason": "profit_lock",
+      "highest_price_usd": 0.005173451770895203
     }
   ],
   "last_exit_at": {
@@ -398,14 +388,15 @@
     "Pb2TYdiAm6Hxyg5z2VYkXHuZJDb1iu1YHnyLiKfpump": "2026-11-13T06:10:05.981910+00:00",
     "ivEE94cN5GxXzLJVYby8AJByRBH9tUy6zUHZZt2pump": "2026-11-13T06:37:14.186696+00:00",
     "14fTp4k7JfZueauHMVGYeFPaFwEgTrHQ5NtGYhECpump": "2026-11-13T06:37:14.186696+00:00",
-    "sNEhFo4z3cG5as5ieayBH4mC2iN72c7dH6mStSJpump": "2026-11-13T06:37:14.186696+00:00"
+    "sNEhFo4z3cG5as5ieayBH4mC2iN72c7dH6mStSJpump": "2026-11-13T06:37:14.186696+00:00",
+    "PyYAqGgWFLvhVWdZst7hR7pehr7weenFHSLM7FGpump": "2026-11-13T09:57:22.029167+00:00"
   },
   "stats": {
     "trades_opened": 18,
-    "trades_closed": 15,
+    "trades_closed": 16,
     "wins": 6,
-    "losses": 9,
-    "realized_pnl_usd": -708.23531354
+    "losses": 10,
+    "realized_pnl_usd": -1468.4660971
   },
   "equity_history": [
     {
@@ -1385,18 +1376,18 @@
       "equity_usd": 9971.14352499
     },
     {
-      "at": "2026-11-13T09:52:21.900640+00:00",
-      "equity_usd": 9984.90709905
+      "at": "2026-11-13T09:57:22.029167+00:00",
+      "equity_usd": 8714.00758728
     }
   ],
   "last_run": {
-    "at": "2026-11-13T09:52:21.900640+00:00",
+    "at": "2026-11-13T09:57:22.029167+00:00",
     "mode": "monitor",
     "scan_status": "not_requested",
     "scan_at": null,
     "entry_decisions": [],
-    "open_positions": 3,
-    "equity_usd": 9984.90709905,
-    "run_number": "662"
+    "open_positions": 2,
+    "equity_usd": 8714.00758728,
+    "run_number": "663"
   }
 }
