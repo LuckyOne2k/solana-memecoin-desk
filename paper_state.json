@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-13T11:02:23.355125+00:00",
+  "updated_at": "2026-11-13T11:09:33.446227+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 6960.11095577,
   "open_positions": [
@@ -22,20 +22,20 @@
       "token_amount": 276668.25503651344,
       "cost_basis_usd": 785.22113317,
       "initial_stop_usd": 0.002667844437311349,
-      "highest_price_usd": 0.00319670366392638,
-      "last_price_usd": 0.00319670366392638,
-      "last_price_at": "2026-11-13T11:02:23.355125+00:00",
-      "current_stop_usd": 0.003008420322925564,
+      "highest_price_usd": 0.0032097632087730137,
+      "last_price_usd": 0.0032097632087730137,
+      "last_price_at": "2026-11-13T11:09:33.446227+00:00",
+      "current_stop_usd": 0.003017177416246633,
       "last_quote": {
-        "at": "2026-11-13T11:02:23.355125+00:00",
+        "at": "2026-11-13T11:09:33.446227+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.00319670366392638,
-        "price_high_usd": 0.00319904287518756,
-        "deviation_pct": 0.0732,
+        "price_low_usd": 0.0032097632087730137,
+        "price_high_usd": 0.003211301590025478,
+        "deviation_pct": 0.0479,
         "errors": {}
       },
-      "last_liquidity_usd": 133627.1841024965,
-      "current_stop_kind": "profit_lock"
+      "last_liquidity_usd": 134124.10698347905,
+      "current_stop_kind": "trailing"
     },
     {
       "token_symbol": "XTO",
@@ -51,20 +51,20 @@
       "token_amount": 1107228.5575062688,
       "cost_basis_usd": 786.20181396,
       "initial_stop_usd": 0.0006674590355462501,
-      "highest_price_usd": 0.0008742494131127822,
-      "last_price_usd": 0.0008742494131127822,
-      "last_price_at": "2026-11-13T11:02:23.355125+00:00",
-      "current_stop_usd": 0.0008217944483260152,
+      "highest_price_usd": 0.0008818284257265353,
+      "last_price_usd": 0.0008818284257265353,
+      "last_price_at": "2026-11-13T11:09:33.446227+00:00",
+      "current_stop_usd": 0.0008378741084516757,
       "last_quote": {
-        "at": "2026-11-13T11:02:23.355125+00:00",
+        "at": "2026-11-13T11:09:33.446227+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.0008742494131127822,
-        "price_high_usd": 0.0008774639222125408,
-        "deviation_pct": 0.3677,
+        "price_low_usd": 0.0008818284257265353,
+        "price_high_usd": 0.0008819252736280225,
+        "deviation_pct": 0.011,
         "errors": {}
       },
-      "last_liquidity_usd": 91772.82380865865,
-      "current_stop_kind": "trailing"
+      "last_liquidity_usd": 91938.55019958704,
+      "current_stop_kind": "profit_lock"
     }
   ],
   "closed_trades": [
@@ -1396,18 +1396,34 @@
       "equity_usd": 8801.75681006
     },
     {
-      "at": "2026-11-13T11:02:23.355125+00:00",
-      "equity_usd": 8812.53129692
+      "at": "2026-11-13T11:09:33.446227+00:00",
+      "equity_usd": 8824.53615761
     }
   ],
   "last_run": {
-    "at": "2026-11-13T11:02:23.355125+00:00",
-    "mode": "monitor",
-    "scan_status": "not_requested",
-    "scan_at": null,
-    "entry_decisions": [],
+    "at": "2026-11-13T11:09:33.446227+00:00",
+    "mode": "after-scan",
+    "scan_status": "ok",
+    "scan_at": "2026-11-13T11:09:33.210610+00:00",
+    "entry_decisions": [
+      {
+        "token_symbol": "inuhao",
+        "token_address": "FyHakvZH3L4UABSQYK7e9ECEzWV37u7GTkmAbHXspump",
+        "decision": "not_ready_in_previous_scan"
+      },
+      {
+        "token_symbol": "XTO",
+        "token_address": "133srjwsjv2vvMcV5iMV9aVUnQeH2bPTCybbpqiipump",
+        "decision": "already_open"
+      },
+      {
+        "token_symbol": "BORLY",
+        "token_address": "BBRgG2GifeKNB1hSmzD2BwHMPK8wnDtcuE4NzxgHpump",
+        "decision": "reentry_cooldown"
+      }
+    ],
     "open_positions": 2,
-    "equity_usd": 8812.53129692,
-    "run_number": "675"
+    "equity_usd": 8824.53615761,
+    "run_number": "123"
   }
 }
