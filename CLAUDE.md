@@ -132,4 +132,10 @@ Vollständiger Verlauf (Scans, PRs, Testzahlen, Begründungen): `docs/entscheidu
 - Offene Frage: Was ist im 20-€-Budget schon enthalten? (Repo ist öffentlich.)
 
 ## Nächster Schritt
-Nutzer: optional Telegram-Secrets anlegen (GitHub Pages ist aktiv) (`docs/start_anleitung.md`). Claude: erste automatische Läufe prüfen (Depot, Helius-Verbrauch bei 30 Prüfungen, Laufzeit, DexPaprika-Seiten), nach 1–2 Wochen Schattendepot auswerten, nach 20–30 Paper-Trades Stop-/Trailing-Werte auswerten, `events.jsonl`-Rotation planen. Später: Löschung des Test-Branches. Prüfregeln (25 % / 3 %, 300k–20 Mio. $) unverändert.
+Fällige Prüfungen (Stand 2026-11-13; wöchentliche geplante Prüfung montags ~06:44 Uhr Berlin, nur lesend, Bericht an den Nutzer):
+- **Liquiditätstiefe (PR #40, Grenze 5 %)**: ab ~2026-11-20 bis 2026-11-27 mit Schattendepot und Scans prüfen: Abstürze ≥ 80 % über/unter der Grenze, wie viele „bereit“ wegfallen; Änderung nur mit Nutzerzustimmung, nie lockern ohne Freigabe.
+- **Stop-/Trailing-Werte Paper-Broker**: bei 20–30 abgeschlossenen Trades auswerten (Stand 2026-11-13: 15).
+- **Positionsgröße/Totalverlust-Risiko**: nach USOE (−99,99 %) mit dem Nutzer besprechen (z. B. kleinere Positionen).
+- **Trend-Bot**: Verlauf beobachten (seit 2026-11-13 komplett in Bargeld, BTC −5,1 %); offene Nutzerentscheidung: zweiter Paper-Trader mit Ausbruchsregel für ETH/SOL.
+- Gold: abgeschlossen (keine Regel schlägt Halten), kein Gold-Trader ohne neue Nutzerentscheidung.
+- Weiter offen: Schattendepot allgemein auswerten, `events.jsonl`-Rotation planen (~19 MB), Test-Branch löschen. Nutzer optional: Telegram-Secrets (`docs/start_anleitung.md`). Prüfregeln (25 % / 3 %, 300k–20 Mio. $) unverändert.
