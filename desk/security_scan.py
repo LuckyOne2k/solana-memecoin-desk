@@ -38,7 +38,7 @@ Ergebnis einer Prüfung.
 
 from desk.check_queue import QUEUE_AFTER_REJECTION, order_check_mints
 from desk.circulating_bounds import COMPLETED, compute_wallet_lower_bound
-from desk.data_quality import CONFIRMED, REJECTED, check_liquidity
+from desk.data_quality import CONFIRMED, REJECTED, UNCLEAR, check_liquidity
 from desk.holders import evaluate_holders
 from desk.market_cap import (
     ONCHAIN_BOUNDS,
@@ -76,6 +76,13 @@ TOKEN_CHECKS = (
     "token_extensions_safe",
     "authority_cross_check",
 )
+
+# Pflichtprüfung Liquiditätstiefe (Nutzerentscheidung 2026-11-13, Anlass
+# USOE −99,99 %): bestätigte (kleinere) Pool-Liquidität im Verhältnis zur
+# Obergrenze des Börsenwerts (Preis × (Gesamtmenge − Burns)). Unter
+# risk_filters.min_liquidity_to_fdv_pct oder ohne beide Werte bleibt die
+# Prüfung offen ("unklar"), nie Ablehnung, nie Bestehen durch Schätzung.
+DEPTH_CHECK = "liquidity_depth"
 
 # Token-2022-Erweiterungen, die ausdrücklich als unbedenklich eingestuft
 # sind: reine Metadaten- und Gruppenangaben ohne Einfluss auf Bestände,
@@ -493,7 +500,7 @@ def _evaluate_item(item, data, config, counters):
     mint = item["token_address"]
 
     # Neue Pflichtprüfungen sind immer offen, bis die Mint-Info sie klärt.
-    for check in TOKEN_CHECKS:
+    for check in TOKEN_CHECKS + (DEPTH_CHECK,):
         if check not in item["missing_checks"]:
             item["missing_checks"].append(check)
 
@@ -616,6 +623,8 @@ def _evaluate_item(item, data, config, counters):
             "market_cap_upper_bound_usd"
         ]
         item["market_cap_basis"] = market_cap["basis"]
+        # Vor der On-Chain-Spanne, die nur bei sonst vollständigen Prüfungen läuft
+        _evaluate_liquidity_depth(item, config)
 
         if market_cap["status"] == CONFIRMED:
             _resolve(item, "market_cap_usd")
@@ -627,6 +636,28 @@ def _evaluate_item(item, data, config, counters):
                 item, data, config, counters, security, snapshot,
                 holders, market_cap,
             )
+
+
+def _evaluate_liquidity_depth(item, config):
+    minimum = config["risk_filters"]["min_liquidity_to_fdv_pct"]
+    liquidity = (item.get("liquidity_check") or {})
+    liquidity_usd = liquidity.get("liquidity_used_usd") if liquidity.get("status") == CONFIRMED else None
+    upper = item.get("market_cap_upper_bound_usd")
+    result = {"status": UNCLEAR, "reason": None, "liquidity_usd": liquidity_usd,
+              "fdv_upper_bound_usd": upper, "ratio_pct": None, "min_pct": minimum}
+    if not isinstance(liquidity_usd, (int, float)) or liquidity_usd <= 0:
+        result["reason"] = "liquidity_not_confirmed"
+    elif not isinstance(upper, (int, float)) or upper <= 0:
+        result["reason"] = "fdv_upper_bound_missing"
+    else:
+        ratio = liquidity_usd / upper * 100
+        result["ratio_pct"] = round(ratio, 4)
+        if ratio >= minimum:
+            result.update(status=CONFIRMED, reason="liquidity_depth_sufficient")
+            _resolve(item, DEPTH_CHECK)
+        else:
+            result["reason"] = "liquidity_below_min_share_of_fdv"
+    item["liquidity_depth"] = result
 
 
 def _onchain_precondition_error(item, security, holders, market_cap):
@@ -641,7 +672,9 @@ def _onchain_precondition_error(item, security, holders, market_cap):
     if item["rejection_reasons"]:
         return "already_rejected"
 
-    if item["missing_checks"] != ["market_cap_usd"]:
+    # Die Liquiditätstiefe darf offen sein: Die Spanne kann dann zwar nicht
+    # bestätigen (Prüfung bleibt offen), aber weiterhin belegt ablehnen.
+    if [c for c in item["missing_checks"] if c != DEPTH_CHECK] != ["market_cap_usd"]:
         return "other_checks_open"
 
     if security.get("mint_authority_revoked") is not True:

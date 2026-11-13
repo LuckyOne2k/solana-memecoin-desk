@@ -74,6 +74,7 @@ const CHECK_LABEL = {
   permanent_delegate_absent: "Kein Permanent Delegate",
   token_extensions_safe: "Token-Erweiterungen unbedenklich",
   authority_cross_check: "Mint-/Freeze-Authority-Gegenprobe (RPC/RugCheck)",
+  liquidity_depth: "Liquidität mind. 5 % vom Börsenwert",
   liquidity_cross_check: "Liquiditätsvergleich zwischen Quellen",
   mint_authority_revoked: "Mint-Authority entzogen",
   freeze_authority_revoked: "Freeze-Authority entzogen",

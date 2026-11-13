@@ -2,6 +2,7 @@
 Marktkapitalisierung. Externe Abfragen sind durch Testdaten ersetzt."""
 
 import copy
+import pytest
 from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
@@ -422,3 +423,66 @@ def test_full_list_rejection_rejects_pool():
     assert item["holder_source"] == "full_holder_list"
     assert "creator_share_above_limit" in item["rejection_reasons"]
     assert item["status"] == "rejected"
+
+
+# --------------------------------------------------
+# Liquiditätstiefe (Liquidität im Verhältnis zum Börsenwert)
+# --------------------------------------------------
+
+def _depth_config(min_pct):
+    config = copy.deepcopy(CONFIG)
+    config["risk_filters"]["min_liquidity_to_fdv_pct"] = min_pct
+    return config
+
+
+def test_liquidity_depth_at_limit_is_confirmed():
+    # 50.000 $ Liquidität / 500.000 $ Obergrenze = genau 10 %
+    item = run(market_data=good_market_data(market_cap=450000.0), full_list=True,
+               config=_depth_config(10))
+
+    assert item["liquidity_depth"]["status"] == "confirmed"
+    assert item["liquidity_depth"]["ratio_pct"] == pytest.approx(10, rel=1e-3)
+    assert item["status"] == "ready_for_full_risk_screen"
+
+
+def test_liquidity_depth_below_limit_is_unclear_not_rejected():
+    item = run(market_data=good_market_data(market_cap=450000.0), full_list=True,
+               config=_depth_config(10.1))
+
+    assert item["liquidity_depth"]["status"] == "unclear"
+    assert item["liquidity_depth"]["reason"] == "liquidity_below_min_share_of_fdv"
+    assert item["missing_checks"] == ["liquidity_depth"]
+    assert item["rejection_reasons"] == []
+    assert item["status"] == "incomplete"
+
+
+@pytest.mark.parametrize("liquidity, upper, reason", [
+    (None, 500000.0, "liquidity_not_confirmed"),
+    (50000.0, None, "fdv_upper_bound_missing"),
+    (50000.0, 0, "fdv_upper_bound_missing"),
+])
+def test_liquidity_depth_without_values_stays_open(liquidity, upper, reason):
+    from desk.security_scan import _evaluate_liquidity_depth
+
+    item = {
+        "missing_checks": ["liquidity_depth"],
+        "liquidity_check": ({"status": "confirmed", "liquidity_used_usd": liquidity}
+                            if liquidity else {"status": "unclear", "liquidity_used_usd": None}),
+        "market_cap_upper_bound_usd": upper,
+    }
+    _evaluate_liquidity_depth(item, CONFIG)
+
+    assert item["liquidity_depth"]["status"] == "unclear"
+    assert item["liquidity_depth"]["reason"] == reason
+    assert item["missing_checks"] == ["liquidity_depth"]
+
+
+def test_unconfirmed_liquidity_is_never_used_for_depth():
+    from desk.security_scan import _evaluate_liquidity_depth
+
+    item = {"missing_checks": ["liquidity_depth"],
+            "liquidity_check": {"status": "unclear", "liquidity_used_usd": 400000.0},
+            "market_cap_upper_bound_usd": 500000.0}
+    _evaluate_liquidity_depth(item, CONFIG)
+
+    assert item["liquidity_depth"]["reason"] == "liquidity_not_confirmed"

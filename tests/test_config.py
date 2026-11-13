@@ -29,6 +29,7 @@ EXPECTED_THRESHOLDS = {
         "reject_top10_share_above_pct": 25,
         "reject_dev_share_above_pct": 3,
         "lp_locked_min_pct": 99.99,
+        "min_liquidity_to_fdv_pct": 5,
     },
     "data_quality": {
         "max_liquidity_deviation_pct": 15,
