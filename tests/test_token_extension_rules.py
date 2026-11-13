@@ -218,9 +218,10 @@ def test_safe_extensions_with_states_stay_ready():
     result, _ = scan(mint_info=token2022_info(states), full_list=full_list())
     item = first(result)
 
-    assert item["missing_checks"] == []
+    # Nur die Liquiditätstiefe bleibt offen (Börsenwert-Stufe hier übersprungen)
+    assert item["missing_checks"] == ["liquidity_depth"]
     assert "token_extension_findings" not in item
-    assert item["status"] == "ready_for_full_risk_screen"
+    assert item["status"] == "incomplete"
 
 
 @pytest.mark.parametrize(
@@ -304,7 +305,8 @@ def test_agreeing_sources_resolve_cross_check():
     assert "authority_cross_check" not in item["missing_checks"]
     assert item["mint_authority_revoked_onchain"] is True
     assert item["freeze_authority_revoked_onchain"] is True
-    assert item["status"] == "ready_for_full_risk_screen"
+    # Nur die Liquiditätstiefe bleibt offen (Börsenwert-Stufe hier übersprungen)
+    assert item["missing_checks"] == ["liquidity_depth"]
 
 
 @pytest.mark.parametrize(
@@ -352,7 +354,7 @@ def test_cross_check_is_mandatory_even_if_not_marked_open():
     result, _ = scan(pools=[pool], mint_info=info, full_list=make_full_list(mint=MINT))
     item = first(result)
 
-    assert item["missing_checks"] == ["authority_cross_check"]
+    assert item["missing_checks"] == ["authority_cross_check", "liquidity_depth"]
     assert item["status"] == "incomplete"
 
 
