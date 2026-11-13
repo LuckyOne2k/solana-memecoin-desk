@@ -24,6 +24,12 @@ risk_filters:
   # Ab diesem RugCheck-Wert gilt die Liquidität als gesperrt/verbrannt
   # (bisher fest im Code)
   lp_locked_min_pct: 99.99
+  # Liquiditätstiefe (Nutzerentscheidung 2026-11-13, Anlass USOE −99,99 %):
+  # bestätigte Pool-Liquidität mindestens dieser Anteil vom Börsenwert
+  # (Preis × (Gesamtmenge − Burns)). Darunter oder ohne Werte → unklar.
+  # Datenprüfung (169 Schattendepot-Token): alle 15 Abstürze ≥ 80 % lagen
+  # unter 3,4 %; darüber kein Absturz.
+  min_liquidity_to_fdv_pct: 5
 
 # Gegenprüfung zwischen Datenquellen. Größere Abweichungen machen die
 # jeweilige Prüfung "unklar" (keine Freigabe, keine Ablehnung).

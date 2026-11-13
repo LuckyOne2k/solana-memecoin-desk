@@ -164,8 +164,10 @@ def test_classic_token_full_list_confirms_and_is_ready():
     assert item["holder_evaluation"]["dev_status"] == "confirmed"
     assert item["token_program"] == TOKEN_PROGRAM_ID
     assert item["token_check_reasons"] == []
-    assert item["missing_checks"] == []
-    assert item["status"] == "ready_for_full_risk_screen"
+    # Nur die Liquiditätstiefe bleibt offen: Sie braucht die Börsenwert-Stufe,
+    # die diese Tests überspringen (Ende-zu-Ende „bereit“: test_pipeline).
+    assert item["missing_checks"] == ["liquidity_depth"]
+    assert item["status"] == "incomplete"
     mocks[2].assert_not_called()  # keine Stichprobe
 
     assert result["full_holder_list_succeeded"] == 1
@@ -186,8 +188,10 @@ def test_token2022_with_metadata_extensions_only_is_ready():
     item = first(result)
 
     assert item["token2022_extensions"] == ["metadataPointer", "tokenMetadata"]
-    assert item["missing_checks"] == []
-    assert item["status"] == "ready_for_full_risk_screen"
+    # Nur die Liquiditätstiefe bleibt offen: Sie braucht die Börsenwert-Stufe,
+    # die diese Tests überspringen (Ende-zu-Ende „bereit“: test_pipeline).
+    assert item["missing_checks"] == ["liquidity_depth"]
+    assert item["status"] == "incomplete"
 
 
 def test_full_list_rejection_is_applied():
@@ -352,7 +356,7 @@ def test_token_checks_are_added_even_if_not_marked_open():
         mint=MINT, token_program=TOKEN_2022_PROGRAM_ID))
     item = first(result)
 
-    assert item["missing_checks"] == ["token_extensions_safe"]
+    assert item["missing_checks"] == ["token_extensions_safe", "liquidity_depth"]
     assert item["status"] == "incomplete"
 
 
@@ -678,8 +682,10 @@ def test_end_to_end_full_list_confirms(program, extensions, monkeypatch):
     assert item["holder_evaluation"]["top10_status"] == "confirmed"
     assert item["holder_evaluation"]["dev_status"] == "confirmed"
     assert item["holder_evaluation"]["dev_share_upper_bound_pct"] == pytest.approx(1)
-    assert item["missing_checks"] == []
-    assert item["status"] == "ready_for_full_risk_screen"
+    # Nur die Liquiditätstiefe bleibt offen: Sie braucht die Börsenwert-Stufe,
+    # die diese Tests überspringen (Ende-zu-Ende „bereit“: test_pipeline).
+    assert item["missing_checks"] == ["liquidity_depth"]
+    assert item["status"] == "incomplete"
     mocks[2].assert_not_called()
 
 
