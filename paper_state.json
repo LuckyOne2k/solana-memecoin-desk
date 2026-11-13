@@ -4,9 +4,9 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-13T20:02:20.771325+00:00",
+  "updated_at": "2026-11-13T20:09:23.264449+00:00",
   "starting_balance_usd": 10000.0,
-  "cash_usd": 7303.43810519,
+  "cash_usd": 6532.30195594,
   "open_positions": [
     {
       "token_symbol": "XTO",
@@ -22,19 +22,19 @@
       "token_amount": 1107228.5575062688,
       "cost_basis_usd": 786.20181396,
       "initial_stop_usd": 0.0006674590355462501,
-      "highest_price_usd": 0.0016023411764047838,
-      "last_price_usd": 0.001600767241683908,
-      "last_price_at": "2026-11-13T20:02:20.771325+00:00",
-      "current_stop_usd": 0.0015195344000733778,
+      "highest_price_usd": 0.0016301765011750475,
+      "last_price_usd": 0.0016301765011750475,
+      "last_price_at": "2026-11-13T20:09:23.264449+00:00",
+      "current_stop_usd": 0.0015621381682997344,
       "last_quote": {
-        "at": "2026-11-13T20:02:20.771325+00:00",
+        "at": "2026-11-13T20:09:23.264449+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.001600767241683908,
-        "price_high_usd": 0.0016201546325697366,
-        "deviation_pct": 1.2111,
+        "price_low_usd": 0.0016301765011750475,
+        "price_high_usd": 0.0016306857962923738,
+        "deviation_pct": 0.0312,
         "errors": {}
       },
-      "last_liquidity_usd": 125990.08642156815,
+      "last_liquidity_usd": 126326.32965522766,
       "current_stop_kind": "profit_lock"
     },
     {
@@ -53,10 +53,10 @@
       "initial_stop_usd": 0.0005393309036439437,
       "highest_price_usd": 0.0005737562804722806,
       "last_price_usd": 0.0005531052535005915,
-      "last_price_at": "2026-11-13T20:02:20.771325+00:00",
+      "last_price_at": "2026-11-13T20:09:23.264449+00:00",
       "current_stop_usd": 0.0005393309036439437,
       "last_quote": {
-        "at": "2026-11-13T20:02:20.771325+00:00",
+        "at": "2026-11-13T20:09:23.264449+00:00",
         "status": "confirmed",
         "price_low_usd": 0.0005531052535005915,
         "price_high_usd": 0.0005534583724086334,
@@ -65,6 +65,25 @@
       },
       "last_liquidity_usd": 54801.877053968296,
       "current_stop_kind": "initial"
+    },
+    {
+      "token_symbol": "MEVS",
+      "token_name": "Me vs Life",
+      "token_address": "mBjWbrkGosa8RZopsghLZTF6KELiMUmEZh4mijqpump",
+      "pool_address": "2NK8aqscRntGJ76ixrsTT3DXGtbz9rRFbCtphb499Psf",
+      "dex_name": "PumpSwap",
+      "opened_at": "2026-11-13T20:09:23.264449+00:00",
+      "entry_price_usd": 0.001337780828127027,
+      "entry_mark_price_usd": 0.00130202161622944,
+      "entry_cost_pct": 2.7464,
+      "entry_liquidity_usd": 88309.61112530317,
+      "token_amount": 576429.3619976874,
+      "cost_basis_usd": 771.13614925,
+      "initial_stop_usd": 0.0012575139784394053,
+      "highest_price_usd": 0.001337780828127027,
+      "last_price_usd": 0.0012825026840353028,
+      "last_price_at": "2026-11-13T20:09:23.264449+00:00",
+      "current_stop_usd": 0.0012575139784394053
     }
   ],
   "closed_trades": [
@@ -411,7 +430,7 @@
     "PyYAqGgWFLvhVWdZst7hR7pehr7weenFHSLM7FGpump": "2026-11-13T09:57:22.029167+00:00"
   },
   "stats": {
-    "trades_opened": 19,
+    "trades_opened": 20,
     "trades_closed": 17,
     "wins": 7,
     "losses": 10,
@@ -1559,18 +1578,34 @@
       "equity_usd": 9596.79324348
     },
     {
-      "at": "2026-11-13T20:02:20.771325+00:00",
-      "equity_usd": 9606.63909368
+      "at": "2026-11-13T20:09:23.264449+00:00",
+      "equity_usd": 9607.33792032
     }
   ],
   "last_run": {
-    "at": "2026-11-13T20:02:20.771325+00:00",
-    "mode": "monitor",
-    "scan_status": "not_requested",
-    "scan_at": null,
-    "entry_decisions": [],
-    "open_positions": 2,
-    "equity_usd": 9606.63909368,
-    "run_number": "774"
+    "at": "2026-11-13T20:09:23.264449+00:00",
+    "mode": "after-scan",
+    "scan_status": "ok",
+    "scan_at": "2026-11-13T20:09:22.991372+00:00",
+    "entry_decisions": [
+      {
+        "token_symbol": "inuhao",
+        "token_address": "FyHakvZH3L4UABSQYK7e9ECEzWV37u7GTkmAbHXspump",
+        "decision": "not_ready_in_previous_scan"
+      },
+      {
+        "token_symbol": "MEVS",
+        "token_address": "mBjWbrkGosa8RZopsghLZTF6KELiMUmEZh4mijqpump",
+        "decision": "open"
+      },
+      {
+        "token_symbol": "XTO",
+        "token_address": "133srjwsjv2vvMcV5iMV9aVUnQeH2bPTCybbpqiipump",
+        "decision": "already_open"
+      }
+    ],
+    "open_positions": 3,
+    "equity_usd": 9607.33792032,
+    "run_number": "132"
   }
 }
