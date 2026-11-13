@@ -105,6 +105,16 @@ paper_trading:
   max_holding_hours: 72
   # Fehlt der Kurs länger, wird die Position auf 0 abgeschrieben
   max_price_missing_hours: 24
+  # Notausstieg (Nutzerentscheidung 2026-11-13): Positionen in diesen Token
+  # (Mint-Adressen) werden beim nächsten Lauf mit frischem Kurs verkauft
+  # (Grund manual_exit), neue Einstiege sind gesperrt. Anlass: USOE (Qt6C…)
+  # fiel am 2026-11-13 binnen 5 Min. um 99,99 %; diese Token gehören zur
+  # selben Familie (Pool hält < 2 % der Menge, Liquidität < 3 % des
+  # Börsenwerts, Menge auf sehr viele kleine Wallets verteilt).
+  manual_exit_tokens:
+    - ivEE94cN5GxXzLJVYby8AJByRBH9tUy6zUHZZt2pump  # USOE
+    - 14fTp4k7JfZueauHMVGYeFPaFwEgTrHQ5NtGYhECpump  # UODF
+    - sNEhFo4z3cG5as5ieayBH4mC2iN72c7dH6mStSJpump  # FOTF
 
 debate:
   bear_objections_required: 3

@@ -54,6 +54,11 @@ EXPECTED_THRESHOLDS = {
         "reentry_cooldown_hours": 24,
         "max_holding_hours": 72,
         "max_price_missing_hours": 24,
+        "manual_exit_tokens": [
+            "ivEE94cN5GxXzLJVYby8AJByRBH9tUy6zUHZZt2pump",
+            "14fTp4k7JfZueauHMVGYeFPaFwEgTrHQ5NtGYhECpump",
+            "sNEhFo4z3cG5as5ieayBH4mC2iN72c7dH6mStSJpump",
+        ],
     },
     "debate": {
         "bear_objections_required": 3,
@@ -316,3 +321,14 @@ def test_onchain_call_limit_above_ten_in_file_stops_program(tmp_path):
 
     with pytest.raises(ConfigError, match="max_account_calls_per_token"):
         load_config(write_config(tmp_path, config))
+
+
+@pytest.mark.parametrize("bad", [None, "abc", ["kurz"], [123], ["a" * 45], ["Adresse mit Leerzeichen 1234567890123"]])
+def test_manual_exit_tokens_must_be_list_of_addresses(bad):
+    config = load_config()
+    if bad is None:
+        config["paper_trading"].pop("manual_exit_tokens")
+    else:
+        config["paper_trading"]["manual_exit_tokens"] = bad
+    with pytest.raises(ConfigError):
+        validate_config(config)

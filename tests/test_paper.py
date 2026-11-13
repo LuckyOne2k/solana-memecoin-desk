@@ -491,6 +491,37 @@ def test_security_rejection_closes_position(tmp_path, desk_config):
     assert state_file(tmp_path)["closed_trades"][0]["exit_reason"] == "security_rejected"
 
 
+def test_manual_exit_closes_with_fresh_lower_price(tmp_path, desk_config):
+    open_ttp(tmp_path, desk_config)
+    cfg = copy.deepcopy(desk_config)
+    cfg["paper_trading"]["manual_exit_tokens"] = [MINT]
+    monitor(tmp_path, cfg, {POOL: quote(0.0068, 0.0070)}, NOW + timedelta(minutes=15))
+
+    closed = state_file(tmp_path)["closed_trades"][0]
+    assert closed["exit_reason"] == "manual_exit"
+    assert closed["exit_mark_price_usd"] == 0.0068  # niedrigerer Kurs
+    assert state_file(tmp_path)["open_positions"] == []
+
+
+def test_manual_exit_waits_for_a_price(tmp_path, desk_config):
+    open_ttp(tmp_path, desk_config)
+    cfg = copy.deepcopy(desk_config)
+    cfg["paper_trading"]["manual_exit_tokens"] = [MINT]
+    monitor(tmp_path, cfg, {POOL: quote(None, None)}, NOW + timedelta(minutes=15))
+
+    assert len(state_file(tmp_path)["open_positions"]) == 1  # ohne Kurs kein Verkauf
+
+
+def test_manual_exit_token_blocks_entry(tmp_path, desk_config):
+    cfg = copy.deepcopy(desk_config)
+    cfg["paper_trading"]["manual_exit_tokens"] = [MINT]
+    write_scan(tmp_path, [ready_pool()])
+    after_scan(tmp_path, cfg, {POOL: quote()})
+
+    assert state_file(tmp_path)["open_positions"] == []
+    assert any(t.get("reason") == "manual_exit_blocked" for t in trades(tmp_path))
+
+
 def test_incomplete_in_later_scan_does_not_close(tmp_path, desk_config):
     open_ttp(tmp_path, desk_config)
     later = NOW + timedelta(hours=1)

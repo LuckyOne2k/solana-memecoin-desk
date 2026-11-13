@@ -575,7 +575,7 @@ def _close(state, position, now, reason, mark_price, liquidity_usd, paper):
     return {"event": "paper_position_closed", "at": _iso(now), **trade}
 
 
-def process_exits(state, quotes, now, paper, max_dev, rejected_tokens):
+def process_exits(state, quotes, now, paper, max_dev, rejected_tokens, manual_exit_tokens=()):
     events = []
     for position in list(state["open_positions"]):
         quote = combine_quote(quotes.get(position["pool_address"]), max_dev)
@@ -614,6 +614,8 @@ def process_exits(state, quotes, now, paper, max_dev, rejected_tokens):
         reason = None
         if mark <= stop:
             reason = STOP_EXIT_REASON[stop_kind]
+        elif position["token_address"] in manual_exit_tokens:
+            reason = "manual_exit"
         elif position["token_address"] in rejected_tokens:
             reason = "security_rejected"
         elif _hours_between(_parse_time(position["opened_at"]), now) >= paper["max_holding_hours"]:
@@ -668,6 +670,8 @@ def entry_decision(pool, quote, state, now, paper, max_dev, scan=None):
         return "not_ready", {}
     if not token or not pool_address:
         return "address_missing", {}
+    if token in paper["manual_exit_tokens"]:
+        return "manual_exit_blocked", {}
     if any(p["token_address"] == token for p in state["open_positions"]):
         return "already_open", {}
     if len(state["open_positions"]) >= paper["max_open_positions"]:
@@ -791,7 +795,8 @@ def run_paper(mode, data_dir, config, now=None, quote_fetcher=fetch_quotes,
     ]
     quotes = quote_fetcher(pairs) if pairs else {}
 
-    events = process_exits(state, quotes, now, paper, max_dev, rejected)
+    events = process_exits(state, quotes, now, paper, max_dev, rejected,
+                           set(paper["manual_exit_tokens"]))
 
     decisions = []
     for pool in candidates:
