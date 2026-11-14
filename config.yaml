@@ -70,7 +70,11 @@ market_cap_onchain_bounds:
   max_slot_span: 150
 
 paper_trading:
-  max_position_pct: 8
+  # Positionsgröße höchstens dieser Anteil des Depotwerts. 2026-11-14 von 8
+  # auf 3 gesenkt (Nutzerentscheidung): drei Totalverluste in 3 Tagen
+  # (USOE, ConConAI, XTO, je −99,6 bis −99,99 % binnen 5 Min.), gegen die
+  # kein Stop schützt. Ein Totalverlust kostet so ~300 $ statt ~800 $.
+  max_position_pct: 3
   initial_stop_loss_pct: 6
   trailing_activation_profit_pct: 12
   trailing_distance_pct: 6
@@ -111,6 +115,11 @@ paper_trading:
   max_holding_hours: 72
   # Fehlt der Kurs länger, wird die Position auf 0 abgeschrieben
   max_price_missing_hours: 24
+  # Teilverkauf (Nutzerentscheidung 2026-11-14): liegt der Kurs mindestens
+  # partial_take_profit_pct über dem Einstieg, wird einmalig dieser Anteil
+  # der Menge verkauft; der Rest läuft mit den normalen Stops weiter.
+  partial_take_profit_pct: 30
+  partial_take_profit_share_pct: 50
   # Notausstieg (Nutzerentscheidung 2026-11-13): Positionen in diesen Token
   # (Mint-Adressen) werden beim nächsten Lauf mit frischem Kurs verkauft
   # (Grund manual_exit), neue Einstiege sind gesperrt. Anlass: USOE (Qt6C…)

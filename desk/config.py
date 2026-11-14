@@ -84,6 +84,8 @@ SCHEMA = {
         "reentry_cooldown_hours": NUMBER,
         "max_holding_hours": NUMBER,
         "max_price_missing_hours": NUMBER,
+        "partial_take_profit_pct": NUMBER,
+        "partial_take_profit_share_pct": PERCENT,
     },
     "debate": {
         "bear_objections_required": COUNT,
@@ -193,6 +195,15 @@ def validate_config(config):
 
     if paper["max_position_pct"] <= 0:
         raise ConfigError("paper_trading.max_position_pct muss größer als 0 sein")
+
+    if paper["partial_take_profit_pct"] <= 0:
+        raise ConfigError("paper_trading.partial_take_profit_pct muss größer als 0 sein")
+
+    share = paper["partial_take_profit_share_pct"]
+    if share <= 0 or share >= 100:
+        raise ConfigError(
+            "paper_trading.partial_take_profit_share_pct muss zwischen 0 und 100 liegen"
+        )
 
     # Notausstieg: Liste von Mint-Adressen (darf leer sein, muss aber da sein)
     manual = config["paper_trading"].get("manual_exit_tokens")

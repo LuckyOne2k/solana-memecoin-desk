@@ -40,6 +40,11 @@ Ausstiege (in dieser Reihenfolge):
 - Kurs <= Stop (anfänglicher Stop oder, ab Aktivierung, Trailing-Stop).
 - Token im neuesten Scan abgelehnt (Sicherheits-Ausstieg).
 - Haltedauer >= max_holding_hours.
+Teilverkauf (2026-11-14, nach den Totalverlusten USOE/ConConAI/XTO):
+erreicht der Kurs partial_take_profit_pct über dem Einstieg und greift
+kein vollständiger Ausstieg, wird einmalig partial_take_profit_share_pct
+der Menge verkauft (Grund partial_take_profit). Der Rest läuft mit
+unveränderten Stops weiter.
 Bewertet wird immer mit dem NIEDRIGEREN verfügbaren Kurs. Der
 Verkaufskurs ist der beobachtete Kurs abzüglich Kosten, nie der
 Stop-Kurs (Kurslücken zwischen zwei Abfragen gehen zu Lasten des Depots).
@@ -525,12 +530,17 @@ STOP_EXIT_REASON = {
 }
 
 
-def _close(state, position, now, reason, mark_price, liquidity_usd, paper):
+def _close(state, position, now, reason, mark_price, liquidity_usd, paper,
+           fraction=1.0):
+    """Verkauft die Position ganz (fraction 1) oder einen Teil davon."""
+    partial = fraction < 1
+    amount = position["token_amount"] * fraction
+    cost_basis = position["cost_basis_usd"] * fraction
     if mark_price is None:
         exit_price = 0.0
         cost_pct = None
     else:
-        size = position["token_amount"] * mark_price
+        size = amount * mark_price
         cost_pct = trade_cost_pct(
             size,
             liquidity_usd or position.get("entry_liquidity_usd"),
@@ -540,16 +550,24 @@ def _close(state, position, now, reason, mark_price, liquidity_usd, paper):
             cost_pct = 100.0
         exit_price = max(mark_price * (1 - min(cost_pct, 100) / 100), 0.0)
 
-    proceeds = position["token_amount"] * exit_price
-    pnl = proceeds - position["cost_basis_usd"]
+    proceeds = amount * exit_price
+    pnl = proceeds - cost_basis
     state["cash_usd"] = round(state["cash_usd"] + proceeds, 8)
-    state["open_positions"].remove(position)
-    state["last_exit_at"][position["token_address"]] = _iso(now)
 
     stats = state["stats"]
-    stats["trades_closed"] += 1
     stats["realized_pnl_usd"] = round(stats["realized_pnl_usd"] + pnl, 8)
-    stats["wins" if pnl > 0 else "losses"] += 1
+    if partial:
+        # Teilverkauf: Position bleibt offen, zählt nicht als abgeschlossener
+        # Trade (Gewinn/Verlust wird beim Schluss des Rests gezählt)
+        position["token_amount"] -= amount
+        position["cost_basis_usd"] = round(position["cost_basis_usd"] - cost_basis, 8)
+        position["partial_taken"] = True
+        stats["partial_sales"] = stats.get("partial_sales", 0) + 1
+    else:
+        state["open_positions"].remove(position)
+        state["last_exit_at"][position["token_address"]] = _iso(now)
+        stats["trades_closed"] += 1
+        stats["wins" if pnl > 0 else "losses"] += 1
 
     trade = {
         "token_symbol": position.get("token_symbol"),
@@ -562,17 +580,19 @@ def _close(state, position, now, reason, mark_price, liquidity_usd, paper):
         "exit_mark_price_usd": mark_price,
         "exit_price_usd": exit_price,
         "exit_cost_pct": None if cost_pct is None else round(cost_pct, 4),
-        "token_amount": position["token_amount"],
-        "cost_basis_usd": position["cost_basis_usd"],
+        "token_amount": amount,
+        "cost_basis_usd": round(cost_basis, 8),
         "proceeds_usd": round(proceeds, 8),
         "pnl_usd": round(pnl, 8),
-        "pnl_pct": round(pnl / position["cost_basis_usd"] * 100, 4),
+        "pnl_pct": round(pnl / cost_basis * 100, 4),
         "exit_reason": reason,
         "highest_price_usd": position["highest_price_usd"],
+        "partial": partial,
     }
     state["closed_trades"].append(trade)
     state["closed_trades"] = state["closed_trades"][-MAX_CLOSED_IN_STATE:]
-    return {"event": "paper_position_closed", "at": _iso(now), **trade}
+    event = "paper_position_partial_sale" if partial else "paper_position_closed"
+    return {"event": event, "at": _iso(now), **trade}
 
 
 def process_exits(state, quotes, now, paper, max_dev, rejected_tokens, manual_exit_tokens=()):
@@ -623,6 +643,12 @@ def process_exits(state, quotes, now, paper, max_dev, rejected_tokens, manual_ex
 
         if reason:
             events.append(_close(state, position, now, reason, mark, liquidity, paper))
+        elif (not position.get("partial_taken")
+              and mark >= position["entry_price_usd"]
+              * (1 + paper["partial_take_profit_pct"] / 100)):
+            events.append(_close(state, position, now, "partial_take_profit", mark,
+                                 liquidity, paper,
+                                 fraction=paper["partial_take_profit_share_pct"] / 100))
     return events
 
 
@@ -857,6 +883,9 @@ def _format_event(event):
     if event["event"] == "paper_position_opened":
         return (f"PAPER KAUF {symbol}: {event['cost_basis_usd']:.2f} $ zu "
                 f"{event['entry_price_usd']:.8g} $, Stop {event['initial_stop_usd']:.8g} $")
+    if event["event"] == "paper_position_partial_sale":
+        return (f"PAPER TEILVERKAUF {symbol}: {event['pnl_usd']:+.2f} $ "
+                f"({event['pnl_pct']:+.1f} %)")
     if event["event"] == "paper_position_closed":
         return (f"PAPER VERKAUF {symbol} ({event['exit_reason']}): "
                 f"{event['pnl_usd']:+.2f} $ ({event['pnl_pct']:+.1f} %)")
