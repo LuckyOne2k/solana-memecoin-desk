@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-14T20:09:24.468555+00:00",
+  "updated_at": "2026-11-14T20:12:27.798237+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 7248.36587954,
   "open_positions": [
@@ -23,9 +23,19 @@
       "cost_basis_usd": 224.17626432,
       "initial_stop_usd": 0.0021259857148526948,
       "highest_price_usd": 0.0022616869306943564,
-      "last_price_usd": 0.0022311345717615032,
-      "last_price_at": "2026-11-14T20:09:24.468555+00:00",
-      "current_stop_usd": 0.0021259857148526948
+      "last_price_usd": 0.0022309721116951496,
+      "last_price_at": "2026-11-14T20:12:27.798237+00:00",
+      "current_stop_usd": 0.0021259857148526948,
+      "last_quote": {
+        "at": "2026-11-14T20:12:27.798237+00:00",
+        "status": "confirmed",
+        "price_low_usd": 0.0022309721116951496,
+        "price_high_usd": 0.0022321890137057747,
+        "deviation_pct": 0.0545,
+        "errors": {}
+      },
+      "last_liquidity_usd": 147731.0152,
+      "current_stop_kind": "initial"
     }
   ],
   "closed_trades": [
@@ -1997,34 +2007,18 @@
       "equity_usd": 7472.54214386
     },
     {
-      "at": "2026-11-14T20:09:24.468555+00:00",
-      "equity_usd": 7469.51382301
+      "at": "2026-11-14T20:12:27.798237+00:00",
+      "equity_usd": 7469.49772012
     }
   ],
   "last_run": {
-    "at": "2026-11-14T20:09:24.468555+00:00",
-    "mode": "after-scan",
-    "scan_status": "ok",
-    "scan_at": "2026-11-14T20:09:24.282138+00:00",
-    "entry_decisions": [
-      {
-        "token_symbol": "USDA",
-        "token_address": "jTJPhJ6Nov7Dy8tY7nfvJxi4P2tkQYYoZ5T3sZUpump",
-        "decision": "open"
-      },
-      {
-        "token_symbol": "RST",
-        "token_address": "yaa6nkX6CGCjEcg8wMhAStf8XxALkBJp62gdaofpump",
-        "decision": "reentry_cooldown"
-      },
-      {
-        "token_symbol": "BORLY",
-        "token_address": "BBRgG2GifeKNB1hSmzD2BwHMPK8wnDtcuE4NzxgHpump",
-        "decision": "reentry_cooldown"
-      }
-    ],
+    "at": "2026-11-14T20:12:27.798237+00:00",
+    "mode": "monitor",
+    "scan_status": "not_requested",
+    "scan_at": null,
+    "entry_decisions": [],
     "open_positions": 1,
-    "equity_usd": 7469.51382301,
-    "run_number": "156"
+    "equity_usd": 7469.49772012,
+    "run_number": "1039"
   }
 }
