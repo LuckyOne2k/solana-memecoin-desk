@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-14T01:09:31.843763+00:00",
+  "updated_at": "2026-11-14T01:12:13.584421+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 6616.578577,
   "open_positions": [
@@ -24,10 +24,10 @@
       "initial_stop_usd": 0.0005393309036439437,
       "highest_price_usd": 0.0005737562804722806,
       "last_price_usd": 0.000551363896558291,
-      "last_price_at": "2026-11-14T01:09:31.843763+00:00",
+      "last_price_at": "2026-11-14T01:12:13.584421+00:00",
       "current_stop_usd": 0.0005393309036439437,
       "last_quote": {
-        "at": "2026-11-14T01:09:31.843763+00:00",
+        "at": "2026-11-14T01:12:13.584421+00:00",
         "status": "confirmed",
         "price_low_usd": 0.000551363896558291,
         "price_high_usd": 0.0005520363458978175,
@@ -52,9 +52,19 @@
       "cost_basis_usd": 621.36463249,
       "initial_stop_usd": 0.0021813565964571993,
       "highest_price_usd": 0.0023205921238906376,
-      "last_price_usd": 0.002278489176811251,
-      "last_price_at": "2026-11-14T01:09:31.843763+00:00",
-      "current_stop_usd": 0.0021813565964571993
+      "last_price_usd": 0.00228046713674212,
+      "last_price_at": "2026-11-14T01:12:13.584421+00:00",
+      "current_stop_usd": 0.0021813565964571993,
+      "last_quote": {
+        "at": "2026-11-14T01:12:13.584421+00:00",
+        "status": "confirmed",
+        "price_low_usd": 0.00228046713674212,
+        "price_high_usd": 0.0022806198367417035,
+        "deviation_pct": 0.0067,
+        "errors": {}
+      },
+      "last_liquidity_usd": 150127.07840173529,
+      "current_stop_kind": "initial"
     }
   ],
   "closed_trades": [
@@ -1669,34 +1679,18 @@
       "equity_usd": 7767.05790615
     },
     {
-      "at": "2026-11-14T01:09:31.843763+00:00",
-      "equity_usd": 7755.78436868
+      "at": "2026-11-14T01:12:13.584421+00:00",
+      "equity_usd": 7756.3139897
     }
   ],
   "last_run": {
-    "at": "2026-11-14T01:09:31.843763+00:00",
-    "mode": "after-scan",
-    "scan_status": "ok",
-    "scan_at": "2026-11-14T01:09:31.644821+00:00",
-    "entry_decisions": [
-      {
-        "token_symbol": "USOI",
-        "token_address": "vxrovNBSaveg1dq47VG9vWcGRbC8rGgMVbqQPiCpump",
-        "decision": "open"
-      },
-      {
-        "token_symbol": "MEVS",
-        "token_address": "mBjWbrkGosa8RZopsghLZTF6KELiMUmEZh4mijqpump",
-        "decision": "reentry_cooldown"
-      },
-      {
-        "token_symbol": "BORLY",
-        "token_address": "BBRgG2GifeKNB1hSmzD2BwHMPK8wnDtcuE4NzxgHpump",
-        "decision": "already_open"
-      }
-    ],
+    "at": "2026-11-14T01:12:13.584421+00:00",
+    "mode": "monitor",
+    "scan_status": "not_requested",
+    "scan_at": null,
+    "entry_decisions": [],
     "open_positions": 2,
-    "equity_usd": 7755.78436868,
-    "run_number": "137"
+    "equity_usd": 7756.3139897,
+    "run_number": "830"
   }
 }
