@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-14T17:37:29.737281+00:00",
+  "updated_at": "2026-11-14T18:09:27.072563+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 7472.54214386,
   "open_positions": [],
@@ -1967,16 +1967,31 @@
     {
       "at": "2026-11-14T17:37:29.737281+00:00",
       "equity_usd": 7472.54214386
+    },
+    {
+      "at": "2026-11-14T18:09:27.072563+00:00",
+      "equity_usd": 7472.54214386
     }
   ],
   "last_run": {
-    "at": "2026-11-14T17:37:29.737281+00:00",
-    "mode": "monitor",
-    "scan_status": "not_requested",
-    "scan_at": null,
-    "entry_decisions": [],
+    "at": "2026-11-14T18:09:27.072563+00:00",
+    "mode": "after-scan",
+    "scan_status": "ok",
+    "scan_at": "2026-11-14T18:09:26.875733+00:00",
+    "entry_decisions": [
+      {
+        "token_symbol": "RST",
+        "token_address": "yaa6nkX6CGCjEcg8wMhAStf8XxALkBJp62gdaofpump",
+        "decision": "reentry_cooldown"
+      },
+      {
+        "token_symbol": "BORLY",
+        "token_address": "BBRgG2GifeKNB1hSmzD2BwHMPK8wnDtcuE4NzxgHpump",
+        "decision": "reentry_cooldown"
+      }
+    ],
     "open_positions": 0,
     "equity_usd": 7472.54214386,
-    "run_number": "1011"
+    "run_number": "154"
   }
 }

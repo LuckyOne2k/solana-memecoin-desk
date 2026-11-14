@@ -1,53 +1,53 @@
 {
   "schema_version": 1,
   "purpose": "learning_only_no_trading",
-  "generated_at": "2026-11-14T17:09:16.460777+00:00",
+  "generated_at": "2026-11-14T18:09:29.190059+00:00",
   "note": "Kursveränderung ohne Kosten seit erster Beobachtung; keine Kaufempfehlung.",
-  "observations_total": 430,
-  "observations_open": 115,
+  "observations_total": 433,
+  "observations_open": 111,
   "by_status": [
     {
       "group": "rejected",
-      "observations": 220,
+      "observations": 222,
       "1h": {
-        "count": 212,
-        "mean_pct": -1.17,
+        "count": 220,
+        "mean_pct": -1.15,
         "median_pct": 0.0,
-        "positive_share_pct": 30.2
+        "positive_share_pct": 29.1
       },
       "6h": {
-        "count": 200,
-        "mean_pct": -3.89,
+        "count": 203,
+        "mean_pct": -3.85,
         "median_pct": 0.0,
-        "positive_share_pct": 33.5
+        "positive_share_pct": 33.0
       },
       "24h": {
-        "count": 152,
-        "mean_pct": -7.64,
+        "count": 158,
+        "mean_pct": -8.59,
         "median_pct": 0.0,
-        "positive_share_pct": 30.3
+        "positive_share_pct": 29.7
       }
     },
     {
       "group": "incomplete",
-      "observations": 174,
+      "observations": 175,
       "1h": {
-        "count": 172,
-        "mean_pct": -0.64,
+        "count": 174,
+        "mean_pct": -0.72,
         "median_pct": 0.0,
-        "positive_share_pct": 43.6
+        "positive_share_pct": 43.1
       },
       "6h": {
-        "count": 165,
-        "mean_pct": -3.13,
+        "count": 166,
+        "mean_pct": -3.14,
         "median_pct": 0.0,
-        "positive_share_pct": 37.6
+        "positive_share_pct": 37.3
       },
       "24h": {
-        "count": 130,
-        "mean_pct": -17.52,
+        "count": 131,
+        "mean_pct": -17.5,
         "median_pct": -0.16,
-        "positive_share_pct": 26.9
+        "positive_share_pct": 26.7
       }
     },
     {
@@ -76,46 +76,46 @@
   "by_reason": [
     {
       "group": "incomplete:market_cap_usd",
-      "observations": 158,
+      "observations": 159,
       "1h": {
-        "count": 156,
-        "mean_pct": -0.9,
+        "count": 158,
+        "mean_pct": -0.98,
         "median_pct": 0.0,
-        "positive_share_pct": 39.1
+        "positive_share_pct": 38.6
       },
       "6h": {
-        "count": 152,
+        "count": 153,
         "mean_pct": -3.8,
         "median_pct": 0.0,
-        "positive_share_pct": 32.9
+        "positive_share_pct": 32.7
       },
       "24h": {
-        "count": 129,
-        "mean_pct": -17.34,
+        "count": 130,
+        "mean_pct": -17.32,
         "median_pct": -0.16,
-        "positive_share_pct": 27.1
+        "positive_share_pct": 26.9
       }
     },
     {
       "group": "rejected:lp_burn_or_lock_not_verified",
       "observations": 105,
       "1h": {
-        "count": 100,
-        "mean_pct": -3.71,
+        "count": 105,
+        "mean_pct": -3.59,
         "median_pct": 0.0,
-        "positive_share_pct": 21.0
+        "positive_share_pct": 20.0
       },
       "6h": {
-        "count": 95,
-        "mean_pct": -8.78,
+        "count": 97,
+        "mean_pct": -8.65,
         "median_pct": 0.0,
-        "positive_share_pct": 23.2
+        "positive_share_pct": 22.7
       },
       "24h": {
-        "count": 66,
-        "mean_pct": -16.3,
+        "count": 69,
+        "mean_pct": -18.14,
         "median_pct": 0.0,
-        "positive_share_pct": 16.7
+        "positive_share_pct": 15.9
       }
     },
     {
@@ -144,32 +144,32 @@
       "group": "rejected:market_cap_below_minimum",
       "observations": 35,
       "1h": {
-        "count": 33,
-        "mean_pct": 0.11,
+        "count": 35,
+        "mean_pct": 0.08,
         "median_pct": 0.0,
-        "positive_share_pct": 6.1
+        "positive_share_pct": 5.7
       },
       "6h": {
-        "count": 30,
+        "count": 31,
         "mean_pct": 0.14,
         "median_pct": 0.0,
-        "positive_share_pct": 16.7
+        "positive_share_pct": 16.1
       },
       "24h": {
-        "count": 24,
-        "mean_pct": -2.05,
+        "count": 25,
+        "mean_pct": -2.18,
         "median_pct": 0.0,
-        "positive_share_pct": 8.3
+        "positive_share_pct": 8.0
       }
     },
     {
       "group": "rejected:no_24h_trading_activity",
       "observations": 18,
       "1h": {
-        "count": 17,
-        "mean_pct": 0.92,
+        "count": 18,
+        "mean_pct": 0.87,
         "median_pct": 0.0,
-        "positive_share_pct": 17.6
+        "positive_share_pct": 16.7
       },
       "6h": {
         "count": 17,
@@ -208,7 +208,7 @@
     },
     {
       "group": "rejected:market_cap_out_of_range",
-      "observations": 15,
+      "observations": 16,
       "1h": {
         "count": 15,
         "mean_pct": 2.49,
@@ -222,10 +222,10 @@
         "positive_share_pct": 71.4
       },
       "24h": {
-        "count": 11,
-        "mean_pct": 2.74,
-        "median_pct": 2.08,
-        "positive_share_pct": 63.6
+        "count": 12,
+        "mean_pct": 3.56,
+        "median_pct": 3.13,
+        "positive_share_pct": 66.7
       }
     },
     {
@@ -247,7 +247,7 @@
     },
     {
       "group": "rejected:mint_authority_not_confirmed_revoked",
-      "observations": 9,
+      "observations": 10,
       "1h": {
         "count": 9,
         "mean_pct": -0.14,
@@ -261,10 +261,10 @@
         "positive_share_pct": 44.4
       },
       "24h": {
-        "count": 7,
-        "mean_pct": 2.21,
-        "median_pct": 0.01,
-        "positive_share_pct": 57.1
+        "count": 8,
+        "mean_pct": -1.48,
+        "median_pct": -1.28,
+        "positive_share_pct": 50.0
       }
     },
     {
