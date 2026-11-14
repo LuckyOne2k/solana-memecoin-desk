@@ -4,10 +4,30 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-14T19:09:22.957968+00:00",
+  "updated_at": "2026-11-14T20:09:24.468555+00:00",
   "starting_balance_usd": 10000.0,
-  "cash_usd": 7472.54214386,
-  "open_positions": [],
+  "cash_usd": 7248.36587954,
+  "open_positions": [
+    {
+      "token_symbol": "USDA",
+      "token_name": "United States Dividend Asset",
+      "token_address": "jTJPhJ6Nov7Dy8tY7nfvJxi4P2tkQYYoZ5T3sZUpump",
+      "pool_address": "AWWSTfU3AvSKqrkyYB8H7zeK1snD9oZu9Bgh61xc75g2",
+      "dex_name": "PumpSwap",
+      "opened_at": "2026-11-14T20:09:24.468555+00:00",
+      "entry_price_usd": 0.0022616869306943564,
+      "entry_mark_price_usd": 0.0022325873460438393,
+      "entry_cost_pct": 1.3034,
+      "entry_liquidity_usd": 147775.1492351419,
+      "token_amount": 99119.05192429796,
+      "cost_basis_usd": 224.17626432,
+      "initial_stop_usd": 0.0021259857148526948,
+      "highest_price_usd": 0.0022616869306943564,
+      "last_price_usd": 0.0022311345717615032,
+      "last_price_at": "2026-11-14T20:09:24.468555+00:00",
+      "current_stop_usd": 0.0021259857148526948
+    }
+  ],
   "closed_trades": [
     {
       "token_symbol": "BRUH",
@@ -472,7 +492,7 @@
     "vxrovNBSaveg1dq47VG9vWcGRbC8rGgMVbqQPiCpump": "2026-11-14T17:37:29.737281+00:00"
   },
   "stats": {
-    "trades_opened": 22,
+    "trades_opened": 23,
     "trades_closed": 22,
     "wins": 7,
     "losses": 15,
@@ -1975,18 +1995,22 @@
     {
       "at": "2026-11-14T19:09:22.957968+00:00",
       "equity_usd": 7472.54214386
+    },
+    {
+      "at": "2026-11-14T20:09:24.468555+00:00",
+      "equity_usd": 7469.51382301
     }
   ],
   "last_run": {
-    "at": "2026-11-14T19:09:22.957968+00:00",
+    "at": "2026-11-14T20:09:24.468555+00:00",
     "mode": "after-scan",
     "scan_status": "ok",
-    "scan_at": "2026-11-14T19:09:22.715117+00:00",
+    "scan_at": "2026-11-14T20:09:24.282138+00:00",
     "entry_decisions": [
       {
         "token_symbol": "USDA",
         "token_address": "jTJPhJ6Nov7Dy8tY7nfvJxi4P2tkQYYoZ5T3sZUpump",
-        "decision": "not_ready_in_previous_scan"
+        "decision": "open"
       },
       {
         "token_symbol": "RST",
@@ -1999,8 +2023,8 @@
         "decision": "reentry_cooldown"
       }
     ],
-    "open_positions": 0,
-    "equity_usd": 7472.54214386,
-    "run_number": "155"
+    "open_positions": 1,
+    "equity_usd": 7469.51382301,
+    "run_number": "156"
   }
 }
