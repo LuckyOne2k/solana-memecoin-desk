@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-14T02:02:25.768737+00:00",
+  "updated_at": "2026-11-14T02:09:31.759778+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 7112.9705204,
   "open_positions": [
@@ -22,19 +22,19 @@
       "token_amount": 267761.24338827713,
       "cost_basis_usd": 621.36463249,
       "initial_stop_usd": 0.0021813565964571993,
-      "highest_price_usd": 0.0023212657484351115,
-      "last_price_usd": 0.0023212042777622163,
-      "last_price_at": "2026-11-14T02:02:25.768737+00:00",
+      "highest_price_usd": 0.00232721732198174,
+      "last_price_usd": 0.00232721732198174,
+      "last_price_at": "2026-11-14T02:09:31.759778+00:00",
       "current_stop_usd": 0.0021813565964571993,
       "last_quote": {
-        "at": "2026-11-14T02:02:25.768737+00:00",
+        "at": "2026-11-14T02:09:31.759778+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.0023212042777622163,
-        "price_high_usd": 0.0023219347062651686,
-        "deviation_pct": 0.0315,
+        "price_low_usd": 0.00232721732198174,
+        "price_high_usd": 0.002327238036753464,
+        "deviation_pct": 0.0009,
         "errors": {}
       },
-      "last_liquidity_usd": 149986.9862,
+      "last_liquidity_usd": 150102.30197908625,
       "current_stop_kind": "initial"
     }
   ],
@@ -1685,18 +1685,34 @@
       "equity_usd": 7727.43844494
     },
     {
-      "at": "2026-11-14T02:02:25.768737+00:00",
-      "equity_usd": 7734.49906397
+      "at": "2026-11-14T02:09:31.759778+00:00",
+      "equity_usd": 7736.10912417
     }
   ],
   "last_run": {
-    "at": "2026-11-14T02:02:25.768737+00:00",
-    "mode": "monitor",
-    "scan_status": "not_requested",
-    "scan_at": null,
-    "entry_decisions": [],
+    "at": "2026-11-14T02:09:31.759778+00:00",
+    "mode": "after-scan",
+    "scan_status": "ok",
+    "scan_at": "2026-11-14T02:09:31.492397+00:00",
+    "entry_decisions": [
+      {
+        "token_symbol": "USOI",
+        "token_address": "vxrovNBSaveg1dq47VG9vWcGRbC8rGgMVbqQPiCpump",
+        "decision": "already_open"
+      },
+      {
+        "token_symbol": "inuhao",
+        "token_address": "FyHakvZH3L4UABSQYK7e9ECEzWV37u7GTkmAbHXspump",
+        "decision": "not_ready_in_previous_scan"
+      },
+      {
+        "token_symbol": "MEVS",
+        "token_address": "mBjWbrkGosa8RZopsghLZTF6KELiMUmEZh4mijqpump",
+        "decision": "reentry_cooldown"
+      }
+    ],
     "open_positions": 1,
-    "equity_usd": 7734.49906397,
-    "run_number": "840"
+    "equity_usd": 7736.10912417,
+    "run_number": "138"
   }
 }
