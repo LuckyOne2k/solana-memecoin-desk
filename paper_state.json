@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-14T17:27:26.412770+00:00",
+  "updated_at": "2026-11-14T17:32:29.179461+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 7472.20626014,
   "open_positions": [
@@ -22,19 +22,19 @@
       "token_amount": 133880.62169413856,
       "cost_basis_usd": 310.68231624,
       "initial_stop_usd": 0.0021813565964571993,
-      "highest_price_usd": 0.003396983336600069,
-      "last_price_usd": 0.003396271112519603,
-      "last_price_at": "2026-11-14T17:27:26.412770+00:00",
-      "current_stop_usd": 0.003193164336404065,
+      "highest_price_usd": 0.0034243339809710252,
+      "last_price_usd": 0.0034243339809710252,
+      "last_price_at": "2026-11-14T17:32:29.179461+00:00",
+      "current_stop_usd": 0.0032188739421127634,
       "last_quote": {
-        "at": "2026-11-14T17:27:26.412770+00:00",
+        "at": "2026-11-14T17:32:29.179461+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.003396271112519603,
-        "price_high_usd": 0.003437660088221182,
-        "deviation_pct": 1.2187,
+        "price_low_usd": 0.0034243339809710252,
+        "price_high_usd": 0.0034647740516317044,
+        "deviation_pct": 1.181,
         "errors": {}
       },
-      "last_liquidity_usd": 183143.6025346651,
+      "last_liquidity_usd": 184936.1632021207,
       "current_stop_kind": "trailing",
       "partial_taken": true
     }
@@ -1973,16 +1973,20 @@
     {
       "at": "2026-11-14T17:27:26.412770+00:00",
       "equity_usd": 7926.90114813
+    },
+    {
+      "at": "2026-11-14T17:32:29.179461+00:00",
+      "equity_usd": 7930.6582224
     }
   ],
   "last_run": {
-    "at": "2026-11-14T17:27:26.412770+00:00",
+    "at": "2026-11-14T17:32:29.179461+00:00",
     "mode": "monitor",
     "scan_status": "not_requested",
     "scan_at": null,
     "entry_decisions": [],
     "open_positions": 1,
-    "equity_usd": 7926.90114813,
-    "run_number": "1009"
+    "equity_usd": 7930.6582224,
+    "run_number": "1010"
   }
 }
