@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-14T18:09:27.072563+00:00",
+  "updated_at": "2026-11-14T19:09:22.957968+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 7472.54214386,
   "open_positions": [],
@@ -1971,14 +1971,23 @@
     {
       "at": "2026-11-14T18:09:27.072563+00:00",
       "equity_usd": 7472.54214386
+    },
+    {
+      "at": "2026-11-14T19:09:22.957968+00:00",
+      "equity_usd": 7472.54214386
     }
   ],
   "last_run": {
-    "at": "2026-11-14T18:09:27.072563+00:00",
+    "at": "2026-11-14T19:09:22.957968+00:00",
     "mode": "after-scan",
     "scan_status": "ok",
-    "scan_at": "2026-11-14T18:09:26.875733+00:00",
+    "scan_at": "2026-11-14T19:09:22.715117+00:00",
     "entry_decisions": [
+      {
+        "token_symbol": "USDA",
+        "token_address": "jTJPhJ6Nov7Dy8tY7nfvJxi4P2tkQYYoZ5T3sZUpump",
+        "decision": "not_ready_in_previous_scan"
+      },
       {
         "token_symbol": "RST",
         "token_address": "yaa6nkX6CGCjEcg8wMhAStf8XxALkBJp62gdaofpump",
@@ -1992,6 +2001,6 @@
     ],
     "open_positions": 0,
     "equity_usd": 7472.54214386,
-    "run_number": "154"
+    "run_number": "155"
   }
 }
