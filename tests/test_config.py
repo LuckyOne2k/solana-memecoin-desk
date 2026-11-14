@@ -36,7 +36,7 @@ EXPECTED_THRESHOLDS = {
         "max_price_deviation_pct": 10,
     },
     "paper_trading": {
-        "max_position_pct": 8,
+        "max_position_pct": 3,
         "initial_stop_loss_pct": 6,
         "trailing_activation_profit_pct": 12,
         "trailing_distance_pct": 6,
@@ -55,6 +55,8 @@ EXPECTED_THRESHOLDS = {
         "reentry_cooldown_hours": 24,
         "max_holding_hours": 72,
         "max_price_missing_hours": 24,
+        "partial_take_profit_pct": 30,
+        "partial_take_profit_share_pct": 50,
         "manual_exit_tokens": [
             "ivEE94cN5GxXzLJVYby8AJByRBH9tUy6zUHZZt2pump",
             "14fTp4k7JfZueauHMVGYeFPaFwEgTrHQ5NtGYhECpump",
@@ -162,6 +164,9 @@ def test_every_threshold_is_required(section, key):
         ("risk_filters", "lp_locked_min_pct", None),
         ("risk_filters", "require_mint_authority_revoked", "yes"),
         ("paper_trading", "max_position_pct", 150),
+        ("paper_trading", "partial_take_profit_pct", 0),
+        ("paper_trading", "partial_take_profit_share_pct", 0),
+        ("paper_trading", "partial_take_profit_share_pct", 100),
         ("debate", "bear_objections_required", 2.5),
         ("data_quality", "max_liquidity_deviation_pct", 150),
     ],

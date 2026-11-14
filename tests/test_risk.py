@@ -17,7 +17,7 @@ def test_position_size_is_capped_by_config(desk_config):
         max_position_pct=stops["max_position_pct"],
     )
 
-    assert size == pytest.approx(80)
+    assert size == pytest.approx(30)
 
 
 def test_position_size_is_zero_for_invalid_amounts():

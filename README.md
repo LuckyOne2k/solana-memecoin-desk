@@ -19,8 +19,10 @@ values stop the program; `mode` must be `paper`.
   entry only if a pool is ready in two consecutive scans (30 min–6 h apart,
   price change ≤ 15 %, liquidity drop ≤ 20 %) and a fresh price from two
   sources (GeckoTerminal + DexPaprika) agrees within 10 %
-- Paper position size: min(8 % of portfolio, 1 % of pool liquidity, cash);
+- Paper position size: min(3 % of portfolio, 1 % of pool liquidity, cash);
   max 5 open positions; costs = 1 % fee + estimated price impact
+- Partial sale: once the price is +30 % above entry, half of the
+  position is sold once; the rest keeps the normal stops
 - Exits: stop −6 %; trailing stop 6 % below the high once +12 % is reached;
   security exit if a later scan rejects the token; max holding 72 h;
   write-off if no price for 24 h. Always valued at the lower price

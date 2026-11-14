@@ -63,7 +63,7 @@ Ein Einstieg findet nur statt, wenn **alle** Punkte erfüllt sind:
 6. Es gibt noch keine Position im Token. Der letzte Verkauf liegt mehr
    als 24 h zurück. Es sind weniger als 5 Positionen offen.
 7. **Positionsgröße** ist der kleinste dieser drei Werte:
-   - 8 % des Depotwerts,
+   - 3 % des Depotwerts (bis 2026-11-14: 8 %),
    - 1 % der kleineren bestätigten Pool-Liquidität,
    - verfügbares Bargeld.
 
@@ -89,6 +89,7 @@ immer mit dem **niedrigeren** verfügbaren Kurs (konservativ).
 | 2 | `trailing_stop` | ab +12 % Höchstkurs: Kurs ≤ Höchstkurs − 6 % |
 | 3 | `security_rejected` | Token im neuesten Scan `rejected` (nur „unvollständig“ → halten) |
 | 4 | `max_holding_time` | Haltedauer ≥ 72 h |
+| 5 | `partial_take_profit` | einmalig: Kurs ≥ Einstieg + 30 % → Hälfte verkaufen (nur wenn kein Grund 1–4 greift) |
 
 Es gilt immer der **höchste** der drei Stops; er sinkt nie.
 
@@ -107,6 +108,21 @@ Verkaufskosten werden mit den Kaufkosten der Position geschätzt (gleiche
 Größe), ohne gespeicherten Wert konservativ mit 3 %. Liegt die Stufe
 nicht unter dem Höchstkurs (sehr hohe Kosten), entfällt sie. Die App
 zeigt beim Stop „(Gewinnsicherung)“ bzw. „(Trailing)“ an.
+
+**Teilverkauf** (2026-11-14, `partial_take_profit_pct: 30`,
+`partial_take_profit_share_pct: 50`): Liegt der niedrigere Kurs mindestens
+30 % über dem Einstieg, wird einmal die Hälfte der Menge verkauft. Der
+Rest behält Einstieg, Höchstkurs und Stops. Der Teilverkauf steht in
+`closed_trades` mit `partial: true` und zählt nicht als abgeschlossener
+Trade (Gewinn/Verlust-Zählung beim Schluss des Rests); der Gewinn geht
+sofort in `realized_pnl_usd`, Anzahl in `stats.partial_sales`.
+
+**Warum 3 % und Teilverkauf:** In drei Tagen fielen USOE, ConConAI und XTO
+jeweils binnen 5 Minuten um 99,6–99,99 % (zusammen −2.372 $ bei 8 %
+Positionsgröße). Gegen solche Sprünge hilft kein Stop. Kleinere
+Positionen begrenzen den Schaden je Fall auf ~300 $; der Teilverkauf
+sichert bei stark gestiegenen Token (XTO +188 %, ConConAI +68 %) einen
+Teil des Gewinns, bevor ein Absturz alles nimmt.
 
 Verkaufskurs = beobachteter Kurs × (1 − Kosten), nie der Stop-Kurs. Fällt
 der Kurs zwischen zwei Abfragen weit unter den Stop, trägt das Depot

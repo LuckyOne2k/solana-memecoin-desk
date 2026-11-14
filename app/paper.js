@@ -30,6 +30,7 @@
     manual_exit: "Notausstieg",
     max_holding_time: "Maximale Haltedauer",
     price_unavailable_writeoff: "Kurs fehlt – abgeschrieben",
+    partial_take_profit: "Teilverkauf (Gewinn)",
   };
   const STOP_KIND_LABEL = {
     profit_lock: "Gewinnsicherung",

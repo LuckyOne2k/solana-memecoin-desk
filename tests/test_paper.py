@@ -227,11 +227,11 @@ def test_ready_token_with_confirmed_fresh_price_opens_position(tmp_path, desk_co
     state = state_file(tmp_path)
     paper_cfg = desk_config["paper_trading"]
 
-    # Größe: min(8 % von 10.000 = 800, 1 % von 197.000 = 1.970, Bargeld)
-    assert position["cost_basis_usd"] == pytest.approx(800)
-    assert state["cash_usd"] == pytest.approx(9200)
-    # Kosten: 1 % Gebühr + 2 x 800 / 197.000
-    cost = 1 + 2 * 800 / 197000 * 100
+    # Größe: min(3 % von 10.000 = 300, 1 % von 197.000 = 1.970, Bargeld)
+    assert position["cost_basis_usd"] == pytest.approx(300)
+    assert state["cash_usd"] == pytest.approx(9700)
+    # Kosten: 1 % Gebühr + 2 x 300 / 197.000
+    cost = 1 + 2 * 300 / 197000 * 100
     assert position["entry_price_usd"] == pytest.approx(0.0067 * (1 + cost / 100))
     assert position["initial_stop_usd"] == pytest.approx(
         position["entry_price_usd"] * (1 - paper_cfg["initial_stop_loss_pct"] / 100)
@@ -346,7 +346,7 @@ def test_size_limited_by_pool_liquidity(tmp_path, desk_config):
     write_scan(tmp_path, [ready_pool(liquidity=(20000, 20000))])
     after_scan(tmp_path, desk_config, {POOL: quote(liq_gt=20000, liq_dp=20000)})
 
-    # 1 % von 20.000 = 200 $ < 800 $
+    # 1 % von 20.000 = 200 $ < 300 $
     assert state_file(tmp_path)["open_positions"][0]["cost_basis_usd"] == pytest.approx(200)
 
 
@@ -445,9 +445,10 @@ def test_stop_loss_sells_at_observed_price_not_stop(tmp_path, desk_config):
     assert trade["exit_reason"] == "stop_loss"
     assert trade["exit_mark_price_usd"] == crash
     assert trade["exit_price_usd"] < crash
-    assert trade["pnl_usd"] < -400
+    # Größe 300 $ (3 % Depot), Kurs halbiert -> Verlust über 150 $
+    assert trade["pnl_usd"] < -150
     assert state["stats"]["losses"] == 1
-    assert state["cash_usd"] == pytest.approx(9200 + trade["proceeds_usd"])
+    assert state["cash_usd"] == pytest.approx(9700 + trade["proceeds_usd"])
 
 
 def test_price_above_stop_keeps_position(tmp_path, desk_config):
@@ -468,8 +469,10 @@ def test_trailing_stop_locks_in_profit(tmp_path, desk_config):
     drop = high * 0.93
     monitor(tmp_path, desk_config, {POOL: quote(drop, drop)}, NOW + timedelta(hours=2))
     state = state_file(tmp_path)
-    assert state["closed_trades"][0]["exit_reason"] == "profit_lock"
-    assert state["closed_trades"][0]["pnl_usd"] > 0
+    # +50 % löst zuerst den Teilverkauf aus, der Rest geht per Gewinnsicherung
+    assert state["closed_trades"][0]["exit_reason"] == "partial_take_profit"
+    assert state["closed_trades"][-1]["exit_reason"] == "profit_lock"
+    assert state["closed_trades"][-1]["pnl_usd"] > 0
     assert state["stats"]["wins"] == 1
 
 
@@ -550,7 +553,7 @@ def test_missing_price_holds_then_writes_off(tmp_path, desk_config):
     trade = state["closed_trades"][0]
     assert trade["exit_reason"] == "price_unavailable_writeoff"
     assert trade["proceeds_usd"] == 0
-    assert state["cash_usd"] == pytest.approx(9200)
+    assert state["cash_usd"] == pytest.approx(9700)
 
 
 def test_price_returning_resets_missing_timer(tmp_path, desk_config):
@@ -774,3 +777,90 @@ def test_equity_history_keeps_one_point_per_15_minutes(tmp_path, desk_config):
     # 5/10 ersetzen den Kaufpunkt, 15 beginnt ein neues Fenster, 20 ersetzt ihn
     assert times == [(NOW + timedelta(minutes=10)).isoformat(),
                      (NOW + timedelta(minutes=20)).isoformat()]
+
+
+# --------------------------------------------------
+# Teilverkauf bei Gewinn
+# --------------------------------------------------
+
+def test_partial_take_profit_sells_half_once(tmp_path, desk_config):
+    position = open_ttp(tmp_path, desk_config)
+    p = desk_config["paper_trading"]
+    entry = position["entry_price_usd"]
+    amount = position["token_amount"]
+    basis = position["cost_basis_usd"]
+    cash_before = state_file(tmp_path)["cash_usd"]
+
+    up = entry * (1 + p["partial_take_profit_pct"] / 100) * 1.01
+    monitor(tmp_path, desk_config, {POOL: quote(up, up)}, NOW + timedelta(minutes=15))
+    state = state_file(tmp_path)
+    held = state["open_positions"][0]
+    share = p["partial_take_profit_share_pct"] / 100
+
+    assert held["partial_taken"] is True
+    assert held["token_amount"] == pytest.approx(amount * (1 - share))
+    assert held["cost_basis_usd"] == pytest.approx(basis * (1 - share))
+    trade = state["closed_trades"][-1]
+    assert trade["exit_reason"] == "partial_take_profit"
+    assert trade["partial"] is True
+    assert trade["token_amount"] == pytest.approx(amount * share)
+    assert trade["cost_basis_usd"] == pytest.approx(basis * share)
+    assert trade["pnl_usd"] > 0
+    assert state["cash_usd"] == pytest.approx(cash_before + trade["proceeds_usd"])
+    # Teilverkauf ist kein abgeschlossener Trade, Gewinn aber realisiert
+    assert state["stats"]["trades_closed"] == 0
+    assert state["stats"]["partial_sales"] == 1
+    assert state["stats"]["realized_pnl_usd"] == pytest.approx(trade["pnl_usd"])
+    assert trades(tmp_path)[-1]["event"] == "paper_position_partial_sale"
+
+    # Kein zweiter Teilverkauf, auch bei weiterem Anstieg
+    higher = up * 1.2
+    monitor(tmp_path, desk_config, {POOL: quote(higher, higher)}, NOW + timedelta(minutes=30))
+    state = state_file(tmp_path)
+    assert state["stats"]["partial_sales"] == 1
+    assert len(state["open_positions"]) == 1
+
+
+def test_partial_take_profit_not_below_threshold(tmp_path, desk_config):
+    position = open_ttp(tmp_path, desk_config)
+    p = desk_config["paper_trading"]
+    below = position["entry_price_usd"] * (1 + p["partial_take_profit_pct"] / 100) * 0.99
+    monitor(tmp_path, desk_config, {POOL: quote(below, below)}, NOW + timedelta(minutes=15))
+    state = state_file(tmp_path)
+    assert "partial_taken" not in state["open_positions"][0]
+    assert state["closed_trades"] == []
+
+
+def test_remainder_after_partial_sale_closes_with_rest(tmp_path, desk_config):
+    position = open_ttp(tmp_path, desk_config)
+    p = desk_config["paper_trading"]
+    entry = position["entry_price_usd"]
+    up = entry * (1 + p["partial_take_profit_pct"] / 100) * 1.01
+    monitor(tmp_path, desk_config, {POOL: quote(up, up)}, NOW + timedelta(minutes=15))
+    rest_basis = state_file(tmp_path)["open_positions"][0]["cost_basis_usd"]
+
+    # Totalabsturz (wie XTO): Rest wird zum beobachteten Kurs verkauft
+    crash = entry * 0.004
+    monitor(tmp_path, desk_config, {POOL: quote(crash, crash)}, NOW + timedelta(minutes=20))
+    state = state_file(tmp_path)
+    assert state["open_positions"] == []
+    final = state["closed_trades"][-1]
+    assert final["partial"] is False
+    assert final["cost_basis_usd"] == pytest.approx(rest_basis)
+    assert state["stats"]["trades_closed"] == 1
+    total = sum(t["pnl_usd"] for t in state["closed_trades"])
+    assert state["stats"]["realized_pnl_usd"] == pytest.approx(total)
+    # Mit Teilverkauf deutlich kleinerer Verlust als ohne (−99,6 %)
+    assert total / position["cost_basis_usd"] > -0.5
+
+
+def test_full_exit_has_priority_over_partial_sale(tmp_path, desk_config):
+    position = open_ttp(tmp_path, desk_config)
+    cfg = copy.deepcopy(desk_config)
+    cfg["paper_trading"]["manual_exit_tokens"] = [MINT]
+    up = position["entry_price_usd"] * 1.5
+    monitor(tmp_path, cfg, {POOL: quote(up, up)}, NOW + timedelta(minutes=15))
+    state = state_file(tmp_path)
+    assert state["open_positions"] == []
+    assert state["closed_trades"][-1]["exit_reason"] == "manual_exit"
+    assert state["closed_trades"][-1]["partial"] is False
