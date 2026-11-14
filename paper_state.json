@@ -4,9 +4,9 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-14T11:02:26.436011+00:00",
+  "updated_at": "2026-11-14T11:09:38.528489+00:00",
   "starting_balance_usd": 10000.0,
-  "cash_usd": 6491.82435571,
+  "cash_usd": 7063.52775622,
   "open_positions": [
     {
       "token_symbol": "USOI",
@@ -22,49 +22,20 @@
       "token_amount": 267761.24338827713,
       "cost_basis_usd": 621.36463249,
       "initial_stop_usd": 0.0021813565964571993,
-      "highest_price_usd": 0.002512789588132497,
-      "last_price_usd": 0.002502581412368493,
-      "last_price_at": "2026-11-14T11:02:26.436011+00:00",
+      "highest_price_usd": 0.0025334818925243857,
+      "last_price_usd": 0.0025334818925243857,
+      "last_price_at": "2026-11-14T11:09:38.528489+00:00",
       "current_stop_usd": 0.0023639107891009117,
       "last_quote": {
-        "at": "2026-11-14T11:02:26.436011+00:00",
+        "at": "2026-11-14T11:09:38.528489+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.002502581412368493,
-        "price_high_usd": 0.0025316502344966654,
-        "deviation_pct": 1.1616,
+        "price_low_usd": 0.0025334818925243857,
+        "price_high_usd": 0.0025335863564474002,
+        "deviation_pct": 0.0041,
         "errors": {}
       },
-      "last_liquidity_usd": 157720.08197095396,
+      "last_liquidity_usd": 157734.95781539023,
       "current_stop_kind": "profit_lock"
-    },
-    {
-      "token_symbol": "RST",
-      "token_name": "Resolut Technologies",
-      "token_address": "yaa6nkX6CGCjEcg8wMhAStf8XxALkBJp62gdaofpump",
-      "pool_address": "J5zXWS85mC8vQtdiE2WqaF1xKrTxQW9Jp2jfb264rsef",
-      "dex_name": "PumpSwap",
-      "opened_at": "2026-11-14T08:09:31.634301+00:00",
-      "entry_price_usd": 0.001786924749514228,
-      "entry_mark_price_usd": 0.0017526428337910785,
-      "entry_cost_pct": 1.956,
-      "entry_liquidity_usd": 129945.17548199793,
-      "token_amount": 347606.2239659825,
-      "cost_basis_usd": 621.14616469,
-      "initial_stop_usd": 0.0016797092645433743,
-      "highest_price_usd": 0.001786924749514228,
-      "last_price_usd": 0.0016932387396745667,
-      "last_price_at": "2026-11-14T11:02:26.436011+00:00",
-      "current_stop_usd": 0.0016797092645433743,
-      "last_quote": {
-        "at": "2026-11-14T11:02:26.436011+00:00",
-        "status": "confirmed",
-        "price_low_usd": 0.0016932387396745667,
-        "price_high_usd": 0.0016942190789352722,
-        "deviation_pct": 0.0579,
-        "errors": {}
-      },
-      "last_liquidity_usd": 128658.2737,
-      "current_stop_kind": "initial"
     }
   ],
   "closed_trades": [
@@ -447,6 +418,25 @@
       "pnl_pct": -9.8458,
       "exit_reason": "stop_loss",
       "highest_price_usd": 0.0005737562804722806
+    },
+    {
+      "token_symbol": "RST",
+      "token_address": "yaa6nkX6CGCjEcg8wMhAStf8XxALkBJp62gdaofpump",
+      "pool_address": "J5zXWS85mC8vQtdiE2WqaF1xKrTxQW9Jp2jfb264rsef",
+      "opened_at": "2026-11-14T08:09:31.634301+00:00",
+      "closed_at": "2026-11-14T11:09:38.528489+00:00",
+      "holding_hours": 3.002,
+      "entry_price_usd": 0.001786924749514228,
+      "exit_mark_price_usd": 0.001676715862161942,
+      "exit_price_usd": 0.001644686893091308,
+      "exit_cost_pct": 1.9102,
+      "token_amount": 347606.2239659825,
+      "cost_basis_usd": 621.14616469,
+      "proceeds_usd": 571.70340051,
+      "pnl_usd": -49.44276418,
+      "pnl_pct": -7.9599,
+      "exit_reason": "stop_loss",
+      "highest_price_usd": 0.001786924749514228
     }
   ],
   "last_exit_at": {
@@ -467,14 +457,15 @@
     "sNEhFo4z3cG5as5ieayBH4mC2iN72c7dH6mStSJpump": "2026-11-13T06:37:14.186696+00:00",
     "PyYAqGgWFLvhVWdZst7hR7pehr7weenFHSLM7FGpump": "2026-11-13T09:57:22.029167+00:00",
     "mBjWbrkGosa8RZopsghLZTF6KELiMUmEZh4mijqpump": "2026-11-13T20:22:39.405787+00:00",
-    "133srjwsjv2vvMcV5iMV9aVUnQeH2bPTCybbpqiipump": "2026-11-14T00:32:13.408424+00:00"
+    "133srjwsjv2vvMcV5iMV9aVUnQeH2bPTCybbpqiipump": "2026-11-14T00:32:13.408424+00:00",
+    "yaa6nkX6CGCjEcg8wMhAStf8XxALkBJp62gdaofpump": "2026-11-14T11:09:38.528489+00:00"
   },
   "stats": {
     "trades_opened": 22,
-    "trades_closed": 20,
+    "trades_closed": 21,
     "wins": 7,
-    "losses": 13,
-    "realized_pnl_usd": -2265.66484711
+    "losses": 14,
+    "realized_pnl_usd": -2315.10761129
   },
   "equity_history": [
     {
@@ -1858,18 +1849,34 @@
       "equity_usd": 7753.26591772
     },
     {
-      "at": "2026-11-14T11:02:26.436011+00:00",
-      "equity_usd": 7750.49899094
+      "at": "2026-11-14T11:09:38.528489+00:00",
+      "equity_usd": 7741.89601786
     }
   ],
   "last_run": {
-    "at": "2026-11-14T11:02:26.436011+00:00",
-    "mode": "monitor",
-    "scan_status": "not_requested",
-    "scan_at": null,
-    "entry_decisions": [],
-    "open_positions": 2,
-    "equity_usd": 7750.49899094,
-    "run_number": "939"
+    "at": "2026-11-14T11:09:38.528489+00:00",
+    "mode": "after-scan",
+    "scan_status": "ok",
+    "scan_at": "2026-11-14T11:09:38.251203+00:00",
+    "entry_decisions": [
+      {
+        "token_symbol": "RST",
+        "token_address": "yaa6nkX6CGCjEcg8wMhAStf8XxALkBJp62gdaofpump",
+        "decision": "reentry_cooldown"
+      },
+      {
+        "token_symbol": "USOI",
+        "token_address": "vxrovNBSaveg1dq47VG9vWcGRbC8rGgMVbqQPiCpump",
+        "decision": "already_open"
+      },
+      {
+        "token_symbol": "MEVS",
+        "token_address": "mBjWbrkGosa8RZopsghLZTF6KELiMUmEZh4mijqpump",
+        "decision": "reentry_cooldown"
+      }
+    ],
+    "open_positions": 1,
+    "equity_usd": 7741.89601786,
+    "run_number": "147"
   }
 }
