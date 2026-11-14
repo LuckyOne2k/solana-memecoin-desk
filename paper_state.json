@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-14T13:37:14.517514+00:00",
+  "updated_at": "2026-11-14T13:42:16.350721+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 7063.52775622,
   "open_positions": [
@@ -22,19 +22,19 @@
       "token_amount": 267761.24338827713,
       "cost_basis_usd": 621.36463249,
       "initial_stop_usd": 0.0021813565964571993,
-      "highest_price_usd": 0.0026433892754948126,
-      "last_price_usd": 0.0026134733476152077,
-      "last_price_at": "2026-11-14T13:37:14.517514+00:00",
-      "current_stop_usd": 0.002484785918965124,
+      "highest_price_usd": 0.002647575786955043,
+      "last_price_usd": 0.002647575786955043,
+      "last_price_at": "2026-11-14T13:42:16.350721+00:00",
+      "current_stop_usd": 0.0024887212397377402,
       "last_quote": {
-        "at": "2026-11-14T13:37:14.517514+00:00",
+        "at": "2026-11-14T13:42:16.350721+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.0026134733476152077,
-        "price_high_usd": 0.0026435890578960807,
-        "deviation_pct": 1.1523,
+        "price_low_usd": 0.002647575786955043,
+        "price_high_usd": 0.002649256498046717,
+        "deviation_pct": 0.0635,
         "errors": {}
       },
-      "last_liquidity_usd": 160302.6689,
+      "last_liquidity_usd": 161334.29538932536,
       "current_stop_kind": "trailing"
     }
   ],
@@ -1889,18 +1889,18 @@
       "equity_usd": 7762.0620281
     },
     {
-      "at": "2026-11-14T13:37:14.517514+00:00",
-      "equity_usd": 7763.31462934
+      "at": "2026-11-14T13:42:16.350721+00:00",
+      "equity_usd": 7772.4459409
     }
   ],
   "last_run": {
-    "at": "2026-11-14T13:37:14.517514+00:00",
+    "at": "2026-11-14T13:42:16.350721+00:00",
     "mode": "monitor",
     "scan_status": "not_requested",
     "scan_at": null,
     "entry_decisions": [],
     "open_positions": 1,
-    "equity_usd": 7763.31462934,
-    "run_number": "967"
+    "equity_usd": 7772.4459409,
+    "run_number": "968"
   }
 }
