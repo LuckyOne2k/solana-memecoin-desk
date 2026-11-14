@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-14T06:02:20.857636+00:00",
+  "updated_at": "2026-11-14T06:09:26.180408+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 7112.9705204,
   "open_positions": [
@@ -23,18 +23,18 @@
       "cost_basis_usd": 621.36463249,
       "initial_stop_usd": 0.0021813565964571993,
       "highest_price_usd": 0.0024039506218279296,
-      "last_price_usd": 0.00238871683745661,
-      "last_price_at": "2026-11-14T06:02:20.857636+00:00",
+      "last_price_usd": 0.0023931371814820026,
+      "last_price_at": "2026-11-14T06:09:26.180408+00:00",
       "current_stop_usd": 0.0021813565964571993,
       "last_quote": {
-        "at": "2026-11-14T06:02:20.857636+00:00",
+        "at": "2026-11-14T06:09:26.180408+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.00238871683745661,
-        "price_high_usd": 0.0024149246253225855,
-        "deviation_pct": 1.0971,
+        "price_low_usd": 0.0023931371814820026,
+        "price_high_usd": 0.0024221526144819296,
+        "deviation_pct": 1.2124,
         "errors": {}
       },
-      "last_liquidity_usd": 153032.5792242578,
+      "last_liquidity_usd": 154120.88017613068,
       "current_stop_kind": "initial"
     }
   ],
@@ -1749,18 +1749,24 @@
       "equity_usd": 7751.80331986
     },
     {
-      "at": "2026-11-14T06:02:20.857636+00:00",
-      "equity_usd": 7752.5763109
+      "at": "2026-11-14T06:09:26.180408+00:00",
+      "equity_usd": 7753.75990771
     }
   ],
   "last_run": {
-    "at": "2026-11-14T06:02:20.857636+00:00",
-    "mode": "monitor",
-    "scan_status": "not_requested",
-    "scan_at": null,
-    "entry_decisions": [],
+    "at": "2026-11-14T06:09:26.180408+00:00",
+    "mode": "after-scan",
+    "scan_status": "ok",
+    "scan_at": "2026-11-14T06:09:25.905927+00:00",
+    "entry_decisions": [
+      {
+        "token_symbol": "USOI",
+        "token_address": "vxrovNBSaveg1dq47VG9vWcGRbC8rGgMVbqQPiCpump",
+        "decision": "already_open"
+      }
+    ],
     "open_positions": 1,
-    "equity_usd": 7752.5763109,
-    "run_number": "884"
+    "equity_usd": 7753.75990771,
+    "run_number": "142"
   }
 }
