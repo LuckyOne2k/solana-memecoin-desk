@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-14T13:09:20.921765+00:00",
+  "updated_at": "2026-11-14T13:12:24.446049+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 7063.52775622,
   "open_positions": [
@@ -23,18 +23,18 @@
       "cost_basis_usd": 621.36463249,
       "initial_stop_usd": 0.0021813565964571993,
       "highest_price_usd": 0.002612133774972635,
-      "last_price_usd": 0.0025967506595071664,
-      "last_price_at": "2026-11-14T13:09:20.921765+00:00",
+      "last_price_usd": 0.002599278355184103,
+      "last_price_at": "2026-11-14T13:12:24.446049+00:00",
       "current_stop_usd": 0.0024598276513240758,
       "last_quote": {
-        "at": "2026-11-14T13:09:20.921765+00:00",
+        "at": "2026-11-14T13:12:24.446049+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.0025967506595071664,
-        "price_high_usd": 0.0025972640268153812,
-        "deviation_pct": 0.0198,
+        "price_low_usd": 0.002599278355184103,
+        "price_high_usd": 0.0026293270441396744,
+        "deviation_pct": 1.156,
         "errors": {}
       },
-      "last_liquidity_usd": 160745.8569241173,
+      "last_liquidity_usd": 160590.23711547535,
       "current_stop_kind": "profit_lock"
     }
   ],
@@ -1881,39 +1881,18 @@
       "equity_usd": 7757.57392404
     },
     {
-      "at": "2026-11-14T13:09:20.921765+00:00",
-      "equity_usd": 7758.83694158
+      "at": "2026-11-14T13:12:24.446049+00:00",
+      "equity_usd": 7759.51376052
     }
   ],
   "last_run": {
-    "at": "2026-11-14T13:09:20.921765+00:00",
-    "mode": "after-scan",
-    "scan_status": "ok",
-    "scan_at": "2026-11-14T13:09:20.734312+00:00",
-    "entry_decisions": [
-      {
-        "token_symbol": "USDA",
-        "token_address": "jTJPhJ6Nov7Dy8tY7nfvJxi4P2tkQYYoZ5T3sZUpump",
-        "decision": "not_ready_in_previous_scan"
-      },
-      {
-        "token_symbol": "RST",
-        "token_address": "yaa6nkX6CGCjEcg8wMhAStf8XxALkBJp62gdaofpump",
-        "decision": "reentry_cooldown"
-      },
-      {
-        "token_symbol": "USOI",
-        "token_address": "vxrovNBSaveg1dq47VG9vWcGRbC8rGgMVbqQPiCpump",
-        "decision": "already_open"
-      },
-      {
-        "token_symbol": "BORLY",
-        "token_address": "BBRgG2GifeKNB1hSmzD2BwHMPK8wnDtcuE4NzxgHpump",
-        "decision": "reentry_cooldown"
-      }
-    ],
+    "at": "2026-11-14T13:12:24.446049+00:00",
+    "mode": "monitor",
+    "scan_status": "not_requested",
+    "scan_at": null,
+    "entry_decisions": [],
     "open_positions": 1,
-    "equity_usd": 7758.83694158,
-    "run_number": "149"
+    "equity_usd": 7759.51376052,
+    "run_number": "962"
   }
 }
