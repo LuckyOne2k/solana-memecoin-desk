@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-14T16:02:16.238512+00:00",
+  "updated_at": "2026-11-14T16:09:29.357164+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 7063.52775622,
   "open_positions": [
@@ -23,18 +23,18 @@
       "cost_basis_usd": 621.36463249,
       "initial_stop_usd": 0.0021813565964571993,
       "highest_price_usd": 0.002671099963493326,
-      "last_price_usd": 0.002671099963493326,
-      "last_price_at": "2026-11-14T16:02:16.238512+00:00",
+      "last_price_usd": 0.0026691099687942725,
+      "last_price_at": "2026-11-14T16:09:29.357164+00:00",
       "current_stop_usd": 0.002510833965683726,
       "last_quote": {
-        "at": "2026-11-14T16:02:16.238512+00:00",
+        "at": "2026-11-14T16:09:29.357164+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.002671099963493326,
-        "price_high_usd": 0.0026995699445747402,
-        "deviation_pct": 1.0659,
+        "price_low_usd": 0.0026691099687942725,
+        "price_high_usd": 0.002699810415813586,
+        "deviation_pct": 1.1502,
         "errors": {}
       },
-      "last_liquidity_usd": 163069.51018051396,
+      "last_liquidity_usd": 163021.49089960402,
       "current_stop_kind": "trailing"
     }
   ],
@@ -1929,18 +1929,29 @@
       "equity_usd": 7778.51314045
     },
     {
-      "at": "2026-11-14T16:02:16.238512+00:00",
-      "equity_usd": 7778.74480366
+      "at": "2026-11-14T16:09:29.357164+00:00",
+      "equity_usd": 7778.2119602
     }
   ],
   "last_run": {
-    "at": "2026-11-14T16:02:16.238512+00:00",
-    "mode": "monitor",
-    "scan_status": "not_requested",
-    "scan_at": null,
-    "entry_decisions": [],
+    "at": "2026-11-14T16:09:29.357164+00:00",
+    "mode": "after-scan",
+    "scan_status": "ok",
+    "scan_at": "2026-11-14T16:09:29.119312+00:00",
+    "entry_decisions": [
+      {
+        "token_symbol": "USOI",
+        "token_address": "vxrovNBSaveg1dq47VG9vWcGRbC8rGgMVbqQPiCpump",
+        "decision": "already_open"
+      },
+      {
+        "token_symbol": "BORLY",
+        "token_address": "BBRgG2GifeKNB1hSmzD2BwHMPK8wnDtcuE4NzxgHpump",
+        "decision": "reentry_cooldown"
+      }
+    ],
     "open_positions": 1,
-    "equity_usd": 7778.74480366,
-    "run_number": "994"
+    "equity_usd": 7778.2119602,
+    "run_number": "152"
   }
 }
