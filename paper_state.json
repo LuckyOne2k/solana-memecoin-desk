@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-14T22:32:23.561967+00:00",
+  "updated_at": "2026-11-14T22:37:31.201384+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 7248.36587954,
   "open_positions": [
@@ -22,19 +22,19 @@
       "token_amount": 99119.05192429796,
       "cost_basis_usd": 224.17626432,
       "initial_stop_usd": 0.0021259857148526948,
-      "highest_price_usd": 0.002298817348342108,
-      "last_price_usd": 0.002298817348342108,
-      "last_price_at": "2026-11-14T22:32:23.561967+00:00",
+      "highest_price_usd": 0.0023005068171078127,
+      "last_price_usd": 0.0023005068171078127,
+      "last_price_at": "2026-11-14T22:37:31.201384+00:00",
       "current_stop_usd": 0.0021259857148526948,
       "last_quote": {
-        "at": "2026-11-14T22:32:23.561967+00:00",
+        "at": "2026-11-14T22:37:31.201384+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.002298817348342108,
-        "price_high_usd": 0.0023012301782362695,
-        "deviation_pct": 0.105,
+        "price_low_usd": 0.0023005068171078127,
+        "price_high_usd": 0.0023012664221690677,
+        "deviation_pct": 0.033,
         "errors": {}
       },
-      "last_liquidity_usd": 150035.8907650736,
+      "last_liquidity_usd": 149713.0947870859,
       "current_stop_kind": "initial"
     }
   ],
@@ -2047,18 +2047,18 @@
       "equity_usd": 7473.74053893
     },
     {
-      "at": "2026-11-14T22:32:23.561967+00:00",
-      "equity_usd": 7476.22247565
+      "at": "2026-11-14T22:37:31.201384+00:00",
+      "equity_usd": 7476.3899342
     }
   ],
   "last_run": {
-    "at": "2026-11-14T22:32:23.561967+00:00",
+    "at": "2026-11-14T22:37:31.201384+00:00",
     "mode": "monitor",
     "scan_status": "not_requested",
     "scan_at": null,
     "entry_decisions": [],
     "open_positions": 1,
-    "equity_usd": 7476.22247565,
-    "run_number": "1065"
+    "equity_usd": 7476.3899342,
+    "run_number": "1066"
   }
 }
