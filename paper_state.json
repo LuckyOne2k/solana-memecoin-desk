@@ -4,9 +4,9 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-15T18:02:19.268150+00:00",
+  "updated_at": "2026-11-15T18:10:28.648804+00:00",
   "starting_balance_usd": 10000.0,
-  "cash_usd": 6786.32281343,
+  "cash_usd": 6575.86795737,
   "open_positions": [
     {
       "token_symbol": "BORLY",
@@ -24,18 +24,37 @@
       "initial_stop_usd": 0.00045915741044568175,
       "highest_price_usd": 0.0004980298756809946,
       "last_price_usd": 0.0004980298756809946,
-      "last_price_at": "2026-11-15T18:02:19.268150+00:00",
+      "last_price_at": "2026-11-15T18:10:28.648804+00:00",
       "current_stop_usd": 0.00045915741044568175,
       "last_quote": {
-        "at": "2026-11-15T18:02:19.268150+00:00",
+        "at": "2026-11-15T18:10:28.648804+00:00",
         "status": "confirmed",
         "price_low_usd": 0.0004980298756809946,
         "price_high_usd": 0.0004986906871773775,
         "deviation_pct": 0.1327,
         "errors": {}
       },
-      "last_liquidity_usd": 48570.9125,
+      "last_liquidity_usd": 48697.242,
       "current_stop_kind": "initial"
+    },
+    {
+      "token_symbol": "UODF",
+      "token_name": "UODF",
+      "token_address": "39rS82a9nNnBuDdoJHGFti2CHQaZvLtauQzzUkERpump",
+      "pool_address": "Hu2Hr2wQ129CAB57hJyYy8K3LVfRMCfczRoqtEczQTxh",
+      "dex_name": "PumpSwap",
+      "opened_at": "2026-11-15T18:10:28.648804+00:00",
+      "entry_price_usd": 0.0010791646152683338,
+      "entry_mark_price_usd": 0.0010623602655353648,
+      "entry_cost_pct": 1.5818,
+      "entry_liquidity_usd": 72346.8778,
+      "token_amount": 195016.45354418008,
+      "cost_basis_usd": 210.45485606,
+      "initial_stop_usd": 0.0010144147383522337,
+      "highest_price_usd": 0.0010791646152683338,
+      "last_price_usd": 0.001061891729221956,
+      "last_price_at": "2026-11-15T18:10:28.648804+00:00",
+      "current_stop_usd": 0.0010144147383522337
     }
   ],
   "closed_trades": [
@@ -647,7 +666,7 @@
     "whuzUJj3qRmBsQRxYTd4mEfZcqrRihcJKkCjcYApump": "2026-11-15T14:27:20.773721+00:00"
   },
   "stats": {
-    "trades_opened": 28,
+    "trades_opened": 29,
     "trades_closed": 27,
     "wins": 9,
     "losses": 18,
@@ -2504,18 +2523,39 @@
       "equity_usd": 7015.16186871
     },
     {
-      "at": "2026-11-15T18:02:19.268150+00:00",
-      "equity_usd": 7015.16186871
+      "at": "2026-11-15T18:10:28.648804+00:00",
+      "equity_usd": 7011.79337173
     }
   ],
   "last_run": {
-    "at": "2026-11-15T18:02:19.268150+00:00",
-    "mode": "monitor",
-    "scan_status": "not_requested",
-    "scan_at": null,
-    "entry_decisions": [],
-    "open_positions": 1,
-    "equity_usd": 7015.16186871,
-    "run_number": "1280"
+    "at": "2026-11-15T18:10:28.648804+00:00",
+    "mode": "after-scan",
+    "scan_status": "ok",
+    "scan_at": "2026-11-15T18:10:28.451433+00:00",
+    "entry_decisions": [
+      {
+        "token_symbol": "WOHAIHAO",
+        "token_address": "4B1mCGeSjTadzH7okALwdFm8taxoHbZBFCTA1nZRpump",
+        "decision": "reentry_cooldown"
+      },
+      {
+        "token_symbol": "UODF",
+        "token_address": "39rS82a9nNnBuDdoJHGFti2CHQaZvLtauQzzUkERpump",
+        "decision": "open"
+      },
+      {
+        "token_symbol": "FOTF",
+        "token_address": "C6rxhmqEtmPs6SWQmoWEczH9jFx3YM724aTe6FNQpump",
+        "decision": "fresh_price_disagree"
+      },
+      {
+        "token_symbol": "BORLY",
+        "token_address": "BBRgG2GifeKNB1hSmzD2BwHMPK8wnDtcuE4NzxgHpump",
+        "decision": "already_open"
+      }
+    ],
+    "open_positions": 2,
+    "equity_usd": 7011.79337173,
+    "run_number": "178"
   }
 }
