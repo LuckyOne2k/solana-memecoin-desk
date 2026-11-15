@@ -4,9 +4,9 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-15T14:09:28.457740+00:00",
+  "updated_at": "2026-11-15T14:12:16.770494+00:00",
   "starting_balance_usd": 10000.0,
-  "cash_usd": 6784.86901906,
+  "cash_usd": 6786.14809467,
   "open_positions": [
     {
       "token_symbol": "BORLY",
@@ -24,10 +24,10 @@
       "initial_stop_usd": 0.00045915741044568175,
       "highest_price_usd": 0.0004980298756809946,
       "last_price_usd": 0.0004980298756809946,
-      "last_price_at": "2026-11-15T14:09:28.457740+00:00",
+      "last_price_at": "2026-11-15T14:12:16.770494+00:00",
       "current_stop_usd": 0.00045915741044568175,
       "last_quote": {
-        "at": "2026-11-15T14:09:28.457740+00:00",
+        "at": "2026-11-15T14:12:16.770494+00:00",
         "status": "confirmed",
         "price_low_usd": 0.0004980298756809946,
         "price_high_usd": 0.0004986906871773775,
@@ -36,35 +36,6 @@
       },
       "last_liquidity_usd": 49343.969,
       "current_stop_kind": "initial"
-    },
-    {
-      "token_symbol": "VTC",
-      "token_name": "VICE 6",
-      "token_address": "iv3tU7sqxnLRpmDTRsiMU95eQqRc4mmEdtQZBnapump",
-      "pool_address": "8SsBqA94GVe4TAJR8wrs3PYSaPuT3eSCCjWPihY9xC1i",
-      "dex_name": "PumpSwap",
-      "opened_at": "2026-11-15T03:09:26.275971+00:00",
-      "entry_price_usd": 0.0038942526488932403,
-      "entry_mark_price_usd": 0.003846897184499774,
-      "entry_cost_pct": 1.231,
-      "entry_liquidity_usd": 194700.25240331335,
-      "token_amount": 57747.368264335,
-      "cost_basis_usd": 224.88284183,
-      "initial_stop_usd": 0.0036605974899596456,
-      "highest_price_usd": 0.004390777177185141,
-      "last_price_usd": 0.004390777177185141,
-      "last_price_at": "2026-11-15T14:09:28.457740+00:00",
-      "current_stop_usd": 0.004127907807826835,
-      "last_quote": {
-        "at": "2026-11-15T14:09:28.457740+00:00",
-        "status": "confirmed",
-        "price_low_usd": 0.004390777177185141,
-        "price_high_usd": 0.004391909545894539,
-        "deviation_pct": 0.0258,
-        "errors": {}
-      },
-      "last_liquidity_usd": 207549.1051,
-      "current_stop_kind": "profit_lock"
     },
     {
       "token_symbol": "OIF",
@@ -80,19 +51,19 @@
       "token_amount": 70048.21820668776,
       "cost_basis_usd": 229.27898296,
       "initial_stop_usd": 0.0030767698237015727,
-      "highest_price_usd": 0.0033333090084347026,
-      "last_price_usd": 0.0033333090084347026,
-      "last_price_at": "2026-11-15T14:09:28.457740+00:00",
+      "highest_price_usd": 0.0033371471224430097,
+      "last_price_usd": 0.0033371471224430097,
+      "last_price_at": "2026-11-15T14:12:16.770494+00:00",
       "current_stop_usd": 0.0030767698237015727,
       "last_quote": {
-        "at": "2026-11-15T14:09:28.457740+00:00",
+        "at": "2026-11-15T14:12:16.770494+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.0033333090084347026,
-        "price_high_usd": 0.0033339950951188106,
-        "deviation_pct": 0.0206,
+        "price_low_usd": 0.0033371471224430097,
+        "price_high_usd": 0.0033392533399281945,
+        "deviation_pct": 0.0631,
         "errors": {}
       },
-      "last_liquidity_usd": 180137.611257408,
+      "last_liquidity_usd": 181301.08216195297,
       "current_stop_kind": "initial"
     }
   ],
@@ -635,6 +606,26 @@
       "exit_reason": "security_rejected",
       "highest_price_usd": 0.0030025218429838903,
       "partial": false
+    },
+    {
+      "token_symbol": "VTC",
+      "token_address": "iv3tU7sqxnLRpmDTRsiMU95eQqRc4mmEdtQZBnapump",
+      "pool_address": "8SsBqA94GVe4TAJR8wrs3PYSaPuT3eSCCjWPihY9xC1i",
+      "opened_at": "2026-11-15T03:09:26.275971+00:00",
+      "closed_at": "2026-11-15T14:12:16.770494+00:00",
+      "holding_hours": 11.047,
+      "entry_price_usd": 0.0038942526488932403,
+      "exit_mark_price_usd": 2.2374605316613836e-05,
+      "exit_price_usd": 2.2149504828359462e-05,
+      "exit_cost_pct": 1.0061,
+      "token_amount": 57747.368264335,
+      "cost_basis_usd": 224.88284183,
+      "proceeds_usd": 1.27907561,
+      "pnl_usd": -223.60376622,
+      "pnl_pct": -99.4312,
+      "exit_reason": "profit_lock",
+      "highest_price_usd": 0.004390777177185141,
+      "partial": false
     }
   ],
   "last_exit_at": {
@@ -660,14 +651,15 @@
     "vxrovNBSaveg1dq47VG9vWcGRbC8rGgMVbqQPiCpump": "2026-11-14T17:37:29.737281+00:00",
     "4B1mCGeSjTadzH7okALwdFm8taxoHbZBFCTA1nZRpump": "2026-11-15T05:32:22.992950+00:00",
     "vADAuKfnEg3XFvx3P2pmdc1376iuBTApdN4hwrjpump": "2026-11-15T12:10:50.960206+00:00",
-    "jTJPhJ6Nov7Dy8tY7nfvJxi4P2tkQYYoZ5T3sZUpump": "2026-11-15T14:09:28.457740+00:00"
+    "jTJPhJ6Nov7Dy8tY7nfvJxi4P2tkQYYoZ5T3sZUpump": "2026-11-15T14:09:28.457740+00:00",
+    "iv3tU7sqxnLRpmDTRsiMU95eQqRc4mmEdtQZBnapump": "2026-11-15T14:12:16.770494+00:00"
   },
   "stats": {
     "trades_opened": 28,
-    "trades_closed": 25,
+    "trades_closed": 26,
     "wins": 9,
-    "losses": 16,
-    "realized_pnl_usd": -2536.52490055,
+    "losses": 17,
+    "realized_pnl_usd": -2760.12866677,
     "partial_sales": 3
   },
   "equity_history": [
@@ -2456,34 +2448,18 @@
       "equity_usd": 7494.41129446
     },
     {
-      "at": "2026-11-15T14:09:28.457740+00:00",
-      "equity_usd": 7500.75625773
+      "at": "2026-11-15T14:12:16.770494+00:00",
+      "equity_usd": 7248.74835977
     }
   ],
   "last_run": {
-    "at": "2026-11-15T14:09:28.457740+00:00",
-    "mode": "after-scan",
-    "scan_status": "ok",
-    "scan_at": "2026-11-15T14:09:28.273699+00:00",
-    "entry_decisions": [
-      {
-        "token_symbol": "OIF",
-        "token_address": "whuzUJj3qRmBsQRxYTd4mEfZcqrRihcJKkCjcYApump",
-        "decision": "already_open"
-      },
-      {
-        "token_symbol": "FOTF",
-        "token_address": "C6rxhmqEtmPs6SWQmoWEczH9jFx3YM724aTe6FNQpump",
-        "decision": "not_ready_in_previous_scan"
-      },
-      {
-        "token_symbol": "BORLY",
-        "token_address": "BBRgG2GifeKNB1hSmzD2BwHMPK8wnDtcuE4NzxgHpump",
-        "decision": "already_open"
-      }
-    ],
-    "open_positions": 3,
-    "equity_usd": 7500.75625773,
-    "run_number": "174"
+    "at": "2026-11-15T14:12:16.770494+00:00",
+    "mode": "monitor",
+    "scan_status": "not_requested",
+    "scan_at": null,
+    "entry_decisions": [],
+    "open_positions": 2,
+    "equity_usd": 7248.74835977,
+    "run_number": "1237"
   }
 }
