@@ -4,9 +4,9 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-15T03:02:10.606128+00:00",
+  "updated_at": "2026-11-15T03:09:26.275971+00:00",
   "starting_balance_usd": 10000.0,
-  "cash_usd": 7023.92162394,
+  "cash_usd": 6799.03878211,
   "open_positions": [
     {
       "token_symbol": "USDA",
@@ -22,19 +22,19 @@
       "token_amount": 99119.05192429796,
       "cost_basis_usd": 224.17626432,
       "initial_stop_usd": 0.0021259857148526948,
-      "highest_price_usd": 0.0025047191532023396,
-      "last_price_usd": 0.002482009363239899,
-      "last_price_at": "2026-11-15T03:02:10.606128+00:00",
+      "highest_price_usd": 0.002511247391323591,
+      "last_price_usd": 0.002511247391323591,
+      "last_price_at": "2026-11-15T03:09:26.275971+00:00",
       "current_stop_usd": 0.002291555059337765,
       "last_quote": {
-        "at": "2026-11-15T03:02:10.606128+00:00",
+        "at": "2026-11-15T03:09:26.275971+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.002482009363239899,
-        "price_high_usd": 0.002509726723602012,
-        "deviation_pct": 1.1167,
+        "price_low_usd": 0.002511247391323591,
+        "price_high_usd": 0.0025142756331435127,
+        "deviation_pct": 0.1206,
         "errors": {}
       },
-      "last_liquidity_usd": 156948.02922335925,
+      "last_liquidity_usd": 156938.62982554833,
       "current_stop_kind": "profit_lock"
     },
     {
@@ -53,18 +53,37 @@
       "initial_stop_usd": 0.00045915741044568175,
       "highest_price_usd": 0.0004884653302613636,
       "last_price_usd": 0.00048588939610951653,
-      "last_price_at": "2026-11-15T03:02:10.606128+00:00",
+      "last_price_at": "2026-11-15T03:09:26.275971+00:00",
       "current_stop_usd": 0.00045915741044568175,
       "last_quote": {
-        "at": "2026-11-15T03:02:10.606128+00:00",
+        "at": "2026-11-15T03:09:26.275971+00:00",
         "status": "confirmed",
         "price_low_usd": 0.00048588939610951653,
         "price_high_usd": 0.00048633289310427756,
         "deviation_pct": 0.0913,
         "errors": {}
       },
-      "last_liquidity_usd": 48680.9863,
+      "last_liquidity_usd": 48875.4285,
       "current_stop_kind": "initial"
+    },
+    {
+      "token_symbol": "VTC",
+      "token_name": "VICE 6",
+      "token_address": "iv3tU7sqxnLRpmDTRsiMU95eQqRc4mmEdtQZBnapump",
+      "pool_address": "8SsBqA94GVe4TAJR8wrs3PYSaPuT3eSCCjWPihY9xC1i",
+      "dex_name": "PumpSwap",
+      "opened_at": "2026-11-15T03:09:26.275971+00:00",
+      "entry_price_usd": 0.0038942526488932403,
+      "entry_mark_price_usd": 0.003846897184499774,
+      "entry_cost_pct": 1.231,
+      "entry_liquidity_usd": 194700.25240331335,
+      "token_amount": 57747.368264335,
+      "cost_basis_usd": 224.88284183,
+      "initial_stop_usd": 0.0036605974899596456,
+      "highest_price_usd": 0.0038942526488932403,
+      "last_price_usd": 0.003846552960859066,
+      "last_price_at": "2026-11-15T03:09:26.275971+00:00",
+      "current_stop_usd": 0.0036605974899596456
     }
   ],
   "closed_trades": [
@@ -531,7 +550,7 @@
     "vxrovNBSaveg1dq47VG9vWcGRbC8rGgMVbqQPiCpump": "2026-11-14T17:37:29.737281+00:00"
   },
   "stats": {
-    "trades_opened": 24,
+    "trades_opened": 25,
     "trades_closed": 22,
     "wins": 7,
     "losses": 15,
@@ -2148,18 +2167,39 @@
       "equity_usd": 7495.44765494
     },
     {
-      "at": "2026-11-15T03:02:10.606128+00:00",
-      "equity_usd": 7493.19668209
+      "at": "2026-11-15T03:09:26.275971+00:00",
+      "equity_usd": 7493.34019626
     }
   ],
   "last_run": {
-    "at": "2026-11-15T03:02:10.606128+00:00",
-    "mode": "monitor",
-    "scan_status": "not_requested",
-    "scan_at": null,
-    "entry_decisions": [],
-    "open_positions": 2,
-    "equity_usd": 7493.19668209,
-    "run_number": "1115"
+    "at": "2026-11-15T03:09:26.275971+00:00",
+    "mode": "after-scan",
+    "scan_status": "ok",
+    "scan_at": "2026-11-15T03:09:25.984161+00:00",
+    "entry_decisions": [
+      {
+        "token_symbol": "WOHAIHAO",
+        "token_address": "4B1mCGeSjTadzH7okALwdFm8taxoHbZBFCTA1nZRpump",
+        "decision": "price_changed_between_scans"
+      },
+      {
+        "token_symbol": "VTC",
+        "token_address": "iv3tU7sqxnLRpmDTRsiMU95eQqRc4mmEdtQZBnapump",
+        "decision": "open"
+      },
+      {
+        "token_symbol": "USDA",
+        "token_address": "jTJPhJ6Nov7Dy8tY7nfvJxi4P2tkQYYoZ5T3sZUpump",
+        "decision": "already_open"
+      },
+      {
+        "token_symbol": "BORLY",
+        "token_address": "BBRgG2GifeKNB1hSmzD2BwHMPK8wnDtcuE4NzxgHpump",
+        "decision": "already_open"
+      }
+    ],
+    "open_positions": 3,
+    "equity_usd": 7493.34019626,
+    "run_number": "163"
   }
 }
