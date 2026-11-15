@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-15T00:47:35.477294+00:00",
+  "updated_at": "2026-11-15T00:52:15.256935+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 7248.36587954,
   "open_positions": [
@@ -22,19 +22,19 @@
       "token_amount": 99119.05192429796,
       "cost_basis_usd": 224.17626432,
       "initial_stop_usd": 0.0021259857148526948,
-      "highest_price_usd": 0.0023404425800172984,
-      "last_price_usd": 0.0023200586074949674,
-      "last_price_at": "2026-11-15T00:47:35.477294+00:00",
+      "highest_price_usd": 0.002345832133431547,
+      "last_price_usd": 0.002345832133431547,
+      "last_price_at": "2026-11-15T00:52:15.256935+00:00",
       "current_stop_usd": 0.0021259857148526948,
       "last_quote": {
-        "at": "2026-11-15T00:47:35.477294+00:00",
+        "at": "2026-11-15T00:52:15.256935+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.0023200586074949674,
-        "price_high_usd": 0.0023445254577483636,
-        "deviation_pct": 1.0546,
+        "price_low_usd": 0.002345832133431547,
+        "price_high_usd": 0.002348102606644445,
+        "deviation_pct": 0.0968,
         "errors": {}
       },
-      "last_liquidity_usd": 151565.53409810804,
+      "last_liquidity_usd": 150816.05515140155,
       "current_stop_kind": "initial"
     }
   ],
@@ -2083,18 +2083,18 @@
       "equity_usd": 7478.13701059
     },
     {
-      "at": "2026-11-15T00:47:35.477294+00:00",
-      "equity_usd": 7478.32788912
+      "at": "2026-11-15T00:52:15.256935+00:00",
+      "equity_usd": 7480.88253658
     }
   ],
   "last_run": {
-    "at": "2026-11-15T00:47:35.477294+00:00",
+    "at": "2026-11-15T00:52:15.256935+00:00",
     "mode": "monitor",
     "scan_status": "not_requested",
     "scan_at": null,
     "entry_decisions": [],
     "open_positions": 1,
-    "equity_usd": 7478.32788912,
-    "run_number": "1090"
+    "equity_usd": 7480.88253658,
+    "run_number": "1091"
   }
 }
