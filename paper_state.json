@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-15T02:52:28.957023+00:00",
+  "updated_at": "2026-11-15T02:57:34.966183+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 7023.92162394,
   "open_positions": [
@@ -22,20 +22,20 @@
       "token_amount": 99119.05192429796,
       "cost_basis_usd": 224.17626432,
       "initial_stop_usd": 0.0021259857148526948,
-      "highest_price_usd": 0.002382581057628297,
-      "last_price_usd": 0.002354757534575896,
-      "last_price_at": "2026-11-15T02:52:28.957023+00:00",
-      "current_stop_usd": 0.0021259857148526948,
+      "highest_price_usd": 0.0025047191532023396,
+      "last_price_usd": 0.0025047191532023396,
+      "last_price_at": "2026-11-15T02:57:34.966183+00:00",
+      "current_stop_usd": 0.002291555059337765,
       "last_quote": {
-        "at": "2026-11-15T02:52:28.957023+00:00",
+        "at": "2026-11-15T02:57:34.966183+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.002354757534575896,
-        "price_high_usd": 0.0024965762922101037,
-        "deviation_pct": 6.0226,
+        "price_low_usd": 0.0025047191532023396,
+        "price_high_usd": 0.002508533858565978,
+        "deviation_pct": 0.1523,
         "errors": {}
       },
-      "last_liquidity_usd": 151995.5011453601,
-      "current_stop_kind": "initial"
+      "last_liquidity_usd": 156746.68519092712,
+      "current_stop_kind": "profit_lock"
     },
     {
       "token_symbol": "BORLY",
@@ -53,17 +53,17 @@
       "initial_stop_usd": 0.00045915741044568175,
       "highest_price_usd": 0.0004884653302613636,
       "last_price_usd": 0.00048588939610951653,
-      "last_price_at": "2026-11-15T02:52:28.957023+00:00",
+      "last_price_at": "2026-11-15T02:57:34.966183+00:00",
       "current_stop_usd": 0.00045915741044568175,
       "last_quote": {
-        "at": "2026-11-15T02:52:28.957023+00:00",
+        "at": "2026-11-15T02:57:34.966183+00:00",
         "status": "confirmed",
         "price_low_usd": 0.00048588939610951653,
         "price_high_usd": 0.00048633289310427756,
         "deviation_pct": 0.0913,
         "errors": {}
       },
-      "last_liquidity_usd": 48419.5666,
+      "last_liquidity_usd": 48459.781,
       "current_stop_kind": "initial"
     }
   ],
@@ -2144,18 +2144,18 @@
       "equity_usd": 7483.11843982
     },
     {
-      "at": "2026-11-15T02:52:28.957023+00:00",
-      "equity_usd": 7480.58360148
+      "at": "2026-11-15T02:57:34.966183+00:00",
+      "equity_usd": 7495.44765494
     }
   ],
   "last_run": {
-    "at": "2026-11-15T02:52:28.957023+00:00",
+    "at": "2026-11-15T02:57:34.966183+00:00",
     "mode": "monitor",
     "scan_status": "not_requested",
     "scan_at": null,
     "entry_decisions": [],
     "open_positions": 2,
-    "equity_usd": 7480.58360148,
-    "run_number": "1113"
+    "equity_usd": 7495.44765494,
+    "run_number": "1114"
   }
 }
