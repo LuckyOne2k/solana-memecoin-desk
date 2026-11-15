@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-15T17:10:48.451801+00:00",
+  "updated_at": "2026-11-15T17:12:19.819538+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 6786.32281343,
   "open_positions": [
@@ -24,10 +24,10 @@
       "initial_stop_usd": 0.00045915741044568175,
       "highest_price_usd": 0.0004980298756809946,
       "last_price_usd": 0.0004980298756809946,
-      "last_price_at": "2026-11-15T17:10:48.451801+00:00",
+      "last_price_at": "2026-11-15T17:12:19.819538+00:00",
       "current_stop_usd": 0.00045915741044568175,
       "last_quote": {
-        "at": "2026-11-15T17:10:48.451801+00:00",
+        "at": "2026-11-15T17:12:19.819538+00:00",
         "status": "confirmed",
         "price_low_usd": 0.0004980298756809946,
         "price_high_usd": 0.0004986906871773775,
@@ -2488,39 +2488,18 @@
       "equity_usd": 7015.16186871
     },
     {
-      "at": "2026-11-15T17:10:48.451801+00:00",
+      "at": "2026-11-15T17:12:19.819538+00:00",
       "equity_usd": 7015.16186871
     }
   ],
   "last_run": {
-    "at": "2026-11-15T17:10:48.451801+00:00",
-    "mode": "after-scan",
-    "scan_status": "ok",
-    "scan_at": "2026-11-15T17:10:48.210740+00:00",
-    "entry_decisions": [
-      {
-        "token_symbol": "WOHAIHAO",
-        "token_address": "4B1mCGeSjTadzH7okALwdFm8taxoHbZBFCTA1nZRpump",
-        "decision": "reentry_cooldown"
-      },
-      {
-        "token_symbol": "UODF",
-        "token_address": "39rS82a9nNnBuDdoJHGFti2CHQaZvLtauQzzUkERpump",
-        "decision": "not_ready_in_previous_scan"
-      },
-      {
-        "token_symbol": "FOTF",
-        "token_address": "C6rxhmqEtmPs6SWQmoWEczH9jFx3YM724aTe6FNQpump",
-        "decision": "fresh_price_disagree"
-      },
-      {
-        "token_symbol": "BORLY",
-        "token_address": "BBRgG2GifeKNB1hSmzD2BwHMPK8wnDtcuE4NzxgHpump",
-        "decision": "already_open"
-      }
-    ],
+    "at": "2026-11-15T17:12:19.819538+00:00",
+    "mode": "monitor",
+    "scan_status": "not_requested",
+    "scan_at": null,
+    "entry_decisions": [],
     "open_positions": 1,
     "equity_usd": 7015.16186871,
-    "run_number": "177"
+    "run_number": "1270"
   }
 }
