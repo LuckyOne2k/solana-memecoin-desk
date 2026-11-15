@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-15T00:02:14.761602+00:00",
+  "updated_at": "2026-11-15T00:09:18.578227+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 7248.36587954,
   "open_positions": [
@@ -23,18 +23,18 @@
       "cost_basis_usd": 224.17626432,
       "initial_stop_usd": 0.0021259857148526948,
       "highest_price_usd": 0.002324231433322167,
-      "last_price_usd": 0.002324231433322167,
-      "last_price_at": "2026-11-15T00:02:14.761602+00:00",
+      "last_price_usd": 0.0023032316123051235,
+      "last_price_at": "2026-11-15T00:09:18.578227+00:00",
       "current_stop_usd": 0.0021259857148526948,
       "last_quote": {
-        "at": "2026-11-15T00:02:14.761602+00:00",
+        "at": "2026-11-15T00:09:18.578227+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.002324231433322167,
-        "price_high_usd": 0.0023263769382526026,
-        "deviation_pct": 0.0923,
+        "price_low_usd": 0.0023032316123051235,
+        "price_high_usd": 0.002332306332844802,
+        "deviation_pct": 1.2623,
         "errors": {}
       },
-      "last_liquidity_usd": 150901.9305752056,
+      "last_liquidity_usd": 150354.7992,
       "current_stop_kind": "initial"
     }
   ],
@@ -2071,18 +2071,24 @@
       "equity_usd": 7475.88061904
     },
     {
-      "at": "2026-11-15T00:02:14.761602+00:00",
-      "equity_usd": 7478.74149566
+      "at": "2026-11-15T00:09:18.578227+00:00",
+      "equity_usd": 7476.66001331
     }
   ],
   "last_run": {
-    "at": "2026-11-15T00:02:14.761602+00:00",
-    "mode": "monitor",
-    "scan_status": "not_requested",
-    "scan_at": null,
-    "entry_decisions": [],
+    "at": "2026-11-15T00:09:18.578227+00:00",
+    "mode": "after-scan",
+    "scan_status": "ok",
+    "scan_at": "2026-11-15T00:09:18.302227+00:00",
+    "entry_decisions": [
+      {
+        "token_symbol": "USDA",
+        "token_address": "jTJPhJ6Nov7Dy8tY7nfvJxi4P2tkQYYoZ5T3sZUpump",
+        "decision": "already_open"
+      }
+    ],
     "open_positions": 1,
-    "equity_usd": 7478.74149566,
-    "run_number": "1082"
+    "equity_usd": 7476.66001331,
+    "run_number": "160"
   }
 }
