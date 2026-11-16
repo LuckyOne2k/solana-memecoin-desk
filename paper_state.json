@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-16T21:37:26.175937+00:00",
+  "updated_at": "2026-11-16T21:42:32.868198+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 6569.99737989,
   "open_positions": [
@@ -22,19 +22,19 @@
       "token_amount": 106866.27995907908,
       "cost_basis_usd": 203.19579525,
       "initial_stop_usd": 0.0017873182037228084,
-      "highest_price_usd": 0.002051727944692893,
-      "last_price_usd": 0.002051727944692893,
-      "last_price_at": "2026-11-16T21:37:26.175937+00:00",
+      "highest_price_usd": 0.0020580320341586815,
+      "last_price_usd": 0.0020580320341586815,
+      "last_price_at": "2026-11-16T21:42:32.868198+00:00",
       "current_stop_usd": 0.001928889012818632,
       "last_quote": {
-        "at": "2026-11-16T21:37:26.175937+00:00",
+        "at": "2026-11-16T21:42:32.868198+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.002051727944692893,
-        "price_high_usd": 0.0020534587991427717,
-        "deviation_pct": 0.0844,
+        "price_low_usd": 0.0020580320341586815,
+        "price_high_usd": 0.002061361498079774,
+        "deviation_pct": 0.1618,
         "errors": {}
       },
-      "last_liquidity_usd": 100634.46005277333,
+      "last_liquidity_usd": 100877.5076958648,
       "current_stop_kind": "profit_lock"
     }
   ],
@@ -2914,18 +2914,18 @@
       "equity_usd": 6787.5151581
     },
     {
-      "at": "2026-11-16T21:37:26.175937+00:00",
-      "equity_usd": 6789.25791283
+      "at": "2026-11-16T21:42:32.868198+00:00",
+      "equity_usd": 6789.93160742
     }
   ],
   "last_run": {
-    "at": "2026-11-16T21:37:26.175937+00:00",
+    "at": "2026-11-16T21:42:32.868198+00:00",
     "mode": "monitor",
     "scan_status": "not_requested",
     "scan_at": null,
     "entry_decisions": [],
     "open_positions": 1,
-    "equity_usd": 6789.25791283,
-    "run_number": "1584"
+    "equity_usd": 6789.93160742,
+    "run_number": "1585"
   }
 }
