@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-16T16:09:53.554488+00:00",
+  "updated_at": "2026-11-16T17:09:35.568781+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 6773.19317514,
   "open_positions": [],
@@ -2822,16 +2822,26 @@
     {
       "at": "2026-11-16T16:09:53.554488+00:00",
       "equity_usd": 6773.19317514
+    },
+    {
+      "at": "2026-11-16T17:09:35.568781+00:00",
+      "equity_usd": 6773.19317514
     }
   ],
   "last_run": {
-    "at": "2026-11-16T16:09:53.554488+00:00",
+    "at": "2026-11-16T17:09:35.568781+00:00",
     "mode": "after-scan",
     "scan_status": "ok",
-    "scan_at": "2026-11-16T16:09:53.313748+00:00",
-    "entry_decisions": [],
+    "scan_at": "2026-11-16T17:09:35.364879+00:00",
+    "entry_decisions": [
+      {
+        "token_symbol": "UODF",
+        "token_address": "KhyV4sEgisvA5CTD6NdcsyFJyAxHANq8By8Zrk9pump",
+        "decision": "not_ready_in_previous_scan"
+      }
+    ],
     "open_positions": 0,
     "equity_usd": 6773.19317514,
-    "run_number": "200"
+    "run_number": "201"
   }
 }
