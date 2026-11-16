@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-16T20:47:31.448364+00:00",
+  "updated_at": "2026-11-16T20:52:29.746293+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 6569.99737989,
   "open_positions": [
@@ -22,19 +22,19 @@
       "token_amount": 106866.27995907908,
       "cost_basis_usd": 203.19579525,
       "initial_stop_usd": 0.0017873182037228084,
-      "highest_price_usd": 0.0020111783349232755,
-      "last_price_usd": 0.0020111783349232755,
-      "last_price_at": "2026-11-16T20:47:31.448364+00:00",
+      "highest_price_usd": 0.002014990185222101,
+      "last_price_usd": 0.002014990185222101,
+      "last_price_at": "2026-11-16T20:52:29.746293+00:00",
       "current_stop_usd": 0.0017873182037228084,
       "last_quote": {
-        "at": "2026-11-16T20:47:31.448364+00:00",
+        "at": "2026-11-16T20:52:29.746293+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.0020111783349232755,
-        "price_high_usd": 0.0020135063784573666,
-        "deviation_pct": 0.1158,
+        "price_low_usd": 0.002014990185222101,
+        "price_high_usd": 0.0020169855054933514,
+        "deviation_pct": 0.099,
         "errors": {}
       },
-      "last_liquidity_usd": 99318.1653619226,
+      "last_liquidity_usd": 99488.04312228858,
       "current_stop_kind": "initial"
     }
   ],
@@ -2902,18 +2902,18 @@
       "equity_usd": 6784.23323972
     },
     {
-      "at": "2026-11-16T20:47:31.448364+00:00",
-      "equity_usd": 6784.92452688
+      "at": "2026-11-16T20:52:29.746293+00:00",
+      "equity_usd": 6785.33188514
     }
   ],
   "last_run": {
-    "at": "2026-11-16T20:47:31.448364+00:00",
+    "at": "2026-11-16T20:52:29.746293+00:00",
     "mode": "monitor",
     "scan_status": "not_requested",
     "scan_at": null,
     "entry_decisions": [],
     "open_positions": 1,
-    "equity_usd": 6784.92452688,
-    "run_number": "1575"
+    "equity_usd": 6785.33188514,
+    "run_number": "1576"
   }
 }
