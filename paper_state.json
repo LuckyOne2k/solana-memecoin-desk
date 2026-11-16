@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-16T14:09:23.436723+00:00",
+  "updated_at": "2026-11-16T14:12:30.531519+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 6596.59447711,
   "open_positions": [
@@ -23,9 +23,19 @@
       "cost_basis_usd": 204.01838589,
       "initial_stop_usd": 0.0005112427512774213,
       "highest_price_usd": 0.0005438752673164056,
-      "last_price_usd": 0.0005335068206545811,
-      "last_price_at": "2026-11-16T14:09:23.436723+00:00",
-      "current_stop_usd": 0.0005112427512774213
+      "last_price_usd": 0.0005331349937060911,
+      "last_price_at": "2026-11-16T14:12:30.531519+00:00",
+      "current_stop_usd": 0.0005112427512774213,
+      "last_quote": {
+        "at": "2026-11-16T14:12:30.531519+00:00",
+        "status": "confirmed",
+        "price_low_usd": 0.0005331349937060911,
+        "price_high_usd": 0.0005343378522168936,
+        "deviation_pct": 0.2256,
+        "errors": {}
+      },
+      "last_liquidity_usd": 51965.20573150161,
+      "current_stop_kind": "initial"
     }
   ],
   "closed_trades": [
@@ -2807,24 +2817,18 @@
       "equity_usd": 6800.612863
     },
     {
-      "at": "2026-11-16T14:09:23.436723+00:00",
-      "equity_usd": 6796.72345328
+      "at": "2026-11-16T14:12:30.531519+00:00",
+      "equity_usd": 6796.58397362
     }
   ],
   "last_run": {
-    "at": "2026-11-16T14:09:23.436723+00:00",
-    "mode": "after-scan",
-    "scan_status": "ok",
-    "scan_at": "2026-11-16T14:09:23.140667+00:00",
-    "entry_decisions": [
-      {
-        "token_symbol": "SWJ",
-        "token_address": "13EAww2eo8g1Xp9U7qrLNg1WoHFHKbs9xy2EQJjfpump",
-        "decision": "open"
-      }
-    ],
+    "at": "2026-11-16T14:12:30.531519+00:00",
+    "mode": "monitor",
+    "scan_status": "not_requested",
+    "scan_at": null,
+    "entry_decisions": [],
     "open_positions": 1,
-    "equity_usd": 6796.72345328,
-    "run_number": "198"
+    "equity_usd": 6796.58397362,
+    "run_number": "1501"
   }
 }
