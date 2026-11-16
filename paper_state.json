@@ -4,10 +4,30 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-16T17:09:35.568781+00:00",
+  "updated_at": "2026-11-16T18:09:49.779311+00:00",
   "starting_balance_usd": 10000.0,
-  "cash_usd": 6773.19317514,
-  "open_positions": [],
+  "cash_usd": 6569.99737989,
+  "open_positions": [
+    {
+      "token_symbol": "UODF",
+      "token_name": "United Oil Dividend Fund",
+      "token_address": "KhyV4sEgisvA5CTD6NdcsyFJyAxHANq8By8Zrk9pump",
+      "pool_address": "874xNaH73Gh3HxVZhY3SR9cfehfVhwrVDP8hCVTNxiW3",
+      "dex_name": "PumpSwap",
+      "opened_at": "2026-11-16T18:09:49.779311+00:00",
+      "entry_price_usd": 0.0019014023443859665,
+      "entry_mark_price_usd": 0.0018746878909583731,
+      "entry_cost_pct": 1.425,
+      "entry_liquidity_usd": 95619.73872868717,
+      "token_amount": 106866.27995907908,
+      "cost_basis_usd": 203.19579525,
+      "initial_stop_usd": 0.0017873182037228084,
+      "highest_price_usd": 0.0019014023443859665,
+      "last_price_usd": 0.0018746311310872158,
+      "last_price_at": "2026-11-16T18:09:49.779311+00:00",
+      "current_stop_usd": 0.0017873182037228084
+    }
+  ],
   "closed_trades": [
     {
       "token_symbol": "BRUH",
@@ -679,7 +699,7 @@
     "13EAww2eo8g1Xp9U7qrLNg1WoHFHKbs9xy2EQJjfpump": "2026-11-16T14:22:29.021985+00:00"
   },
   "stats": {
-    "trades_opened": 30,
+    "trades_opened": 31,
     "trades_closed": 30,
     "wins": 9,
     "losses": 21,
@@ -2826,22 +2846,31 @@
     {
       "at": "2026-11-16T17:09:35.568781+00:00",
       "equity_usd": 6773.19317514
+    },
+    {
+      "at": "2026-11-16T18:09:49.779311+00:00",
+      "equity_usd": 6770.33223516
     }
   ],
   "last_run": {
-    "at": "2026-11-16T17:09:35.568781+00:00",
+    "at": "2026-11-16T18:09:49.779311+00:00",
     "mode": "after-scan",
     "scan_status": "ok",
-    "scan_at": "2026-11-16T17:09:35.364879+00:00",
+    "scan_at": "2026-11-16T18:09:49.568113+00:00",
     "entry_decisions": [
+      {
+        "token_symbol": "GODF",
+        "token_address": "WbNBLM9BGKfdg8fmjrfvm31xZKtVPMEhDd9JR3Bpump",
+        "decision": "not_ready_in_previous_scan"
+      },
       {
         "token_symbol": "UODF",
         "token_address": "KhyV4sEgisvA5CTD6NdcsyFJyAxHANq8By8Zrk9pump",
-        "decision": "not_ready_in_previous_scan"
+        "decision": "open"
       }
     ],
-    "open_positions": 0,
-    "equity_usd": 6773.19317514,
-    "run_number": "201"
+    "open_positions": 1,
+    "equity_usd": 6770.33223516,
+    "run_number": "202"
   }
 }
