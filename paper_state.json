@@ -4,40 +4,10 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-16T10:02:23.442771+00:00",
+  "updated_at": "2026-11-16T10:09:21.712541+00:00",
   "starting_balance_usd": 10000.0,
-  "cash_usd": 6576.22820554,
-  "open_positions": [
-    {
-      "token_symbol": "BORLY",
-      "token_name": "Borly",
-      "token_address": "BBRgG2GifeKNB1hSmzD2BwHMPK8wnDtcuE4NzxgHpump",
-      "pool_address": "GHe3AhhjJXCz9Equ7gbA1Au5dYwP4CmyzdWhkWWTafih",
-      "dex_name": "PumpSwap",
-      "opened_at": "2026-11-15T02:09:05.388650+00:00",
-      "entry_price_usd": 0.0004884653302613636,
-      "entry_mark_price_usd": 0.0004790557334850803,
-      "entry_cost_pct": 1.9642,
-      "entry_liquidity_usd": 46555.7001,
-      "token_amount": 459488.6099283779,
-      "cost_basis_usd": 224.4442556,
-      "initial_stop_usd": 0.00045915741044568175,
-      "highest_price_usd": 0.0004980298756809946,
-      "last_price_usd": 0.0004980298756809946,
-      "last_price_at": "2026-11-16T10:02:23.442771+00:00",
-      "current_stop_usd": 0.00045915741044568175,
-      "last_quote": {
-        "at": "2026-11-16T10:02:23.442771+00:00",
-        "status": "confirmed",
-        "price_low_usd": 0.0004980298756809946,
-        "price_high_usd": 0.0004986906871773775,
-        "deviation_pct": 0.1327,
-        "errors": {}
-      },
-      "last_liquidity_usd": 48353.7742,
-      "current_stop_kind": "initial"
-    }
-  ],
+  "cash_usd": 6800.612863,
+  "open_positions": [],
   "closed_trades": [
     {
       "token_symbol": "BRUH",
@@ -637,6 +607,26 @@
       "exit_reason": "stop_loss",
       "highest_price_usd": 0.0011430071447653305,
       "partial": false
+    },
+    {
+      "token_symbol": "BORLY",
+      "token_address": "BBRgG2GifeKNB1hSmzD2BwHMPK8wnDtcuE4NzxgHpump",
+      "pool_address": "GHe3AhhjJXCz9Equ7gbA1Au5dYwP4CmyzdWhkWWTafih",
+      "opened_at": "2026-11-15T02:09:05.388650+00:00",
+      "closed_at": "2026-11-16T10:09:21.712541+00:00",
+      "holding_hours": 32.005,
+      "entry_price_usd": 0.0004884653302613636,
+      "exit_mark_price_usd": 0.0004980298756809946,
+      "exit_price_usd": 0.0004883356248847682,
+      "exit_cost_pct": 1.9465,
+      "token_amount": 459488.6099283779,
+      "cost_basis_usd": 224.4442556,
+      "proceeds_usd": 224.38465746,
+      "pnl_usd": -0.05959814,
+      "pnl_pct": -0.0266,
+      "exit_reason": "security_rejected",
+      "highest_price_usd": 0.0004980298756809946,
+      "partial": false
     }
   ],
   "last_exit_at": {
@@ -647,7 +637,7 @@
     "ECNQSQA7Y5bnXzbotgv6XcG15c6jpJ6V2BFbYzJrpump": "2026-11-11T16:09:14.090134+00:00",
     "Gb7gExpwNdth2iq3Ppio6c423jEP6TYkWPkRkAUpump": "2026-11-12T04:47:27.843121+00:00",
     "DK8brTRwuYF5P6FumuqWJ1Fnf4GEpNwSWuwvpNYpump": "2026-11-12T06:09:44.442120+00:00",
-    "BBRgG2GifeKNB1hSmzD2BwHMPK8wnDtcuE4NzxgHpump": "2026-11-14T01:52:22.073086+00:00",
+    "BBRgG2GifeKNB1hSmzD2BwHMPK8wnDtcuE4NzxgHpump": "2026-11-16T10:09:21.712541+00:00",
     "8AAVuQpJcqpvCuutxyBTVvgBEXZJSkZoNv1sExpBpump": "2026-11-12T15:12:17.212130+00:00",
     "Rob4tig8vz87fhM43w5hcuUnDprbiG9GueYoiiRpump": "2026-11-13T03:09:20.624301+00:00",
     "Qt6CPLxhNLuWjEVgt4rSgCeATUwpieBd76xeZjgpump": "2026-11-13T03:42:21.041223+00:00",
@@ -669,10 +659,10 @@
   },
   "stats": {
     "trades_opened": 29,
-    "trades_closed": 28,
+    "trades_closed": 29,
     "wins": 9,
-    "losses": 19,
-    "realized_pnl_usd": -3199.32753886,
+    "losses": 20,
+    "realized_pnl_usd": -3199.387137,
     "partial_sales": 3
   },
   "equity_history": [
@@ -2781,18 +2771,18 @@
       "equity_usd": 6805.06726082
     },
     {
-      "at": "2026-11-16T10:02:23.442771+00:00",
-      "equity_usd": 6805.06726082
+      "at": "2026-11-16T10:09:21.712541+00:00",
+      "equity_usd": 6800.612863
     }
   ],
   "last_run": {
-    "at": "2026-11-16T10:02:23.442771+00:00",
-    "mode": "monitor",
-    "scan_status": "not_requested",
-    "scan_at": null,
+    "at": "2026-11-16T10:09:21.712541+00:00",
+    "mode": "after-scan",
+    "scan_status": "ok",
+    "scan_at": "2026-11-16T10:09:21.515415+00:00",
     "entry_decisions": [],
-    "open_positions": 1,
-    "equity_usd": 6805.06726082,
-    "run_number": "1456"
+    "open_positions": 0,
+    "equity_usd": 6800.612863,
+    "run_number": "194"
   }
 }
