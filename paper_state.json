@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-17T14:37:26.619507+00:00",
+  "updated_at": "2026-11-17T14:42:36.949061+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 6472.1428242,
   "open_positions": [
@@ -22,19 +22,19 @@
       "token_amount": 154592.29235223835,
       "cost_basis_usd": 204.32500597,
       "initial_stop_usd": 0.0012424002690520882,
-      "highest_price_usd": 0.001598741524954732,
-      "last_price_usd": 0.001598741524954732,
-      "last_price_at": "2026-11-17T14:37:26.619507+00:00",
-      "current_stop_usd": 0.001502817033457448,
+      "highest_price_usd": 0.0016055798615469585,
+      "last_price_usd": 0.0016055798615469585,
+      "last_price_at": "2026-11-17T14:42:36.949061+00:00",
+      "current_stop_usd": 0.001509245069854141,
       "last_quote": {
-        "at": "2026-11-17T14:37:26.619507+00:00",
+        "at": "2026-11-17T14:42:36.949061+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.001598741524954732,
-        "price_high_usd": 0.0016002802482965785,
-        "deviation_pct": 0.0962,
+        "price_low_usd": 0.0016055798615469585,
+        "price_high_usd": 0.0016083409080711287,
+        "deviation_pct": 0.172,
         "errors": {}
       },
-      "last_liquidity_usd": 89996.8363,
+      "last_liquidity_usd": 90288.67248229019,
       "current_stop_kind": "trailing"
     }
   ],
@@ -3248,18 +3248,18 @@
       "equity_usd": 6717.58568541
     },
     {
-      "at": "2026-11-17T14:37:26.619507+00:00",
-      "equity_usd": 6719.29594142
+      "at": "2026-11-17T14:42:36.949061+00:00",
+      "equity_usd": 6720.35309555
     }
   ],
   "last_run": {
-    "at": "2026-11-17T14:37:26.619507+00:00",
+    "at": "2026-11-17T14:42:36.949061+00:00",
     "mode": "monitor",
     "scan_status": "not_requested",
     "scan_at": null,
     "entry_decisions": [],
     "open_positions": 1,
-    "equity_usd": 6719.29594142,
-    "run_number": "1772"
+    "equity_usd": 6720.35309555,
+    "run_number": "1773"
   }
 }
