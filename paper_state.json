@@ -4,9 +4,9 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-17T15:02:20.293953+00:00",
+  "updated_at": "2026-11-17T15:09:48.878772+00:00",
   "starting_balance_usd": 10000.0,
-  "cash_usd": 6472.1428242,
+  "cash_usd": 6270.5486442,
   "open_positions": [
     {
       "token_symbol": "ENO",
@@ -23,19 +23,38 @@
       "cost_basis_usd": 204.32500597,
       "initial_stop_usd": 0.0012424002690520882,
       "highest_price_usd": 0.0016102556827649777,
-      "last_price_usd": 0.0016102556827649777,
-      "last_price_at": "2026-11-17T15:02:20.293953+00:00",
+      "last_price_usd": 0.0016020409030142741,
+      "last_price_at": "2026-11-17T15:09:48.878772+00:00",
       "current_stop_usd": 0.001513640341799079,
       "last_quote": {
-        "at": "2026-11-17T15:02:20.293953+00:00",
+        "at": "2026-11-17T15:09:48.878772+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.0016102556827649777,
-        "price_high_usd": 0.0016105672565358113,
-        "deviation_pct": 0.0193,
+        "price_low_usd": 0.0016020409030142741,
+        "price_high_usd": 0.0016032526636895663,
+        "deviation_pct": 0.0756,
         "errors": {}
       },
-      "last_liquidity_usd": 90186.1667,
+      "last_liquidity_usd": 89555.35956368016,
       "current_stop_kind": "trailing"
+    },
+    {
+      "token_symbol": "SWJ",
+      "token_name": "Stand With Jensen",
+      "token_address": "13EAww2eo8g1Xp9U7qrLNg1WoHFHKbs9xy2EQJjfpump",
+      "pool_address": "9bQhnihe5okqCUTzeufqtpnAqjH5eGZAeJ4Maa9Ag2f8",
+      "dex_name": "PumpSwap",
+      "opened_at": "2026-11-17T15:09:48.878772+00:00",
+      "entry_price_usd": 0.0008769231608842666,
+      "entry_mark_price_usd": 0.0008631621873286187,
+      "entry_cost_pct": 1.5943,
+      "entry_liquidity_usd": 67848.13525487503,
+      "token_amount": 229888.07798931625,
+      "cost_basis_usd": 201.59418,
+      "initial_stop_usd": 0.0008243077712312105,
+      "highest_price_usd": 0.0008769231608842666,
+      "last_price_usd": 0.0008623573361234159,
+      "last_price_at": "2026-11-17T15:09:48.878772+00:00",
+      "current_stop_usd": 0.0008243077712312105
     }
   ],
   "closed_trades": [
@@ -771,7 +790,7 @@
     "KhyV4sEgisvA5CTD6NdcsyFJyAxHANq8By8Zrk9pump": "2026-11-17T08:17:26.821122+00:00"
   },
   "stats": {
-    "trades_opened": 33,
+    "trades_opened": 34,
     "trades_closed": 32,
     "wins": 9,
     "losses": 23,
@@ -3256,18 +3275,34 @@
       "equity_usd": 6720.2573058
     },
     {
-      "at": "2026-11-17T15:02:20.293953+00:00",
-      "equity_usd": 6721.07594147
+      "at": "2026-11-17T15:09:48.878772+00:00",
+      "equity_usd": 6716.45749038
     }
   ],
   "last_run": {
-    "at": "2026-11-17T15:02:20.293953+00:00",
-    "mode": "monitor",
-    "scan_status": "not_requested",
-    "scan_at": null,
-    "entry_decisions": [],
-    "open_positions": 1,
-    "equity_usd": 6721.07594147,
-    "run_number": "1777"
+    "at": "2026-11-17T15:09:48.878772+00:00",
+    "mode": "after-scan",
+    "scan_status": "ok",
+    "scan_at": "2026-11-17T15:09:48.617561+00:00",
+    "entry_decisions": [
+      {
+        "token_symbol": "ENO",
+        "token_address": "xmKrA827TY121gTRwHEn1HKBtzG2uFNpstwzJE6pump",
+        "decision": "already_open"
+      },
+      {
+        "token_symbol": "SWJ",
+        "token_address": "13EAww2eo8g1Xp9U7qrLNg1WoHFHKbs9xy2EQJjfpump",
+        "decision": "open"
+      },
+      {
+        "token_symbol": "FOTF",
+        "token_address": "C6rxhmqEtmPs6SWQmoWEczH9jFx3YM724aTe6FNQpump",
+        "decision": "reentry_cooldown"
+      }
+    ],
+    "open_positions": 2,
+    "equity_usd": 6716.45749038,
+    "run_number": "223"
   }
 }
