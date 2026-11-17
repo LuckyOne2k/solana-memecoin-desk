@@ -4,9 +4,9 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-17T18:22:22.668974+00:00",
+  "updated_at": "2026-11-17T18:27:23.714662+00:00",
   "starting_balance_usd": 10000.0,
-  "cash_usd": 6455.83894729,
+  "cash_usd": 6587.76895132,
   "open_positions": [
     {
       "token_symbol": "ENO",
@@ -19,23 +19,24 @@
       "entry_mark_price_usd": 0.0013020577317391006,
       "entry_cost_pct": 1.5087,
       "entry_liquidity_usd": 80325.70760629748,
-      "token_amount": 154592.29235223835,
-      "cost_basis_usd": 204.32500597,
+      "token_amount": 77296.14617611917,
+      "cost_basis_usd": 102.16250299,
       "initial_stop_usd": 0.0012424002690520882,
-      "highest_price_usd": 0.0017112160788666235,
-      "last_price_usd": 0.0017112160788666235,
-      "last_price_at": "2026-11-17T18:22:22.668974+00:00",
-      "current_stop_usd": 0.001608543114134626,
+      "highest_price_usd": 0.0017290741654509602,
+      "last_price_usd": 0.0017290741654509602,
+      "last_price_at": "2026-11-17T18:27:23.714662+00:00",
+      "current_stop_usd": 0.0016389109932176485,
       "last_quote": {
-        "at": "2026-11-17T18:22:22.668974+00:00",
+        "at": "2026-11-17T18:27:23.714662+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.0017112160788666235,
-        "price_high_usd": 0.0017142930052808094,
-        "deviation_pct": 0.1798,
+        "price_low_usd": 0.0017290741654509602,
+        "price_high_usd": 0.00173009586074338,
+        "deviation_pct": 0.0591,
         "errors": {}
       },
-      "last_liquidity_usd": 92127.3454,
-      "current_stop_kind": "trailing"
+      "last_liquidity_usd": 92971.60346406011,
+      "current_stop_kind": "profit_lock",
+      "partial_taken": true
     }
   ],
   "closed_trades": [
@@ -757,6 +758,26 @@
       "exit_reason": "stop_loss",
       "highest_price_usd": 0.0009275251859108261,
       "partial": false
+    },
+    {
+      "token_symbol": "ENO",
+      "token_address": "xmKrA827TY121gTRwHEn1HKBtzG2uFNpstwzJE6pump",
+      "pool_address": "G9hgGPusZV64AyR1UNStCDNuqa9WhuWcUkqzkgNqCXH9",
+      "opened_at": "2026-11-17T07:09:38.785241+00:00",
+      "closed_at": "2026-11-17T18:27:23.714662+00:00",
+      "holding_hours": 11.296,
+      "entry_price_usd": 0.0013217024138852003,
+      "exit_mark_price_usd": 0.0017290741654509602,
+      "exit_price_usd": 0.001706812183460164,
+      "exit_cost_pct": 1.2875,
+      "token_amount": 77296.14617611917,
+      "cost_basis_usd": 102.16250299,
+      "proceeds_usd": 131.93000403,
+      "pnl_usd": 29.76750104,
+      "pnl_pct": 29.1374,
+      "exit_reason": "partial_take_profit",
+      "highest_price_usd": 0.0017290741654509602,
+      "partial": true
     }
   ],
   "last_exit_at": {
@@ -795,8 +816,8 @@
     "trades_closed": 33,
     "wins": 9,
     "losses": 24,
-    "realized_pnl_usd": -3339.83604675,
-    "partial_sales": 4
+    "realized_pnl_usd": -3310.06854571,
+    "partial_sales": 5
   },
   "equity_history": [
     {
@@ -3328,18 +3349,18 @@
       "equity_usd": 6719.60051666
     },
     {
-      "at": "2026-11-17T18:22:22.668974+00:00",
-      "equity_usd": 6720.37976363
+      "at": "2026-11-17T18:27:23.714662+00:00",
+      "equity_usd": 6721.41972076
     }
   ],
   "last_run": {
-    "at": "2026-11-17T18:22:22.668974+00:00",
+    "at": "2026-11-17T18:27:23.714662+00:00",
     "mode": "monitor",
     "scan_status": "not_requested",
     "scan_at": null,
     "entry_decisions": [],
     "open_positions": 1,
-    "equity_usd": 6720.37976363,
-    "run_number": "1813"
+    "equity_usd": 6721.41972076,
+    "run_number": "1814"
   }
 }
