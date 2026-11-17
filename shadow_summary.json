@@ -1,14 +1,14 @@
 {
   "schema_version": 1,
   "purpose": "learning_only_no_trading",
-  "generated_at": "2026-11-17T01:09:31.199426+00:00",
+  "generated_at": "2026-11-17T02:09:23.596747+00:00",
   "note": "Kursveränderung ohne Kosten seit erster Beobachtung; keine Kaufempfehlung.",
-  "observations_total": 667,
-  "observations_open": 108,
+  "observations_total": 672,
+  "observations_open": 113,
   "by_status": [
     {
       "group": "rejected",
-      "observations": 347,
+      "observations": 349,
       "1h": {
         "count": 339,
         "mean_pct": -1.1,
@@ -30,7 +30,7 @@
     },
     {
       "group": "incomplete",
-      "observations": 275,
+      "observations": 278,
       "1h": {
         "count": 271,
         "mean_pct": -1.59,
@@ -76,7 +76,7 @@
   "by_reason": [
     {
       "group": "incomplete:market_cap_usd",
-      "observations": 245,
+      "observations": 247,
       "1h": {
         "count": 242,
         "mean_pct": -1.97,
@@ -164,7 +164,7 @@
     },
     {
       "group": "rejected:market_cap_above_maximum_onchain_lower_bound",
-      "observations": 33,
+      "observations": 34,
       "1h": {
         "count": 33,
         "mean_pct": -4.49,
@@ -252,7 +252,7 @@
     },
     {
       "group": "rejected:mint_authority_not_confirmed_revoked",
-      "observations": 15,
+      "observations": 16,
       "1h": {
         "count": 15,
         "mean_pct": -0.33,
@@ -318,7 +318,7 @@
     },
     {
       "group": "incomplete:token_classification",
-      "observations": 7,
+      "observations": 8,
       "1h": {
         "count": 7,
         "mean_pct": 1.8,
