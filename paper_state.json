@@ -4,9 +4,9 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-17T20:02:15.527928+00:00",
+  "updated_at": "2026-11-17T20:09:38.503844+00:00",
   "starting_balance_usd": 10000.0,
-  "cash_usd": 6587.76895132,
+  "cash_usd": 6385.9483892,
   "open_positions": [
     {
       "token_symbol": "ENO",
@@ -22,21 +22,40 @@
       "token_amount": 77296.14617611917,
       "cost_basis_usd": 102.16250299,
       "initial_stop_usd": 0.0012424002690520882,
-      "highest_price_usd": 0.001794805050333726,
-      "last_price_usd": 0.001794805050333726,
-      "last_price_at": "2026-11-17T20:02:15.527928+00:00",
-      "current_stop_usd": 0.0016871167473137022,
+      "highest_price_usd": 0.001805822491379473,
+      "last_price_usd": 0.001805822491379473,
+      "last_price_at": "2026-11-17T20:09:38.503844+00:00",
+      "current_stop_usd": 0.0017182131380507604,
       "last_quote": {
-        "at": "2026-11-17T20:02:15.527928+00:00",
+        "at": "2026-11-17T20:09:38.503844+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.001794805050333726,
-        "price_high_usd": 0.001798212088472834,
-        "deviation_pct": 0.1898,
+        "price_low_usd": 0.001805822491379473,
+        "price_high_usd": 0.0018059796460200483,
+        "deviation_pct": 0.0087,
         "errors": {}
       },
-      "last_liquidity_usd": 94708.94350827893,
-      "current_stop_kind": "trailing",
+      "last_liquidity_usd": 94977.47477588526,
+      "current_stop_kind": "profit_lock",
       "partial_taken": true
+    },
+    {
+      "token_symbol": "GTA",
+      "token_name": "Grand Theft Anthropic",
+      "token_address": "2NWgu4fqN2AxS5pp5v3f3SH54qArP9JepQFJm58gpump",
+      "pool_address": "7TiCdhJE5YHWgrAs8v1EXxxvAJy9eTbzVq97nFgqDhYt",
+      "dex_name": "PumpSwap",
+      "opened_at": "2026-11-17T20:09:38.503844+00:00",
+      "entry_price_usd": 0.0012385977292872351,
+      "entry_mark_price_usd": 0.0012202734028419514,
+      "entry_cost_pct": 1.5017,
+      "entry_liquidity_usd": 80461.50325855776,
+      "token_amount": 162942.7838820114,
+      "cost_basis_usd": 201.82056212,
+      "initial_stop_usd": 0.001164281865530001,
+      "highest_price_usd": 0.0012385977292872351,
+      "last_price_usd": 0.0011958097183878652,
+      "last_price_at": "2026-11-17T20:09:38.503844+00:00",
+      "current_stop_usd": 0.001164281865530001
     }
   ],
   "closed_trades": [
@@ -812,7 +831,7 @@
     "KhyV4sEgisvA5CTD6NdcsyFJyAxHANq8By8Zrk9pump": "2026-11-17T08:17:26.821122+00:00"
   },
   "stats": {
-    "trades_opened": 34,
+    "trades_opened": 35,
     "trades_closed": 33,
     "wins": 9,
     "losses": 24,
@@ -3377,18 +3396,39 @@
       "equity_usd": 6726.49065517
     },
     {
-      "at": "2026-11-17T20:02:15.527928+00:00",
-      "equity_usd": 6726.50046485
+      "at": "2026-11-17T20:09:38.503844+00:00",
+      "equity_usd": 6720.38007297
     }
   ],
   "last_run": {
-    "at": "2026-11-17T20:02:15.527928+00:00",
-    "mode": "monitor",
-    "scan_status": "not_requested",
-    "scan_at": null,
-    "entry_decisions": [],
-    "open_positions": 1,
-    "equity_usd": 6726.50046485,
-    "run_number": "1832"
+    "at": "2026-11-17T20:09:38.503844+00:00",
+    "mode": "after-scan",
+    "scan_status": "ok",
+    "scan_at": "2026-11-17T20:09:38.302431+00:00",
+    "entry_decisions": [
+      {
+        "token_symbol": "ASWF",
+        "token_address": "w1wMtdikYDkCBGxKAGc1C8k3oYbjBucftqNzseupump",
+        "decision": "not_ready_in_previous_scan"
+      },
+      {
+        "token_symbol": "GTA",
+        "token_address": "2NWgu4fqN2AxS5pp5v3f3SH54qArP9JepQFJm58gpump",
+        "decision": "open"
+      },
+      {
+        "token_symbol": "ENO",
+        "token_address": "xmKrA827TY121gTRwHEn1HKBtzG2uFNpstwzJE6pump",
+        "decision": "already_open"
+      },
+      {
+        "token_symbol": "SWJ",
+        "token_address": "13EAww2eo8g1Xp9U7qrLNg1WoHFHKbs9xy2EQJjfpump",
+        "decision": "reentry_cooldown"
+      }
+    ],
+    "open_positions": 2,
+    "equity_usd": 6720.38007297,
+    "run_number": "228"
   }
 }
