@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-17T06:57:17.138970+00:00",
+  "updated_at": "2026-11-17T07:02:21.002972+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 6676.39562556,
   "open_positions": [
@@ -22,19 +22,19 @@
       "token_amount": 53433.13997953954,
       "cost_basis_usd": 101.59789763,
       "initial_stop_usd": 0.0017873182037228084,
-      "highest_price_usd": 0.0024915451138746154,
-      "last_price_usd": 0.0024915451138746154,
-      "last_price_at": "2026-11-17T06:57:17.138970+00:00",
+      "highest_price_usd": 0.0025010908138859357,
+      "last_price_usd": 0.0025010908138859357,
+      "last_price_at": "2026-11-17T07:02:21.002972+00:00",
       "current_stop_usd": 0.0023577389070385986,
       "last_quote": {
-        "at": "2026-11-17T06:57:17.138970+00:00",
+        "at": "2026-11-17T07:02:21.002972+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.0024915451138746154,
-        "price_high_usd": 0.0024937114852892476,
-        "deviation_pct": 0.0869,
+        "price_low_usd": 0.0025010908138859357,
+        "price_high_usd": 0.0025159884569323165,
+        "deviation_pct": 0.5956,
         "errors": {}
       },
-      "last_liquidity_usd": 111599.02100927431,
+      "last_liquidity_usd": 111920.61846928849,
       "current_stop_kind": "profit_lock",
       "partial_taken": true
     }
@@ -3106,16 +3106,20 @@
     {
       "at": "2026-11-17T06:57:17.138970+00:00",
       "equity_usd": 6809.52670439
+    },
+    {
+      "at": "2026-11-17T07:02:21.002972+00:00",
+      "equity_usd": 6810.03676112
     }
   ],
   "last_run": {
-    "at": "2026-11-17T06:57:17.138970+00:00",
+    "at": "2026-11-17T07:02:21.002972+00:00",
     "mode": "monitor",
     "scan_status": "not_requested",
     "scan_at": null,
     "entry_decisions": [],
     "open_positions": 1,
-    "equity_usd": 6809.52670439,
-    "run_number": "1688"
+    "equity_usd": 6810.03676112,
+    "run_number": "1689"
   }
 }
