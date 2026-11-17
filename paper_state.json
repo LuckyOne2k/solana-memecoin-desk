@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-17T05:09:29.124045+00:00",
+  "updated_at": "2026-11-17T05:12:32.413418+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 6545.84322156,
   "open_positions": [
@@ -23,18 +23,18 @@
       "cost_basis_usd": 203.19579525,
       "initial_stop_usd": 0.0017873182037228084,
       "highest_price_usd": 0.002420755812558836,
-      "last_price_usd": 0.002420755812558836,
-      "last_price_at": "2026-11-17T05:09:29.124045+00:00",
+      "last_price_usd": 0.0024182861294321113,
+      "last_price_at": "2026-11-17T05:12:32.413418+00:00",
       "current_stop_usd": 0.0022755104638053055,
       "last_quote": {
-        "at": "2026-11-17T05:09:29.124045+00:00",
+        "at": "2026-11-17T05:12:32.413418+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.002420755812558836,
-        "price_high_usd": 0.002423499669076601,
-        "deviation_pct": 0.1133,
+        "price_low_usd": 0.0024182861294321113,
+        "price_high_usd": 0.0024215874555906496,
+        "deviation_pct": 0.1365,
         "errors": {}
       },
-      "last_liquidity_usd": 110272.47775864648,
+      "last_liquidity_usd": 110086.93719137447,
       "current_stop_kind": "trailing"
     }
   ],
@@ -3055,29 +3055,18 @@
       "equity_usd": 6803.1027238
     },
     {
-      "at": "2026-11-17T05:09:29.124045+00:00",
-      "equity_usd": 6804.54038994
+      "at": "2026-11-17T05:12:32.413418+00:00",
+      "equity_usd": 6804.27646409
     }
   ],
   "last_run": {
-    "at": "2026-11-17T05:09:29.124045+00:00",
-    "mode": "after-scan",
-    "scan_status": "ok",
-    "scan_at": "2026-11-17T05:09:28.926475+00:00",
-    "entry_decisions": [
-      {
-        "token_symbol": "SWJ",
-        "token_address": "13EAww2eo8g1Xp9U7qrLNg1WoHFHKbs9xy2EQJjfpump",
-        "decision": "reentry_cooldown"
-      },
-      {
-        "token_symbol": "FOTF",
-        "token_address": "C6rxhmqEtmPs6SWQmoWEczH9jFx3YM724aTe6FNQpump",
-        "decision": "reentry_cooldown"
-      }
-    ],
+    "at": "2026-11-17T05:12:32.413418+00:00",
+    "mode": "monitor",
+    "scan_status": "not_requested",
+    "scan_at": null,
+    "entry_decisions": [],
     "open_positions": 1,
-    "equity_usd": 6804.54038994,
-    "run_number": "213"
+    "equity_usd": 6804.27646409,
+    "run_number": "1668"
   }
 }
