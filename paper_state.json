@@ -4,40 +4,10 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-17T08:12:24.716772+00:00",
+  "updated_at": "2026-11-17T08:17:26.821122+00:00",
   "starting_balance_usd": 10000.0,
-  "cash_usd": 6472.07061959,
+  "cash_usd": 6472.1428242,
   "open_positions": [
-    {
-      "token_symbol": "UODF",
-      "token_name": "United Oil Dividend Fund",
-      "token_address": "KhyV4sEgisvA5CTD6NdcsyFJyAxHANq8By8Zrk9pump",
-      "pool_address": "874xNaH73Gh3HxVZhY3SR9cfehfVhwrVDP8hCVTNxiW3",
-      "dex_name": "PumpSwap",
-      "opened_at": "2026-11-16T18:09:49.779311+00:00",
-      "entry_price_usd": 0.0019014023443859665,
-      "entry_mark_price_usd": 0.0018746878909583731,
-      "entry_cost_pct": 1.425,
-      "entry_liquidity_usd": 95619.73872868717,
-      "token_amount": 53433.13997953954,
-      "cost_basis_usd": 101.59789763,
-      "initial_stop_usd": 0.0017873182037228084,
-      "highest_price_usd": 0.0025537465116061836,
-      "last_price_usd": 0.002552109646482428,
-      "last_price_at": "2026-11-17T08:12:24.716772+00:00",
-      "current_stop_usd": 0.0024005217209098124,
-      "last_quote": {
-        "at": "2026-11-17T08:12:24.716772+00:00",
-        "status": "confirmed",
-        "price_low_usd": 0.002552109646482428,
-        "price_high_usd": 0.0025526060142933597,
-        "deviation_pct": 0.0194,
-        "errors": {}
-      },
-      "last_liquidity_usd": 113091.5834,
-      "current_stop_kind": "trailing",
-      "partial_taken": true
-    },
     {
       "token_symbol": "ENO",
       "token_name": "Enoxum",
@@ -52,19 +22,19 @@
       "token_amount": 154592.29235223835,
       "cost_basis_usd": 204.32500597,
       "initial_stop_usd": 0.0012424002690520882,
-      "highest_price_usd": 0.0013346691670355403,
-      "last_price_usd": 0.0013344634237079864,
-      "last_price_at": "2026-11-17T08:12:24.716772+00:00",
+      "highest_price_usd": 0.001337993604595454,
+      "last_price_usd": 0.001337993604595454,
+      "last_price_at": "2026-11-17T08:17:26.821122+00:00",
       "current_stop_usd": 0.0012424002690520882,
       "last_quote": {
-        "at": "2026-11-17T08:12:24.716772+00:00",
+        "at": "2026-11-17T08:17:26.821122+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.0013344634237079864,
-        "price_high_usd": 0.0013357948299881593,
-        "deviation_pct": 0.0998,
+        "price_low_usd": 0.001337993604595454,
+        "price_high_usd": 0.0013385443954273717,
+        "deviation_pct": 0.0412,
         "errors": {}
       },
-      "last_liquidity_usd": 81454.58430733746,
+      "last_liquidity_usd": 81494.90675242883,
       "current_stop_kind": "initial"
     }
   ],
@@ -747,6 +717,26 @@
       "exit_reason": "partial_take_profit",
       "highest_price_usd": 0.002473914931617579,
       "partial": true
+    },
+    {
+      "token_symbol": "UODF",
+      "token_address": "KhyV4sEgisvA5CTD6NdcsyFJyAxHANq8By8Zrk9pump",
+      "pool_address": "874xNaH73Gh3HxVZhY3SR9cfehfVhwrVDP8hCVTNxiW3",
+      "opened_at": "2026-11-16T18:09:49.779311+00:00",
+      "closed_at": "2026-11-17T08:17:26.821122+00:00",
+      "holding_hours": 14.127,
+      "entry_price_usd": 0.0019014023443859665,
+      "exit_mark_price_usd": 1.3651020058756724e-06,
+      "exit_price_usd": 1.3513076406392971e-06,
+      "exit_cost_pct": 1.0105,
+      "token_amount": 53433.13997953954,
+      "cost_basis_usd": 101.59789763,
+      "proceeds_usd": 0.07220461,
+      "pnl_usd": -101.52569302,
+      "pnl_pct": -99.9289,
+      "exit_reason": "trailing_stop",
+      "highest_price_usd": 0.0025537465116061836,
+      "partial": false
     }
   ],
   "last_exit_at": {
@@ -777,14 +767,15 @@
     "whuzUJj3qRmBsQRxYTd4mEfZcqrRihcJKkCjcYApump": "2026-11-15T14:27:20.773721+00:00",
     "39rS82a9nNnBuDdoJHGFti2CHQaZvLtauQzzUkERpump": "2026-11-16T03:57:36.030810+00:00",
     "13EAww2eo8g1Xp9U7qrLNg1WoHFHKbs9xy2EQJjfpump": "2026-11-16T14:22:29.021985+00:00",
-    "C6rxhmqEtmPs6SWQmoWEczH9jFx3YM724aTe6FNQpump": "2026-11-17T03:12:29.377059+00:00"
+    "C6rxhmqEtmPs6SWQmoWEczH9jFx3YM724aTe6FNQpump": "2026-11-17T03:12:29.377059+00:00",
+    "KhyV4sEgisvA5CTD6NdcsyFJyAxHANq8By8Zrk9pump": "2026-11-17T08:17:26.821122+00:00"
   },
   "stats": {
     "trades_opened": 33,
-    "trades_closed": 31,
+    "trades_closed": 32,
     "wins": 9,
-    "losses": 22,
-    "realized_pnl_usd": -3222.00647682,
+    "losses": 23,
+    "realized_pnl_usd": -3323.53216984,
     "partial_sales": 4
   },
   "equity_history": [
@@ -3155,16 +3146,20 @@
     {
       "at": "2026-11-17T08:12:24.716772+00:00",
       "equity_usd": 6814.7356113
+    },
+    {
+      "at": "2026-11-17T08:17:26.821122+00:00",
+      "equity_usd": 6678.98632269
     }
   ],
   "last_run": {
-    "at": "2026-11-17T08:12:24.716772+00:00",
+    "at": "2026-11-17T08:17:26.821122+00:00",
     "mode": "monitor",
     "scan_status": "not_requested",
     "scan_at": null,
     "entry_decisions": [],
-    "open_positions": 2,
-    "equity_usd": 6814.7356113,
-    "run_number": "1701"
+    "open_positions": 1,
+    "equity_usd": 6678.98632269,
+    "run_number": "1702"
   }
 }
