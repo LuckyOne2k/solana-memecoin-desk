@@ -4,9 +4,9 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-17T20:12:24.149072+00:00",
+  "updated_at": "2026-11-17T20:17:22.461818+00:00",
   "starting_balance_usd": 10000.0,
-  "cash_usd": 6385.9483892,
+  "cash_usd": 6558.17160998,
   "open_positions": [
     {
       "token_symbol": "ENO",
@@ -22,50 +22,21 @@
       "token_amount": 77296.14617611917,
       "cost_basis_usd": 102.16250299,
       "initial_stop_usd": 0.0012424002690520882,
-      "highest_price_usd": 0.001805822491379473,
-      "last_price_usd": 0.001804794770834148,
-      "last_price_at": "2026-11-17T20:12:24.149072+00:00",
+      "highest_price_usd": 0.0018100972236774118,
+      "last_price_usd": 0.0018100972236774118,
+      "last_price_at": "2026-11-17T20:17:22.461818+00:00",
       "current_stop_usd": 0.0017182131380507604,
       "last_quote": {
-        "at": "2026-11-17T20:12:24.149072+00:00",
+        "at": "2026-11-17T20:17:22.461818+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.001804794770834148,
-        "price_high_usd": 0.001807215106219818,
-        "deviation_pct": 0.1341,
+        "price_low_usd": 0.0018100972236774118,
+        "price_high_usd": 0.0018126840402950032,
+        "deviation_pct": 0.1429,
         "errors": {}
       },
-      "last_liquidity_usd": 94989.13037249,
+      "last_liquidity_usd": 95078.3900551976,
       "current_stop_kind": "profit_lock",
       "partial_taken": true
-    },
-    {
-      "token_symbol": "GTA",
-      "token_name": "Grand Theft Anthropic",
-      "token_address": "2NWgu4fqN2AxS5pp5v3f3SH54qArP9JepQFJm58gpump",
-      "pool_address": "7TiCdhJE5YHWgrAs8v1EXxxvAJy9eTbzVq97nFgqDhYt",
-      "dex_name": "PumpSwap",
-      "opened_at": "2026-11-17T20:09:38.503844+00:00",
-      "entry_price_usd": 0.0012385977292872351,
-      "entry_mark_price_usd": 0.0012202734028419514,
-      "entry_cost_pct": 1.5017,
-      "entry_liquidity_usd": 80461.50325855776,
-      "token_amount": 162942.7838820114,
-      "cost_basis_usd": 201.82056212,
-      "initial_stop_usd": 0.001164281865530001,
-      "highest_price_usd": 0.0012385977292872351,
-      "last_price_usd": 0.0011757213111723145,
-      "last_price_at": "2026-11-17T20:12:24.149072+00:00",
-      "current_stop_usd": 0.001164281865530001,
-      "last_quote": {
-        "at": "2026-11-17T20:12:24.149072+00:00",
-        "status": "confirmed",
-        "price_low_usd": 0.0011757213111723145,
-        "price_high_usd": 0.0011787917540445783,
-        "deviation_pct": 0.2612,
-        "errors": {}
-      },
-      "last_liquidity_usd": 81343.52394664954,
-      "current_stop_kind": "initial"
     }
   ],
   "closed_trades": [
@@ -807,6 +778,26 @@
       "exit_reason": "partial_take_profit",
       "highest_price_usd": 0.0017290741654509602,
       "partial": true
+    },
+    {
+      "token_symbol": "GTA",
+      "token_address": "2NWgu4fqN2AxS5pp5v3f3SH54qArP9JepQFJm58gpump",
+      "pool_address": "7TiCdhJE5YHWgrAs8v1EXxxvAJy9eTbzVq97nFgqDhYt",
+      "opened_at": "2026-11-17T20:09:38.503844+00:00",
+      "closed_at": "2026-11-17T20:17:22.461818+00:00",
+      "holding_hours": 0.129,
+      "entry_price_usd": 0.0012385977292872351,
+      "exit_mark_price_usd": 0.001072364598202318,
+      "exit_price_usd": 0.0010569551880323933,
+      "exit_cost_pct": 1.437,
+      "token_amount": 162942.7838820114,
+      "cost_basis_usd": 201.82056212,
+      "proceeds_usd": 172.22322078,
+      "pnl_usd": -29.59734134,
+      "pnl_pct": -14.6652,
+      "exit_reason": "stop_loss",
+      "highest_price_usd": 0.0012385977292872351,
+      "partial": false
     }
   ],
   "last_exit_at": {
@@ -838,14 +829,15 @@
     "39rS82a9nNnBuDdoJHGFti2CHQaZvLtauQzzUkERpump": "2026-11-16T03:57:36.030810+00:00",
     "13EAww2eo8g1Xp9U7qrLNg1WoHFHKbs9xy2EQJjfpump": "2026-11-17T16:57:31.704378+00:00",
     "C6rxhmqEtmPs6SWQmoWEczH9jFx3YM724aTe6FNQpump": "2026-11-17T03:12:29.377059+00:00",
-    "KhyV4sEgisvA5CTD6NdcsyFJyAxHANq8By8Zrk9pump": "2026-11-17T08:17:26.821122+00:00"
+    "KhyV4sEgisvA5CTD6NdcsyFJyAxHANq8By8Zrk9pump": "2026-11-17T08:17:26.821122+00:00",
+    "2NWgu4fqN2AxS5pp5v3f3SH54qArP9JepQFJm58gpump": "2026-11-17T20:17:22.461818+00:00"
   },
   "stats": {
     "trades_opened": 35,
-    "trades_closed": 33,
+    "trades_closed": 34,
     "wins": 9,
-    "losses": 24,
-    "realized_pnl_usd": -3310.06854571,
+    "losses": 25,
+    "realized_pnl_usd": -3339.66588705,
     "partial_sales": 5
   },
   "equity_history": [
@@ -3408,16 +3400,20 @@
     {
       "at": "2026-11-17T20:12:24.149072+00:00",
       "equity_usd": 6717.02737314
+    },
+    {
+      "at": "2026-11-17T20:17:22.461818+00:00",
+      "equity_usd": 6698.08514957
     }
   ],
   "last_run": {
-    "at": "2026-11-17T20:12:24.149072+00:00",
+    "at": "2026-11-17T20:17:22.461818+00:00",
     "mode": "monitor",
     "scan_status": "not_requested",
     "scan_at": null,
     "entry_decisions": [],
-    "open_positions": 2,
-    "equity_usd": 6717.02737314,
-    "run_number": "1833"
+    "open_positions": 1,
+    "equity_usd": 6698.08514957,
+    "run_number": "1834"
   }
 }
