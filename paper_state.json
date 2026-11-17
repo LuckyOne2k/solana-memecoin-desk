@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-17T06:47:28.813348+00:00",
+  "updated_at": "2026-11-17T06:52:18.560857+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 6676.39562556,
   "open_positions": [
@@ -22,19 +22,19 @@
       "token_amount": 53433.13997953954,
       "cost_basis_usd": 101.59789763,
       "initial_stop_usd": 0.0017873182037228084,
-      "highest_price_usd": 0.002479076304872736,
-      "last_price_usd": 0.002479076304872736,
-      "last_price_at": "2026-11-17T06:47:28.813348+00:00",
+      "highest_price_usd": 0.0024868640791949575,
+      "last_price_usd": 0.0024868640791949575,
+      "last_price_at": "2026-11-17T06:52:18.560857+00:00",
       "current_stop_usd": 0.0023577389070385986,
       "last_quote": {
-        "at": "2026-11-17T06:47:28.813348+00:00",
+        "at": "2026-11-17T06:52:18.560857+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.002479076304872736,
-        "price_high_usd": 0.002480768910524726,
-        "deviation_pct": 0.0683,
+        "price_low_usd": 0.0024868640791949575,
+        "price_high_usd": 0.002491516091489998,
+        "deviation_pct": 0.1871,
         "errors": {}
       },
-      "last_liquidity_usd": 111190.31008515124,
+      "last_liquidity_usd": 111292.31367704947,
       "current_stop_kind": "profit_lock",
       "partial_taken": true
     }
@@ -3104,18 +3104,18 @@
       "equity_usd": 6808.59279867
     },
     {
-      "at": "2026-11-17T06:47:28.813348+00:00",
-      "equity_usd": 6808.86045678
+      "at": "2026-11-17T06:52:18.560857+00:00",
+      "equity_usd": 6809.27658201
     }
   ],
   "last_run": {
-    "at": "2026-11-17T06:47:28.813348+00:00",
+    "at": "2026-11-17T06:52:18.560857+00:00",
     "mode": "monitor",
     "scan_status": "not_requested",
     "scan_at": null,
     "entry_decisions": [],
     "open_positions": 1,
-    "equity_usd": 6808.86045678,
-    "run_number": "1686"
+    "equity_usd": 6809.27658201,
+    "run_number": "1687"
   }
 }
