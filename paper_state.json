@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-17T00:02:33.630503+00:00",
+  "updated_at": "2026-11-17T00:09:24.984318+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 6569.99737989,
   "open_positions": [
@@ -22,20 +22,20 @@
       "token_amount": 106866.27995907908,
       "cost_basis_usd": 203.19579525,
       "initial_stop_usd": 0.0017873182037228084,
-      "highest_price_usd": 0.0021421550036646846,
-      "last_price_usd": 0.0021421550036646846,
-      "last_price_at": "2026-11-17T00:02:33.630503+00:00",
-      "current_stop_usd": 0.0020154864850491245,
+      "highest_price_usd": 0.0021537033582203387,
+      "last_price_usd": 0.0021537033582203387,
+      "last_price_at": "2026-11-17T00:09:24.984318+00:00",
+      "current_stop_usd": 0.002024481156727118,
       "last_quote": {
-        "at": "2026-11-17T00:02:33.630503+00:00",
+        "at": "2026-11-17T00:09:24.984318+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.0021421550036646846,
-        "price_high_usd": 0.0021522409723026686,
-        "deviation_pct": 0.4708,
+        "price_low_usd": 0.0021537033582203387,
+        "price_high_usd": 0.0021550174999623263,
+        "deviation_pct": 0.061,
         "errors": {}
       },
-      "last_liquidity_usd": 102695.20898266477,
-      "current_stop_kind": "profit_lock"
+      "last_liquidity_usd": 102917.89366612076,
+      "current_stop_kind": "trailing"
     }
   ],
   "closed_trades": [
@@ -2954,18 +2954,24 @@
       "equity_usd": 6798.53190972
     },
     {
-      "at": "2026-11-17T00:02:33.630503+00:00",
-      "equity_usd": 6798.92151623
+      "at": "2026-11-17T00:09:24.984318+00:00",
+      "equity_usd": 6800.15564592
     }
   ],
   "last_run": {
-    "at": "2026-11-17T00:02:33.630503+00:00",
-    "mode": "monitor",
-    "scan_status": "not_requested",
-    "scan_at": null,
-    "entry_decisions": [],
+    "at": "2026-11-17T00:09:24.984318+00:00",
+    "mode": "after-scan",
+    "scan_status": "ok",
+    "scan_at": "2026-11-17T00:09:24.725994+00:00",
+    "entry_decisions": [
+      {
+        "token_symbol": "SWJ",
+        "token_address": "13EAww2eo8g1Xp9U7qrLNg1WoHFHKbs9xy2EQJjfpump",
+        "decision": "reentry_cooldown"
+      }
+    ],
     "open_positions": 1,
-    "equity_usd": 6798.92151623,
-    "run_number": "1611"
+    "equity_usd": 6800.15564592,
+    "run_number": "208"
   }
 }
