@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-17T11:09:29.134305+00:00",
+  "updated_at": "2026-11-17T11:12:31.321252+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 6472.1428242,
   "open_positions": [
@@ -22,19 +22,19 @@
       "token_amount": 154592.29235223835,
       "cost_basis_usd": 204.32500597,
       "initial_stop_usd": 0.0012424002690520882,
-      "highest_price_usd": 0.0014325577248725204,
-      "last_price_usd": 0.0014325577248725204,
-      "last_price_at": "2026-11-17T11:09:29.134305+00:00",
+      "highest_price_usd": 0.0014390430149849513,
+      "last_price_usd": 0.0014390430149849513,
+      "last_price_at": "2026-11-17T11:12:31.321252+00:00",
       "current_stop_usd": 0.0013419483892335672,
       "last_quote": {
-        "at": "2026-11-17T11:09:29.134305+00:00",
+        "at": "2026-11-17T11:12:31.321252+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.0014325577248725204,
-        "price_high_usd": 0.0014331559412616279,
-        "deviation_pct": 0.0418,
+        "price_low_usd": 0.0014390430149849513,
+        "price_high_usd": 0.00144315478765899,
+        "deviation_pct": 0.2857,
         "errors": {}
       },
-      "last_liquidity_usd": 84189.2274,
+      "last_liquidity_usd": 84409.47590143423,
       "current_stop_kind": "profit_lock"
     }
   ],
@@ -3192,34 +3192,18 @@
       "equity_usd": 6691.47895113
     },
     {
-      "at": "2026-11-17T11:09:29.134305+00:00",
-      "equity_usd": 6693.60520681
+      "at": "2026-11-17T11:12:31.321252+00:00",
+      "equity_usd": 6694.60778268
     }
   ],
   "last_run": {
-    "at": "2026-11-17T11:09:29.134305+00:00",
-    "mode": "after-scan",
-    "scan_status": "ok",
-    "scan_at": "2026-11-17T11:09:28.839407+00:00",
-    "entry_decisions": [
-      {
-        "token_symbol": "ENO",
-        "token_address": "xmKrA827TY121gTRwHEn1HKBtzG2uFNpstwzJE6pump",
-        "decision": "already_open"
-      },
-      {
-        "token_symbol": "SWJ",
-        "token_address": "13EAww2eo8g1Xp9U7qrLNg1WoHFHKbs9xy2EQJjfpump",
-        "decision": "reentry_cooldown"
-      },
-      {
-        "token_symbol": "FOTF",
-        "token_address": "C6rxhmqEtmPs6SWQmoWEczH9jFx3YM724aTe6FNQpump",
-        "decision": "reentry_cooldown"
-      }
-    ],
+    "at": "2026-11-17T11:12:31.321252+00:00",
+    "mode": "monitor",
+    "scan_status": "not_requested",
+    "scan_at": null,
+    "entry_decisions": [],
     "open_positions": 1,
-    "equity_usd": 6693.60520681,
-    "run_number": "219"
+    "equity_usd": 6694.60778268,
+    "run_number": "1734"
   }
 }
