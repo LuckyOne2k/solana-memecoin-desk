@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-18T21:02:18.681042+00:00",
+  "updated_at": "2026-11-18T21:09:22.934986+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 6164.99478272,
   "open_positions": [
@@ -23,18 +23,18 @@
       "cost_basis_usd": 201.04894658,
       "initial_stop_usd": 0.0007781566908810156,
       "highest_price_usd": 0.000845207211077333,
-      "last_price_usd": 0.0008101505035192039,
-      "last_price_at": "2026-11-18T21:02:18.681042+00:00",
+      "last_price_usd": 0.0008093918404043027,
+      "last_price_at": "2026-11-18T21:09:22.934986+00:00",
       "current_stop_usd": 0.0007781566908810156,
       "last_quote": {
-        "at": "2026-11-18T21:02:18.681042+00:00",
+        "at": "2026-11-18T21:09:22.934986+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.0008101505035192039,
-        "price_high_usd": 0.000820244721965458,
-        "deviation_pct": 1.246,
+        "price_low_usd": 0.0008093918404043027,
+        "price_high_usd": 0.0008118901615016697,
+        "deviation_pct": 0.3087,
         "errors": {}
       },
-      "last_liquidity_usd": 65717.86693240942,
+      "last_liquidity_usd": 65761.74335855065,
       "current_stop_kind": "initial"
     }
   ],
@@ -3859,18 +3859,24 @@
       "equity_usd": 6361.57945919
     },
     {
-      "at": "2026-11-18T21:02:18.681042+00:00",
-      "equity_usd": 6361.75092808
+      "at": "2026-11-18T21:09:22.934986+00:00",
+      "equity_usd": 6361.56667635
     }
   ],
   "last_run": {
-    "at": "2026-11-18T21:02:18.681042+00:00",
-    "mode": "monitor",
-    "scan_status": "not_requested",
-    "scan_at": null,
-    "entry_decisions": [],
+    "at": "2026-11-18T21:09:22.934986+00:00",
+    "mode": "after-scan",
+    "scan_status": "ok",
+    "scan_at": "2026-11-18T21:09:22.680840+00:00",
+    "entry_decisions": [
+      {
+        "token_symbol": "ASWF",
+        "token_address": "w1wMtdikYDkCBGxKAGc1C8k3oYbjBucftqNzseupump",
+        "decision": "already_open"
+      }
+    ],
     "open_positions": 1,
-    "equity_usd": 6361.75092808,
-    "run_number": "2106"
+    "equity_usd": 6361.56667635,
+    "run_number": "253"
   }
 }
