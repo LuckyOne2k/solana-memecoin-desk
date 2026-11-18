@@ -4,9 +4,9 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-18T07:09:59.112998+00:00",
+  "updated_at": "2026-11-18T07:12:30.590168+00:00",
   "starting_balance_usd": 10000.0,
-  "cash_usd": 6170.75506853,
+  "cash_usd": 6170.89847075,
   "open_positions": [
     {
       "token_symbol": "ASWF",
@@ -23,47 +23,18 @@
       "cost_basis_usd": 201.04894658,
       "initial_stop_usd": 0.0007781566908810156,
       "highest_price_usd": 0.000845207211077333,
-      "last_price_usd": 0.0008418368296824375,
-      "last_price_at": "2026-11-18T07:09:59.112998+00:00",
+      "last_price_usd": 0.000843109816838583,
+      "last_price_at": "2026-11-18T07:12:30.590168+00:00",
       "current_stop_usd": 0.0007781566908810156,
       "last_quote": {
-        "at": "2026-11-18T07:09:59.112998+00:00",
+        "at": "2026-11-18T07:12:30.590168+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.0008418368296824375,
-        "price_high_usd": 0.0008433360498384559,
-        "deviation_pct": 0.1781,
+        "price_low_usd": 0.000843109816838583,
+        "price_high_usd": 0.0008439586962447102,
+        "deviation_pct": 0.1007,
         "errors": {}
       },
-      "last_liquidity_usd": 67548.0369,
-      "current_stop_kind": "initial"
-    },
-    {
-      "token_symbol": "SPAX10R",
-      "token_name": "SPAX10R",
-      "token_address": "941dyEVrMt8uEmtABhXiJQ6yZSGqepumQZQwLYzpump",
-      "pool_address": "2f4pSzv5p93C32n8WCgA8SjDBpGC6hgJx8HKi1m8VcTT",
-      "dex_name": "PumpSwap",
-      "opened_at": "2026-11-18T03:09:33.451105+00:00",
-      "entry_price_usd": 0.0019534836233630177,
-      "entry_mark_price_usd": 0.001926538515836812,
-      "entry_cost_pct": 1.3986,
-      "entry_liquidity_usd": 98881.85112509716,
-      "token_amount": 100889.19148997414,
-      "cost_basis_usd": 197.08538335,
-      "initial_stop_usd": 0.0018362746059612364,
-      "highest_price_usd": 0.0020078545164337494,
-      "last_price_usd": 0.0020078545164337494,
-      "last_price_at": "2026-11-18T07:09:59.112998+00:00",
-      "current_stop_usd": 0.0018362746059612364,
-      "last_quote": {
-        "at": "2026-11-18T07:09:59.112998+00:00",
-        "status": "confirmed",
-        "price_low_usd": 0.0020078545164337494,
-        "price_high_usd": 0.0020290184841922584,
-        "deviation_pct": 1.0541,
-        "errors": {}
-      },
-      "last_liquidity_usd": 101741.34130932792,
+      "last_liquidity_usd": 67921.40594535499,
       "current_stop_kind": "initial"
     }
   ],
@@ -846,6 +817,26 @@
       "exit_reason": "profit_lock",
       "highest_price_usd": 0.002059332268446923,
       "partial": false
+    },
+    {
+      "token_symbol": "SPAX10R",
+      "token_address": "941dyEVrMt8uEmtABhXiJQ6yZSGqepumQZQwLYzpump",
+      "pool_address": "2f4pSzv5p93C32n8WCgA8SjDBpGC6hgJx8HKi1m8VcTT",
+      "opened_at": "2026-11-18T03:09:33.451105+00:00",
+      "closed_at": "2026-11-18T07:12:30.590168+00:00",
+      "holding_hours": 4.049,
+      "entry_price_usd": 0.0019534836233630177,
+      "exit_mark_price_usd": 1.4360315843832342e-06,
+      "exit_price_usd": 1.421383428339601e-06,
+      "exit_cost_pct": 1.02,
+      "token_amount": 100889.19148997414,
+      "cost_basis_usd": 197.08538335,
+      "proceeds_usd": 0.14340222,
+      "pnl_usd": -196.94198113,
+      "pnl_pct": -99.9272,
+      "exit_reason": "stop_loss",
+      "highest_price_usd": 0.0020078545164337494,
+      "partial": false
     }
   ],
   "last_exit_at": {
@@ -879,14 +870,15 @@
     "C6rxhmqEtmPs6SWQmoWEczH9jFx3YM724aTe6FNQpump": "2026-11-17T03:12:29.377059+00:00",
     "KhyV4sEgisvA5CTD6NdcsyFJyAxHANq8By8Zrk9pump": "2026-11-17T08:17:26.821122+00:00",
     "2NWgu4fqN2AxS5pp5v3f3SH54qArP9JepQFJm58gpump": "2026-11-17T20:17:22.461818+00:00",
-    "xmKrA827TY121gTRwHEn1HKBtzG2uFNpstwzJE6pump": "2026-11-18T00:42:29.572592+00:00"
+    "xmKrA827TY121gTRwHEn1HKBtzG2uFNpstwzJE6pump": "2026-11-18T00:42:29.572592+00:00",
+    "941dyEVrMt8uEmtABhXiJQ6yZSGqepumQZQwLYzpump": "2026-11-18T07:12:30.590168+00:00"
   },
   "stats": {
     "trades_opened": 37,
-    "trades_closed": 35,
+    "trades_closed": 36,
     "wins": 9,
-    "losses": 26,
-    "realized_pnl_usd": -3431.11060156,
+    "losses": 27,
+    "realized_pnl_usd": -3628.05258269,
     "partial_sales": 5
   },
   "equity_history": [
@@ -3623,34 +3615,18 @@
       "equity_usd": 6576.37930074
     },
     {
-      "at": "2026-11-18T07:09:59.112998+00:00",
-      "equity_usd": 6577.77749096
+      "at": "2026-11-18T07:12:30.590168+00:00",
+      "equity_usd": 6375.65923675
     }
   ],
   "last_run": {
-    "at": "2026-11-18T07:09:59.112998+00:00",
-    "mode": "after-scan",
-    "scan_status": "ok",
-    "scan_at": "2026-11-18T07:09:58.886213+00:00",
-    "entry_decisions": [
-      {
-        "token_symbol": "SPAX10R",
-        "token_address": "941dyEVrMt8uEmtABhXiJQ6yZSGqepumQZQwLYzpump",
-        "decision": "already_open"
-      },
-      {
-        "token_symbol": "ASWF",
-        "token_address": "w1wMtdikYDkCBGxKAGc1C8k3oYbjBucftqNzseupump",
-        "decision": "already_open"
-      },
-      {
-        "token_symbol": "SWJ",
-        "token_address": "13EAww2eo8g1Xp9U7qrLNg1WoHFHKbs9xy2EQJjfpump",
-        "decision": "reentry_cooldown"
-      }
-    ],
-    "open_positions": 2,
-    "equity_usd": 6577.77749096,
-    "run_number": "239"
+    "at": "2026-11-18T07:12:30.590168+00:00",
+    "mode": "monitor",
+    "scan_status": "not_requested",
+    "scan_at": null,
+    "entry_decisions": [],
+    "open_positions": 1,
+    "equity_usd": 6375.65923675,
+    "run_number": "1953"
   }
 }
