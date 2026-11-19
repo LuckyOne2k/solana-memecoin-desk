@@ -4,10 +4,30 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-19T15:09:40.597774+00:00",
+  "updated_at": "2026-11-19T16:10:37.542411+00:00",
   "starting_balance_usd": 10000.0,
-  "cash_usd": 6338.68437949,
-  "open_positions": [],
+  "cash_usd": 6148.52384811,
+  "open_positions": [
+    {
+      "token_symbol": "JESTER",
+      "token_name": "JESTER",
+      "token_address": "VAYMVikuYQpWz5sXCeCsQDeho2QcGqDSNq9rhCspump",
+      "pool_address": "EJHur4FVts85xqWskjUAoaUBMAvccEDXUTUpPZe9gUEn",
+      "dex_name": "PumpSwap",
+      "opened_at": "2026-11-19T16:10:37.542411+00:00",
+      "entry_price_usd": 0.0016354025223590696,
+      "entry_mark_price_usd": 0.0016127709070574887,
+      "entry_cost_pct": 1.4033,
+      "entry_liquidity_usd": 94308.05481966447,
+      "token_amount": 116277.50891914565,
+      "cost_basis_usd": 190.16053138,
+      "initial_stop_usd": 0.0015372783710175253,
+      "highest_price_usd": 0.0016354025223590696,
+      "last_price_usd": 0.0016107583409241428,
+      "last_price_at": "2026-11-19T16:10:37.542411+00:00",
+      "current_stop_usd": 0.0015372783710175253
+    }
+  ],
   "closed_trades": [
     {
       "token_symbol": "BRUH",
@@ -906,7 +926,7 @@
     "9rbKkz2BDQBVgZmrHY6d7PTq2ge91gkpEyE4y9PPpump": "2026-11-19T08:27:11.651579+00:00"
   },
   "stats": {
-    "trades_opened": 39,
+    "trades_opened": 40,
     "trades_closed": 39,
     "wins": 9,
     "losses": 30,
@@ -3997,22 +4017,26 @@
     {
       "at": "2026-11-19T15:09:40.597774+00:00",
       "equity_usd": 6338.68437949
+    },
+    {
+      "at": "2026-11-19T16:10:37.542411+00:00",
+      "equity_usd": 6335.81881546
     }
   ],
   "last_run": {
-    "at": "2026-11-19T15:09:40.597774+00:00",
+    "at": "2026-11-19T16:10:37.542411+00:00",
     "mode": "after-scan",
     "scan_status": "ok",
-    "scan_at": "2026-11-19T15:09:40.270840+00:00",
+    "scan_at": "2026-11-19T16:10:37.329075+00:00",
     "entry_decisions": [
       {
         "token_symbol": "JESTER",
         "token_address": "VAYMVikuYQpWz5sXCeCsQDeho2QcGqDSNq9rhCspump",
-        "decision": "not_ready_in_previous_scan"
+        "decision": "open"
       }
     ],
-    "open_positions": 0,
-    "equity_usd": 6338.68437949,
-    "run_number": "271"
+    "open_positions": 1,
+    "equity_usd": 6335.81881546,
+    "run_number": "272"
   }
 }
