@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-19T21:17:27.270242+00:00",
+  "updated_at": "2026-11-19T21:22:43.753473+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 6132.22791202,
   "open_positions": [
@@ -23,18 +23,20 @@
       "cost_basis_usd": 189.65653336,
       "initial_stop_usd": 0.0010821556963617079,
       "highest_price_usd": 0.001151229464214583,
-      "last_price_usd": 0.0011372982700912314,
-      "last_price_at": "2026-11-19T21:17:27.270242+00:00",
+      "last_price_usd": 0.001129027662623073,
+      "last_price_at": "2026-11-19T21:22:43.753473+00:00",
       "current_stop_usd": 0.0010821556963617079,
       "last_quote": {
-        "at": "2026-11-19T21:17:27.270242+00:00",
-        "status": "confirmed",
-        "price_low_usd": 0.0011372982700912314,
-        "price_high_usd": 0.0011534391054600715,
-        "deviation_pct": 1.4192,
-        "errors": {}
+        "at": "2026-11-19T21:22:43.753473+00:00",
+        "status": "single_source",
+        "price_low_usd": 0.001129027662623073,
+        "price_high_usd": 0.001129027662623073,
+        "deviation_pct": null,
+        "errors": {
+          "geckoterminal": "HTTPError HTTP 429"
+        }
       },
-      "last_liquidity_usd": 85945.729,
+      "last_liquidity_usd": 85142.32129398931,
       "current_stop_kind": "initial"
     }
   ],
@@ -4086,18 +4088,18 @@
       "equity_usd": 6317.42287082
     },
     {
-      "at": "2026-11-19T21:17:27.270242+00:00",
-      "equity_usd": 6319.58938426
+      "at": "2026-11-19T21:22:43.753473+00:00",
+      "equity_usd": 6318.2268629
     }
   ],
   "last_run": {
-    "at": "2026-11-19T21:17:27.270242+00:00",
+    "at": "2026-11-19T21:22:43.753473+00:00",
     "mode": "monitor",
     "scan_status": "not_requested",
     "scan_at": null,
     "entry_decisions": [],
     "open_positions": 1,
-    "equity_usd": 6319.58938426,
-    "run_number": "2371"
+    "equity_usd": 6318.2268629,
+    "run_number": "2372"
   }
 }
