@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "purpose": "learning_only_no_trading",
-  "generated_at": "2026-11-19T13:09:35.905181+00:00",
+  "generated_at": "2026-11-19T14:09:23.944342+00:00",
   "note": "Kursveränderung ohne Kosten seit erster Beobachtung; keine Kaufempfehlung.",
-  "observations_total": 906,
-  "observations_open": 91,
+  "observations_total": 912,
+  "observations_open": 97,
   "by_status": [
     {
       "group": "rejected",
-      "observations": 463,
+      "observations": 468,
       "1h": {
-        "count": 460,
+        "count": 461,
         "mean_pct": -1.96,
         "median_pct": 0.0,
         "positive_share_pct": 28.9
@@ -30,12 +30,12 @@
     },
     {
       "group": "incomplete",
-      "observations": 390,
+      "observations": 391,
       "1h": {
-        "count": 387,
-        "mean_pct": -1.71,
+        "count": 388,
+        "mean_pct": -1.68,
         "median_pct": 0.0,
-        "positive_share_pct": 47.0
+        "positive_share_pct": 47.2
       },
       "6h": {
         "count": 379,
@@ -78,10 +78,10 @@
       "group": "incomplete:market_cap_usd",
       "observations": 341,
       "1h": {
-        "count": 338,
-        "mean_pct": -1.85,
+        "count": 339,
+        "mean_pct": -1.81,
         "median_pct": 0.0,
-        "positive_share_pct": 42.0
+        "positive_share_pct": 42.2
       },
       "6h": {
         "count": 331,
@@ -98,7 +98,7 @@
     },
     {
       "group": "rejected:lp_burn_or_lock_not_verified",
-      "observations": 218,
+      "observations": 222,
       "1h": {
         "count": 217,
         "mean_pct": -2.31,
@@ -120,7 +120,7 @@
     },
     {
       "group": "rejected:market_cap_below_minimum",
-      "observations": 63,
+      "observations": 64,
       "1h": {
         "count": 62,
         "mean_pct": 0.13,
@@ -208,7 +208,7 @@
     },
     {
       "group": "incomplete:liquidity_depth",
-      "observations": 39,
+      "observations": 40,
       "1h": {
         "count": 39,
         "mean_pct": -1.32,
@@ -254,10 +254,10 @@
       "group": "rejected:mint_authority_not_confirmed_revoked",
       "observations": 22,
       "1h": {
-        "count": 21,
-        "mean_pct": -0.29,
+        "count": 22,
+        "mean_pct": -0.3,
         "median_pct": 0.0,
-        "positive_share_pct": 23.8
+        "positive_share_pct": 22.7
       },
       "6h": {
         "count": 21,
