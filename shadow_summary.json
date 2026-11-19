@@ -1,14 +1,14 @@
 {
   "schema_version": 1,
   "purpose": "learning_only_no_trading",
-  "generated_at": "2026-11-19T16:10:39.315475+00:00",
+  "generated_at": "2026-11-19T17:09:36.741860+00:00",
   "note": "Kursveränderung ohne Kosten seit erster Beobachtung; keine Kaufempfehlung.",
-  "observations_total": 922,
-  "observations_open": 95,
+  "observations_total": 927,
+  "observations_open": 98,
   "by_status": [
     {
       "group": "rejected",
-      "observations": 471,
+      "observations": 474,
       "1h": {
         "count": 469,
         "mean_pct": -1.93,
@@ -22,15 +22,15 @@
         "positive_share_pct": 30.5
       },
       "24h": {
-        "count": 430,
-        "mean_pct": -11.02,
+        "count": 432,
+        "mean_pct": -10.97,
         "median_pct": 0.0,
-        "positive_share_pct": 27.4
+        "positive_share_pct": 27.5
       }
     },
     {
       "group": "incomplete",
-      "observations": 397,
+      "observations": 399,
       "1h": {
         "count": 392,
         "mean_pct": -1.66,
@@ -76,7 +76,7 @@
   "by_reason": [
     {
       "group": "incomplete:market_cap_usd",
-      "observations": 347,
+      "observations": 349,
       "1h": {
         "count": 342,
         "mean_pct": -1.8,
@@ -98,7 +98,7 @@
     },
     {
       "group": "rejected:lp_burn_or_lock_not_verified",
-      "observations": 224,
+      "observations": 225,
       "1h": {
         "count": 222,
         "mean_pct": -2.26,
@@ -112,10 +112,10 @@
         "positive_share_pct": 21.3
       },
       "24h": {
-        "count": 202,
-        "mean_pct": -13.81,
+        "count": 203,
+        "mean_pct": -13.74,
         "median_pct": 0.0,
-        "positive_share_pct": 19.8
+        "positive_share_pct": 20.2
       }
     },
     {
@@ -164,7 +164,7 @@
     },
     {
       "group": "rejected:market_cap_above_maximum_onchain_lower_bound",
-      "observations": 43,
+      "observations": 44,
       "1h": {
         "count": 43,
         "mean_pct": -11.37,
@@ -186,7 +186,7 @@
     },
     {
       "group": "rejected:no_24h_trading_activity",
-      "observations": 41,
+      "observations": 42,
       "1h": {
         "count": 41,
         "mean_pct": -0.1,
@@ -310,10 +310,10 @@
         "positive_share_pct": 37.5
       },
       "24h": {
-        "count": 13,
-        "mean_pct": 0.28,
-        "median_pct": 0.22,
-        "positive_share_pct": 69.2
+        "count": 14,
+        "mean_pct": 0.25,
+        "median_pct": 0.21,
+        "positive_share_pct": 64.3
       }
     },
     {

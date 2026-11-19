@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-19T16:57:13.697279+00:00",
+  "updated_at": "2026-11-19T17:09:36.024560+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 6321.88444538,
   "open_positions": [],
@@ -4034,16 +4034,20 @@
     {
       "at": "2026-11-19T16:57:13.697279+00:00",
       "equity_usd": 6321.88444538
+    },
+    {
+      "at": "2026-11-19T17:09:36.024560+00:00",
+      "equity_usd": 6321.88444538
     }
   ],
   "last_run": {
-    "at": "2026-11-19T16:57:13.697279+00:00",
-    "mode": "monitor",
-    "scan_status": "not_requested",
-    "scan_at": null,
+    "at": "2026-11-19T17:09:36.024560+00:00",
+    "mode": "after-scan",
+    "scan_status": "ok",
+    "scan_at": "2026-11-19T17:09:35.709333+00:00",
     "entry_decisions": [],
     "open_positions": 0,
     "equity_usd": 6321.88444538,
-    "run_number": "2324"
+    "run_number": "273"
   }
 }
