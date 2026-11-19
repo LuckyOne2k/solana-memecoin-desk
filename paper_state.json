@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-19T14:09:22.289629+00:00",
+  "updated_at": "2026-11-19T15:09:40.597774+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 6338.68437949,
   "open_positions": [],
@@ -3993,22 +3993,26 @@
     {
       "at": "2026-11-19T14:09:22.289629+00:00",
       "equity_usd": 6338.68437949
+    },
+    {
+      "at": "2026-11-19T15:09:40.597774+00:00",
+      "equity_usd": 6338.68437949
     }
   ],
   "last_run": {
-    "at": "2026-11-19T14:09:22.289629+00:00",
+    "at": "2026-11-19T15:09:40.597774+00:00",
     "mode": "after-scan",
     "scan_status": "ok",
-    "scan_at": "2026-11-19T14:09:21.970961+00:00",
+    "scan_at": "2026-11-19T15:09:40.270840+00:00",
     "entry_decisions": [
       {
-        "token_symbol": "ASWF",
-        "token_address": "w1wMtdikYDkCBGxKAGc1C8k3oYbjBucftqNzseupump",
-        "decision": "reentry_cooldown"
+        "token_symbol": "JESTER",
+        "token_address": "VAYMVikuYQpWz5sXCeCsQDeho2QcGqDSNq9rhCspump",
+        "decision": "not_ready_in_previous_scan"
       }
     ],
     "open_positions": 0,
     "equity_usd": 6338.68437949,
-    "run_number": "270"
+    "run_number": "271"
   }
 }
