@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-19T19:09:47.716193+00:00",
+  "updated_at": "2026-11-19T20:09:30.437324+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 6321.88444538,
   "open_positions": [],
@@ -4046,16 +4046,26 @@
     {
       "at": "2026-11-19T19:09:47.716193+00:00",
       "equity_usd": 6321.88444538
+    },
+    {
+      "at": "2026-11-19T20:09:30.437324+00:00",
+      "equity_usd": 6321.88444538
     }
   ],
   "last_run": {
-    "at": "2026-11-19T19:09:47.716193+00:00",
+    "at": "2026-11-19T20:09:30.437324+00:00",
     "mode": "after-scan",
     "scan_status": "ok",
-    "scan_at": "2026-11-19T19:09:47.479255+00:00",
-    "entry_decisions": [],
+    "scan_at": "2026-11-19T20:09:30.230508+00:00",
+    "entry_decisions": [
+      {
+        "token_symbol": "SHIT",
+        "token_address": "Fn95NtGXWPaJXc4N5y9rVkUq1NwZbjBNJzPVvNRLpump",
+        "decision": "not_ready_in_previous_scan"
+      }
+    ],
     "open_positions": 0,
     "equity_usd": 6321.88444538,
-    "run_number": "275"
+    "run_number": "276"
   }
 }
