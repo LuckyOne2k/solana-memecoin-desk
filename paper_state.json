@@ -4,40 +4,10 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-19T16:52:48.535366+00:00",
+  "updated_at": "2026-11-19T16:57:13.697279+00:00",
   "starting_balance_usd": 10000.0,
-  "cash_usd": 6148.52384811,
-  "open_positions": [
-    {
-      "token_symbol": "JESTER",
-      "token_name": "JESTER",
-      "token_address": "VAYMVikuYQpWz5sXCeCsQDeho2QcGqDSNq9rhCspump",
-      "pool_address": "EJHur4FVts85xqWskjUAoaUBMAvccEDXUTUpPZe9gUEn",
-      "dex_name": "PumpSwap",
-      "opened_at": "2026-11-19T16:10:37.542411+00:00",
-      "entry_price_usd": 0.0016354025223590696,
-      "entry_mark_price_usd": 0.0016127709070574887,
-      "entry_cost_pct": 1.4033,
-      "entry_liquidity_usd": 94308.05481966447,
-      "token_amount": 116277.50891914565,
-      "cost_basis_usd": 190.16053138,
-      "initial_stop_usd": 0.0015372783710175253,
-      "highest_price_usd": 0.0016833314232924809,
-      "last_price_usd": 0.001639554959795335,
-      "last_price_at": "2026-11-19T16:52:48.535366+00:00",
-      "current_stop_usd": 0.0015372783710175253,
-      "last_quote": {
-        "at": "2026-11-19T16:52:48.535366+00:00",
-        "status": "confirmed",
-        "price_low_usd": 0.001639554959795335,
-        "price_high_usd": 0.0016413207657146416,
-        "deviation_pct": 0.1077,
-        "errors": {}
-      },
-      "last_liquidity_usd": 95732.1197,
-      "current_stop_kind": "initial"
-    }
-  ],
+  "cash_usd": 6321.88444538,
+  "open_positions": [],
   "closed_trades": [
     {
       "token_symbol": "BRUH",
@@ -897,6 +867,26 @@
       "exit_reason": "stop_loss",
       "highest_price_usd": 0.001436831960506629,
       "partial": false
+    },
+    {
+      "token_symbol": "JESTER",
+      "token_address": "VAYMVikuYQpWz5sXCeCsQDeho2QcGqDSNq9rhCspump",
+      "pool_address": "EJHur4FVts85xqWskjUAoaUBMAvccEDXUTUpPZe9gUEn",
+      "opened_at": "2026-11-19T16:10:37.542411+00:00",
+      "closed_at": "2026-11-19T16:57:13.697279+00:00",
+      "holding_hours": 0.777,
+      "entry_price_usd": 0.0016354025223590696,
+      "exit_mark_price_usd": 0.0015115804711349193,
+      "exit_price_usd": 0.001490921149567965,
+      "exit_cost_pct": 1.3667,
+      "token_amount": 116277.50891914565,
+      "cost_basis_usd": 190.16053138,
+      "proceeds_usd": 173.36059727,
+      "pnl_usd": -16.79993411,
+      "pnl_pct": -8.8346,
+      "exit_reason": "stop_loss",
+      "highest_price_usd": 0.0016833314232924809,
+      "partial": false
     }
   ],
   "last_exit_at": {
@@ -933,14 +923,15 @@
     "xmKrA827TY121gTRwHEn1HKBtzG2uFNpstwzJE6pump": "2026-11-18T00:42:29.572592+00:00",
     "941dyEVrMt8uEmtABhXiJQ6yZSGqepumQZQwLYzpump": "2026-11-18T07:12:30.590168+00:00",
     "w1wMtdikYDkCBGxKAGc1C8k3oYbjBucftqNzseupump": "2026-11-19T00:09:24.384733+00:00",
-    "9rbKkz2BDQBVgZmrHY6d7PTq2ge91gkpEyE4y9PPpump": "2026-11-19T08:27:11.651579+00:00"
+    "9rbKkz2BDQBVgZmrHY6d7PTq2ge91gkpEyE4y9PPpump": "2026-11-19T08:27:11.651579+00:00",
+    "VAYMVikuYQpWz5sXCeCsQDeho2QcGqDSNq9rhCspump": "2026-11-19T16:57:13.697279+00:00"
   },
   "stats": {
     "trades_opened": 40,
-    "trades_closed": 39,
+    "trades_closed": 40,
     "wins": 9,
-    "losses": 30,
-    "realized_pnl_usd": -3661.31562053,
+    "losses": 31,
+    "realized_pnl_usd": -3678.11555464,
     "partial_sales": 5
   },
   "equity_history": [
@@ -4041,18 +4032,18 @@
       "equity_usd": 6341.86021163
     },
     {
-      "at": "2026-11-19T16:52:48.535366+00:00",
-      "equity_usd": 6339.16721457
+      "at": "2026-11-19T16:57:13.697279+00:00",
+      "equity_usd": 6321.88444538
     }
   ],
   "last_run": {
-    "at": "2026-11-19T16:52:48.535366+00:00",
+    "at": "2026-11-19T16:57:13.697279+00:00",
     "mode": "monitor",
     "scan_status": "not_requested",
     "scan_at": null,
     "entry_decisions": [],
-    "open_positions": 1,
-    "equity_usd": 6339.16721457,
-    "run_number": "2323"
+    "open_positions": 0,
+    "equity_usd": 6321.88444538,
+    "run_number": "2324"
   }
 }
