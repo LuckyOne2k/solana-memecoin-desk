@@ -4,40 +4,10 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-19T22:42:25.347170+00:00",
+  "updated_at": "2026-11-19T22:47:16.253294+00:00",
   "starting_balance_usd": 10000.0,
-  "cash_usd": 6132.22791202,
-  "open_positions": [
-    {
-      "token_symbol": "SHIT",
-      "token_name": "Ah Shit, Here We Go Again",
-      "token_address": "Fn95NtGXWPaJXc4N5y9rVkUq1NwZbjBNJzPVvNRLpump",
-      "pool_address": "D1LXpkFpbQr1YwVgWYQsed93czdz8hA7s9g7yb8LMFfe",
-      "dex_name": "PumpSwap",
-      "opened_at": "2026-11-19T21:10:16.036569+00:00",
-      "entry_price_usd": 0.001151229464214583,
-      "entry_mark_price_usd": 0.0011348393451221371,
-      "entry_cost_pct": 1.4443,
-      "entry_liquidity_usd": 85379.3766,
-      "token_amount": 164742.598461369,
-      "cost_basis_usd": 189.65653336,
-      "initial_stop_usd": 0.0010821556963617079,
-      "highest_price_usd": 0.0014634121613990433,
-      "last_price_usd": 0.0013859592669163497,
-      "last_price_at": "2026-11-19T22:42:25.347170+00:00",
-      "current_stop_usd": 0.0013756074317151006,
-      "last_quote": {
-        "at": "2026-11-19T22:42:25.347170+00:00",
-        "status": "confirmed",
-        "price_low_usd": 0.0013859592669163497,
-        "price_high_usd": 0.001401887305379746,
-        "deviation_pct": 1.1492,
-        "errors": {}
-      },
-      "last_liquidity_usd": 94812.4040966415,
-      "current_stop_kind": "trailing"
-    }
-  ],
+  "cash_usd": 6351.04994072,
+  "open_positions": [],
   "closed_trades": [
     {
       "token_symbol": "BRUH",
@@ -917,6 +887,26 @@
       "exit_reason": "stop_loss",
       "highest_price_usd": 0.0016833314232924809,
       "partial": false
+    },
+    {
+      "token_symbol": "SHIT",
+      "token_address": "Fn95NtGXWPaJXc4N5y9rVkUq1NwZbjBNJzPVvNRLpump",
+      "pool_address": "D1LXpkFpbQr1YwVgWYQsed93czdz8hA7s9g7yb8LMFfe",
+      "opened_at": "2026-11-19T21:10:16.036569+00:00",
+      "closed_at": "2026-11-19T22:47:16.253294+00:00",
+      "holding_hours": 1.617,
+      "entry_price_usd": 0.001151229464214583,
+      "exit_mark_price_usd": 0.0013481378296763913,
+      "exit_price_usd": 0.001328266221017307,
+      "exit_cost_pct": 1.474,
+      "token_amount": 164742.598461369,
+      "cost_basis_usd": 189.65653336,
+      "proceeds_usd": 218.8220287,
+      "pnl_usd": 29.16549534,
+      "pnl_pct": 15.3781,
+      "exit_reason": "trailing_stop",
+      "highest_price_usd": 0.0014634121613990433,
+      "partial": false
     }
   ],
   "last_exit_at": {
@@ -954,14 +944,15 @@
     "941dyEVrMt8uEmtABhXiJQ6yZSGqepumQZQwLYzpump": "2026-11-18T07:12:30.590168+00:00",
     "w1wMtdikYDkCBGxKAGc1C8k3oYbjBucftqNzseupump": "2026-11-19T00:09:24.384733+00:00",
     "9rbKkz2BDQBVgZmrHY6d7PTq2ge91gkpEyE4y9PPpump": "2026-11-19T08:27:11.651579+00:00",
-    "VAYMVikuYQpWz5sXCeCsQDeho2QcGqDSNq9rhCspump": "2026-11-19T16:57:13.697279+00:00"
+    "VAYMVikuYQpWz5sXCeCsQDeho2QcGqDSNq9rhCspump": "2026-11-19T16:57:13.697279+00:00",
+    "Fn95NtGXWPaJXc4N5y9rVkUq1NwZbjBNJzPVvNRLpump": "2026-11-19T22:47:16.253294+00:00"
   },
   "stats": {
     "trades_opened": 41,
-    "trades_closed": 40,
-    "wins": 9,
+    "trades_closed": 41,
+    "wins": 10,
     "losses": 31,
-    "realized_pnl_usd": -3678.11555464,
+    "realized_pnl_usd": -3648.9500593,
     "partial_sales": 5
   },
   "equity_history": [
@@ -4108,16 +4099,20 @@
     {
       "at": "2026-11-19T22:42:25.347170+00:00",
       "equity_usd": 6360.55444301
+    },
+    {
+      "at": "2026-11-19T22:47:16.253294+00:00",
+      "equity_usd": 6351.04994072
     }
   ],
   "last_run": {
-    "at": "2026-11-19T22:42:25.347170+00:00",
+    "at": "2026-11-19T22:47:16.253294+00:00",
     "mode": "monitor",
     "scan_status": "not_requested",
     "scan_at": null,
     "entry_decisions": [],
-    "open_positions": 1,
-    "equity_usd": 6360.55444301,
-    "run_number": "2387"
+    "open_positions": 0,
+    "equity_usd": 6351.04994072,
+    "run_number": "2388"
   }
 }
