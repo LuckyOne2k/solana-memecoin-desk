@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-19T16:10:37.542411+00:00",
+  "updated_at": "2026-11-19T16:12:41.995783+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 6148.52384811,
   "open_positions": [
@@ -22,10 +22,20 @@
       "token_amount": 116277.50891914565,
       "cost_basis_usd": 190.16053138,
       "initial_stop_usd": 0.0015372783710175253,
-      "highest_price_usd": 0.0016354025223590696,
-      "last_price_usd": 0.0016107583409241428,
-      "last_price_at": "2026-11-19T16:10:37.542411+00:00",
-      "current_stop_usd": 0.0015372783710175253
+      "highest_price_usd": 0.0016552687862635565,
+      "last_price_usd": 0.0016552687862635565,
+      "last_price_at": "2026-11-19T16:12:41.995783+00:00",
+      "current_stop_usd": 0.0015372783710175253,
+      "last_quote": {
+        "at": "2026-11-19T16:12:41.995783+00:00",
+        "status": "confirmed",
+        "price_low_usd": 0.0016552687862635565,
+        "price_high_usd": 0.0016571789308133882,
+        "deviation_pct": 0.1154,
+        "errors": {}
+      },
+      "last_liquidity_usd": 94471.39005823054,
+      "current_stop_kind": "initial"
     }
   ],
   "closed_trades": [
@@ -4019,24 +4029,18 @@
       "equity_usd": 6338.68437949
     },
     {
-      "at": "2026-11-19T16:10:37.542411+00:00",
-      "equity_usd": 6335.81881546
+      "at": "2026-11-19T16:12:41.995783+00:00",
+      "equity_usd": 6340.99437917
     }
   ],
   "last_run": {
-    "at": "2026-11-19T16:10:37.542411+00:00",
-    "mode": "after-scan",
-    "scan_status": "ok",
-    "scan_at": "2026-11-19T16:10:37.329075+00:00",
-    "entry_decisions": [
-      {
-        "token_symbol": "JESTER",
-        "token_address": "VAYMVikuYQpWz5sXCeCsQDeho2QcGqDSNq9rhCspump",
-        "decision": "open"
-      }
-    ],
+    "at": "2026-11-19T16:12:41.995783+00:00",
+    "mode": "monitor",
+    "scan_status": "not_requested",
+    "scan_at": null,
+    "entry_decisions": [],
     "open_positions": 1,
-    "equity_usd": 6335.81881546,
-    "run_number": "272"
+    "equity_usd": 6340.99437917,
+    "run_number": "2315"
   }
 }
