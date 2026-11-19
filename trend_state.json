@@ -7,7 +7,7 @@
   "cost_pct_per_trade": 0.5,
   "starting_balance_usd": 9999.99,
   "created_at": "2026-11-11T06:32:56+00:00",
-  "updated_at": "2026-11-18T01:05:26+00:00",
+  "updated_at": "2026-11-19T01:05:16+00:00",
   "products": {
     "BTC-USD": {
       "cash_usd": 3163.31,
@@ -15,13 +15,13 @@
       "entry_price_usd": null,
       "cost_basis_usd": null,
       "opened_at": null,
-      "signal_day": "2026-11-17",
+      "signal_day": "2026-11-18",
       "signal": {
-        "close_usd": 64873.18,
-        "sma_usd": 72796.77595,
+        "close_usd": 62981.71,
+        "sma_usd": 72718.27295,
         "long": false
       },
-      "last_close_usd": 64873.18,
+      "last_close_usd": 62981.71,
       "status": "ok",
       "reason": null
     },
@@ -31,13 +31,13 @@
       "entry_price_usd": null,
       "cost_basis_usd": null,
       "opened_at": null,
-      "signal_day": "2026-11-17",
+      "signal_day": "2026-11-18",
       "signal": {
-        "close_usd": 1822.15,
-        "sma_usd": 2137.9726,
+        "close_usd": 1774.64,
+        "sma_usd": 2135.26135,
         "long": false
       },
-      "last_close_usd": 1822.15,
+      "last_close_usd": 1774.64,
       "status": "ok",
       "reason": null
     },
@@ -47,13 +47,13 @@
       "entry_price_usd": null,
       "cost_basis_usd": null,
       "opened_at": null,
-      "signal_day": "2026-11-17",
+      "signal_day": "2026-11-18",
       "signal": {
-        "close_usd": 75.11,
-        "sma_usd": 88.68175,
+        "close_usd": 73.55,
+        "sma_usd": 88.6282,
         "long": false
       },
-      "last_close_usd": 75.11,
+      "last_close_usd": 73.55,
       "status": "ok",
       "reason": null
     }
@@ -90,6 +90,10 @@
     {
       "day": "2026-11-17",
       "equity_usd": 9829.97
+    },
+    {
+      "day": "2026-11-18",
+      "equity_usd": 9829.97
     }
   ],
   "stats": {
@@ -98,7 +102,7 @@
     "realized_pnl_usd": -170.02
   },
   "last_run": {
-    "at": "2026-11-18T01:05:26+00:00",
+    "at": "2026-11-19T01:05:16+00:00",
     "decisions": {
       "BTC-USD": "hold_cash",
       "ETH-USD": "hold_cash",
