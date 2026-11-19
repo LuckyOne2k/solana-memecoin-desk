@@ -4,10 +4,30 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-19T06:09:33.922409+00:00",
+  "updated_at": "2026-11-19T07:09:28.583562+00:00",
   "starting_balance_usd": 10000.0,
-  "cash_usd": 6358.39464089,
-  "open_positions": [],
+  "cash_usd": 6167.64280166,
+  "open_positions": [
+    {
+      "token_symbol": "Leonida",
+      "token_name": "The State of Leonida",
+      "token_address": "9rbKkz2BDQBVgZmrHY6d7PTq2ge91gkpEyE4y9PPpump",
+      "pool_address": "6Ecx5Lm5dinVma1xWMEumj6ABZL3g1Xx4t5rxQxELzdn",
+      "dex_name": "PumpSwap",
+      "opened_at": "2026-11-19T07:09:28.583562+00:00",
+      "entry_price_usd": 0.0014082772348288192,
+      "entry_mark_price_usd": 0.0013885401200976872,
+      "entry_cost_pct": 1.4214,
+      "entry_liquidity_usd": 90526.1614,
+      "token_amount": 135450.48837858016,
+      "cost_basis_usd": 190.75183923,
+      "initial_stop_usd": 0.00132378060073909,
+      "highest_price_usd": 0.0014082772348288192,
+      "last_price_usd": 0.0013866629112820848,
+      "last_price_at": "2026-11-19T07:09:28.583562+00:00",
+      "current_stop_usd": 0.00132378060073909
+    }
+  ],
   "closed_trades": [
     {
       "token_symbol": "BRUH",
@@ -885,7 +905,7 @@
     "w1wMtdikYDkCBGxKAGc1C8k3oYbjBucftqNzseupump": "2026-11-19T00:09:24.384733+00:00"
   },
   "stats": {
-    "trades_opened": 38,
+    "trades_opened": 39,
     "trades_closed": 38,
     "wins": 9,
     "losses": 29,
@@ -3924,22 +3944,26 @@
     {
       "at": "2026-11-19T06:09:33.922409+00:00",
       "equity_usd": 6358.39464089
+    },
+    {
+      "at": "2026-11-19T07:09:28.583562+00:00",
+      "equity_usd": 6355.46697021
     }
   ],
   "last_run": {
-    "at": "2026-11-19T06:09:33.922409+00:00",
+    "at": "2026-11-19T07:09:28.583562+00:00",
     "mode": "after-scan",
     "scan_status": "ok",
-    "scan_at": "2026-11-19T06:09:33.633215+00:00",
+    "scan_at": "2026-11-19T07:09:28.369278+00:00",
     "entry_decisions": [
       {
         "token_symbol": "Leonida",
         "token_address": "9rbKkz2BDQBVgZmrHY6d7PTq2ge91gkpEyE4y9PPpump",
-        "decision": "price_changed_between_scans"
+        "decision": "open"
       }
     ],
-    "open_positions": 0,
-    "equity_usd": 6358.39464089,
-    "run_number": "262"
+    "open_positions": 1,
+    "equity_usd": 6355.46697021,
+    "run_number": "263"
   }
 }
