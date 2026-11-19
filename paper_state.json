@@ -4,40 +4,10 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-19T00:02:11.586541+00:00",
+  "updated_at": "2026-11-19T00:09:24.384733+00:00",
   "starting_balance_usd": 10000.0,
-  "cash_usd": 6164.99478272,
-  "open_positions": [
-    {
-      "token_symbol": "ASWF",
-      "token_name": "American Sovereign Wealth Fund",
-      "token_address": "w1wMtdikYDkCBGxKAGc1C8k3oYbjBucftqNzseupump",
-      "pool_address": "EtWQ7ckEpBeidm3bWNFMFKNfeS5BnneSmeHUiU4waKtJ",
-      "dex_name": "PumpSwap",
-      "opened_at": "2026-11-17T21:09:34.474011+00:00",
-      "entry_price_usd": 0.0008278262668946975,
-      "entry_mark_price_usd": 0.0008147207829251038,
-      "entry_cost_pct": 1.6086,
-      "entry_liquidity_usd": 66070.84822637583,
-      "token_amount": 242863.69570533835,
-      "cost_basis_usd": 201.04894658,
-      "initial_stop_usd": 0.0007781566908810156,
-      "highest_price_usd": 0.000845207211077333,
-      "last_price_usd": 0.0008114369273866532,
-      "last_price_at": "2026-11-19T00:02:11.586541+00:00",
-      "current_stop_usd": 0.0007781566908810156,
-      "last_quote": {
-        "at": "2026-11-19T00:02:11.586541+00:00",
-        "status": "confirmed",
-        "price_low_usd": 0.0008114369273866532,
-        "price_high_usd": 0.0008203727867879687,
-        "deviation_pct": 1.1012,
-        "errors": {}
-      },
-      "last_liquidity_usd": 66349.1078,
-      "current_stop_kind": "initial"
-    }
-  ],
+  "cash_usd": 6358.39464089,
+  "open_positions": [],
   "closed_trades": [
     {
       "token_symbol": "BRUH",
@@ -857,6 +827,26 @@
       "exit_reason": "security_rejected",
       "highest_price_usd": 0.0009459026301856319,
       "partial": false
+    },
+    {
+      "token_symbol": "ASWF",
+      "token_address": "w1wMtdikYDkCBGxKAGc1C8k3oYbjBucftqNzseupump",
+      "pool_address": "EtWQ7ckEpBeidm3bWNFMFKNfeS5BnneSmeHUiU4waKtJ",
+      "opened_at": "2026-11-17T21:09:34.474011+00:00",
+      "closed_at": "2026-11-19T00:09:24.384733+00:00",
+      "holding_hours": 26.997,
+      "entry_price_usd": 0.0008278262668946975,
+      "exit_mark_price_usd": 0.0008092580030969027,
+      "exit_price_usd": 0.0007963308703125242,
+      "exit_cost_pct": 1.5974,
+      "token_amount": 242863.69570533835,
+      "cost_basis_usd": 201.04894658,
+      "proceeds_usd": 193.39985817,
+      "pnl_usd": -7.64908841,
+      "pnl_pct": -3.8046,
+      "exit_reason": "security_rejected",
+      "highest_price_usd": 0.000845207211077333,
+      "partial": false
     }
   ],
   "last_exit_at": {
@@ -891,14 +881,15 @@
     "KhyV4sEgisvA5CTD6NdcsyFJyAxHANq8By8Zrk9pump": "2026-11-17T08:17:26.821122+00:00",
     "2NWgu4fqN2AxS5pp5v3f3SH54qArP9JepQFJm58gpump": "2026-11-17T20:17:22.461818+00:00",
     "xmKrA827TY121gTRwHEn1HKBtzG2uFNpstwzJE6pump": "2026-11-18T00:42:29.572592+00:00",
-    "941dyEVrMt8uEmtABhXiJQ6yZSGqepumQZQwLYzpump": "2026-11-18T07:12:30.590168+00:00"
+    "941dyEVrMt8uEmtABhXiJQ6yZSGqepumQZQwLYzpump": "2026-11-18T07:12:30.590168+00:00",
+    "w1wMtdikYDkCBGxKAGc1C8k3oYbjBucftqNzseupump": "2026-11-19T00:09:24.384733+00:00"
   },
   "stats": {
     "trades_opened": 38,
-    "trades_closed": 37,
+    "trades_closed": 38,
     "wins": 9,
-    "losses": 28,
-    "realized_pnl_usd": -3633.95627072,
+    "losses": 29,
+    "realized_pnl_usd": -3641.60535913,
     "partial_sales": 5
   },
   "equity_history": [
@@ -3907,18 +3898,24 @@
       "equity_usd": 6365.00877762
     },
     {
-      "at": "2026-11-19T00:02:11.586541+00:00",
-      "equity_usd": 6362.06335374
+      "at": "2026-11-19T00:09:24.384733+00:00",
+      "equity_usd": 6358.39464089
     }
   ],
   "last_run": {
-    "at": "2026-11-19T00:02:11.586541+00:00",
-    "mode": "monitor",
-    "scan_status": "not_requested",
-    "scan_at": null,
-    "entry_decisions": [],
-    "open_positions": 1,
-    "equity_usd": 6362.06335374,
-    "run_number": "2139"
+    "at": "2026-11-19T00:09:24.384733+00:00",
+    "mode": "after-scan",
+    "scan_status": "ok",
+    "scan_at": "2026-11-19T00:09:24.062055+00:00",
+    "entry_decisions": [
+      {
+        "token_symbol": "SWJ",
+        "token_address": "13EAww2eo8g1Xp9U7qrLNg1WoHFHKbs9xy2EQJjfpump",
+        "decision": "reentry_cooldown"
+      }
+    ],
+    "open_positions": 0,
+    "equity_usd": 6358.39464089,
+    "run_number": "256"
   }
 }
