@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-19T10:09:35.411581+00:00",
+  "updated_at": "2026-11-19T11:09:39.336974+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 6338.68437949,
   "open_positions": [],
@@ -3977,19 +3977,18 @@
     {
       "at": "2026-11-19T10:09:35.411581+00:00",
       "equity_usd": 6338.68437949
+    },
+    {
+      "at": "2026-11-19T11:09:39.336974+00:00",
+      "equity_usd": 6338.68437949
     }
   ],
   "last_run": {
-    "at": "2026-11-19T10:09:35.411581+00:00",
+    "at": "2026-11-19T11:09:39.336974+00:00",
     "mode": "after-scan",
     "scan_status": "ok",
-    "scan_at": "2026-11-19T10:09:35.142641+00:00",
+    "scan_at": "2026-11-19T11:09:39.072002+00:00",
     "entry_decisions": [
-      {
-        "token_symbol": "Leonida",
-        "token_address": "9rbKkz2BDQBVgZmrHY6d7PTq2ge91gkpEyE4y9PPpump",
-        "decision": "reentry_cooldown"
-      },
       {
         "token_symbol": "ASWF",
         "token_address": "w1wMtdikYDkCBGxKAGc1C8k3oYbjBucftqNzseupump",
@@ -3998,6 +3997,6 @@
     ],
     "open_positions": 0,
     "equity_usd": 6338.68437949,
-    "run_number": "266"
+    "run_number": "267"
   }
 }
