@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-19T02:10:14.611409+00:00",
+  "updated_at": "2026-11-19T03:09:46.539764+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 6358.39464089,
   "open_positions": [],
@@ -3908,16 +3908,26 @@
     {
       "at": "2026-11-19T02:10:14.611409+00:00",
       "equity_usd": 6358.39464089
+    },
+    {
+      "at": "2026-11-19T03:09:46.539764+00:00",
+      "equity_usd": 6358.39464089
     }
   ],
   "last_run": {
-    "at": "2026-11-19T02:10:14.611409+00:00",
+    "at": "2026-11-19T03:09:46.539764+00:00",
     "mode": "after-scan",
     "scan_status": "ok",
-    "scan_at": "2026-11-19T02:10:14.405241+00:00",
-    "entry_decisions": [],
+    "scan_at": "2026-11-19T03:09:46.276015+00:00",
+    "entry_decisions": [
+      {
+        "token_symbol": "Leonida",
+        "token_address": "9rbKkz2BDQBVgZmrHY6d7PTq2ge91gkpEyE4y9PPpump",
+        "decision": "not_ready_in_previous_scan"
+      }
+    ],
     "open_positions": 0,
     "equity_usd": 6358.39464089,
-    "run_number": "258"
+    "run_number": "259"
   }
 }
