@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-19T08:09:56.945054+00:00",
+  "updated_at": "2026-11-19T08:12:28.661127+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 6167.64280166,
   "open_positions": [
@@ -22,19 +22,19 @@
       "token_amount": 135450.48837858016,
       "cost_basis_usd": 190.75183923,
       "initial_stop_usd": 0.00132378060073909,
-      "highest_price_usd": 0.0014361467825380891,
-      "last_price_usd": 0.0014020699274138516,
-      "last_price_at": "2026-11-19T08:09:56.945054+00:00",
+      "highest_price_usd": 0.001436831960506629,
+      "last_price_usd": 0.001436831960506629,
+      "last_price_at": "2026-11-19T08:12:28.661127+00:00",
       "current_stop_usd": 0.00132378060073909,
       "last_quote": {
-        "at": "2026-11-19T08:09:56.945054+00:00",
+        "at": "2026-11-19T08:12:28.661127+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.0014020699274138516,
-        "price_high_usd": 0.0014098812981941636,
-        "deviation_pct": 0.5571,
+        "price_low_usd": 0.001436831960506629,
+        "price_high_usd": 0.0014428480355934991,
+        "deviation_pct": 0.4187,
         "errors": {}
       },
-      "last_liquidity_usd": 91198.59296791154,
+      "last_liquidity_usd": 91964.2905,
       "current_stop_kind": "initial"
     }
   ],
@@ -3972,24 +3972,18 @@
       "equity_usd": 6353.09558649
     },
     {
-      "at": "2026-11-19T08:09:56.945054+00:00",
-      "equity_usd": 6357.55385807
+      "at": "2026-11-19T08:12:28.661127+00:00",
+      "equity_usd": 6362.26239243
     }
   ],
   "last_run": {
-    "at": "2026-11-19T08:09:56.945054+00:00",
-    "mode": "after-scan",
-    "scan_status": "ok",
-    "scan_at": "2026-11-19T08:09:56.627622+00:00",
-    "entry_decisions": [
-      {
-        "token_symbol": "Leonida",
-        "token_address": "9rbKkz2BDQBVgZmrHY6d7PTq2ge91gkpEyE4y9PPpump",
-        "decision": "already_open"
-      }
-    ],
+    "at": "2026-11-19T08:12:28.661127+00:00",
+    "mode": "monitor",
+    "scan_status": "not_requested",
+    "scan_at": null,
+    "entry_decisions": [],
     "open_positions": 1,
-    "equity_usd": 6357.55385807,
-    "run_number": "264"
+    "equity_usd": 6362.26239243,
+    "run_number": "2227"
   }
 }
