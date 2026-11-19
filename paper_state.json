@@ -4,40 +4,10 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-19T08:22:46.833428+00:00",
+  "updated_at": "2026-11-19T08:27:11.651579+00:00",
   "starting_balance_usd": 10000.0,
-  "cash_usd": 6167.64280166,
-  "open_positions": [
-    {
-      "token_symbol": "Leonida",
-      "token_name": "The State of Leonida",
-      "token_address": "9rbKkz2BDQBVgZmrHY6d7PTq2ge91gkpEyE4y9PPpump",
-      "pool_address": "6Ecx5Lm5dinVma1xWMEumj6ABZL3g1Xx4t5rxQxELzdn",
-      "dex_name": "PumpSwap",
-      "opened_at": "2026-11-19T07:09:28.583562+00:00",
-      "entry_price_usd": 0.0014082772348288192,
-      "entry_mark_price_usd": 0.0013885401200976872,
-      "entry_cost_pct": 1.4214,
-      "entry_liquidity_usd": 90526.1614,
-      "token_amount": 135450.48837858016,
-      "cost_basis_usd": 190.75183923,
-      "initial_stop_usd": 0.00132378060073909,
-      "highest_price_usd": 0.001436831960506629,
-      "last_price_usd": 0.0013496409812497913,
-      "last_price_at": "2026-11-19T08:22:46.833428+00:00",
-      "current_stop_usd": 0.00132378060073909,
-      "last_quote": {
-        "at": "2026-11-19T08:22:46.833428+00:00",
-        "status": "confirmed",
-        "price_low_usd": 0.0013496409812497913,
-        "price_high_usd": 0.0013680963667457502,
-        "deviation_pct": 1.3674,
-        "errors": {}
-      },
-      "last_liquidity_usd": 89082.27338495934,
-      "current_stop_kind": "initial"
-    }
-  ],
+  "cash_usd": 6338.68437949,
+  "open_positions": [],
   "closed_trades": [
     {
       "token_symbol": "BRUH",
@@ -877,6 +847,26 @@
       "exit_reason": "security_rejected",
       "highest_price_usd": 0.000845207211077333,
       "partial": false
+    },
+    {
+      "token_symbol": "Leonida",
+      "token_address": "9rbKkz2BDQBVgZmrHY6d7PTq2ge91gkpEyE4y9PPpump",
+      "pool_address": "6Ecx5Lm5dinVma1xWMEumj6ABZL3g1Xx4t5rxQxELzdn",
+      "opened_at": "2026-11-19T07:09:28.583562+00:00",
+      "closed_at": "2026-11-19T08:27:11.651579+00:00",
+      "holding_hours": 1.295,
+      "entry_price_usd": 0.0014082772348288192,
+      "exit_mark_price_usd": 0.001280718181408317,
+      "exit_price_usd": 0.0012627608794853573,
+      "exit_cost_pct": 1.4021,
+      "token_amount": 135450.48837858016,
+      "cost_basis_usd": 190.75183923,
+      "proceeds_usd": 171.04157783,
+      "pnl_usd": -19.7102614,
+      "pnl_pct": -10.3329,
+      "exit_reason": "stop_loss",
+      "highest_price_usd": 0.001436831960506629,
+      "partial": false
     }
   ],
   "last_exit_at": {
@@ -912,14 +902,15 @@
     "2NWgu4fqN2AxS5pp5v3f3SH54qArP9JepQFJm58gpump": "2026-11-17T20:17:22.461818+00:00",
     "xmKrA827TY121gTRwHEn1HKBtzG2uFNpstwzJE6pump": "2026-11-18T00:42:29.572592+00:00",
     "941dyEVrMt8uEmtABhXiJQ6yZSGqepumQZQwLYzpump": "2026-11-18T07:12:30.590168+00:00",
-    "w1wMtdikYDkCBGxKAGc1C8k3oYbjBucftqNzseupump": "2026-11-19T00:09:24.384733+00:00"
+    "w1wMtdikYDkCBGxKAGc1C8k3oYbjBucftqNzseupump": "2026-11-19T00:09:24.384733+00:00",
+    "9rbKkz2BDQBVgZmrHY6d7PTq2ge91gkpEyE4y9PPpump": "2026-11-19T08:27:11.651579+00:00"
   },
   "stats": {
     "trades_opened": 39,
-    "trades_closed": 38,
+    "trades_closed": 39,
     "wins": 9,
-    "losses": 29,
-    "realized_pnl_usd": -3641.60535913,
+    "losses": 30,
+    "realized_pnl_usd": -3661.31562053,
     "partial_sales": 5
   },
   "equity_history": [
@@ -3976,18 +3967,18 @@
       "equity_usd": 6362.26239243
     },
     {
-      "at": "2026-11-19T08:22:46.833428+00:00",
-      "equity_usd": 6350.45233171
+      "at": "2026-11-19T08:27:11.651579+00:00",
+      "equity_usd": 6338.68437949
     }
   ],
   "last_run": {
-    "at": "2026-11-19T08:22:46.833428+00:00",
+    "at": "2026-11-19T08:27:11.651579+00:00",
     "mode": "monitor",
     "scan_status": "not_requested",
     "scan_at": null,
     "entry_decisions": [],
-    "open_positions": 1,
-    "equity_usd": 6350.45233171,
-    "run_number": "2229"
+    "open_positions": 0,
+    "equity_usd": 6338.68437949,
+    "run_number": "2230"
   }
 }
