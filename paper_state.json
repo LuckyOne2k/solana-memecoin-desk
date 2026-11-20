@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-20T14:10:16.009724+00:00",
+  "updated_at": "2026-11-20T15:10:16.873258+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 6343.10476293,
   "open_positions": [],
@@ -4343,27 +4343,31 @@
     {
       "at": "2026-11-20T14:10:16.009724+00:00",
       "equity_usd": 6343.10476293
+    },
+    {
+      "at": "2026-11-20T15:10:16.873258+00:00",
+      "equity_usd": 6343.10476293
     }
   ],
   "last_run": {
-    "at": "2026-11-20T14:10:16.009724+00:00",
+    "at": "2026-11-20T15:10:16.873258+00:00",
     "mode": "after-scan",
     "scan_status": "ok",
-    "scan_at": "2026-11-20T14:10:15.660949+00:00",
+    "scan_at": "2026-11-20T15:10:16.556225+00:00",
     "entry_decisions": [
+      {
+        "token_symbol": "SWJ",
+        "token_address": "gHZhqEnFnitWCJ1MA2i9BzqTReFMhsGmbdL17xypump",
+        "decision": "not_ready_in_previous_scan"
+      },
       {
         "token_symbol": "GTAVI",
         "token_address": "2iEtCtoAfgJGzGc2kTHiU4RrjKqehJCpu5dqokg3pump",
         "decision": "fresh_price_disagree"
-      },
-      {
-        "token_symbol": "JESTER",
-        "token_address": "VAYMVikuYQpWz5sXCeCsQDeho2QcGqDSNq9rhCspump",
-        "decision": "reentry_cooldown"
       }
     ],
     "open_positions": 0,
     "equity_usd": 6343.10476293,
-    "run_number": "294"
+    "run_number": "295"
   }
 }
