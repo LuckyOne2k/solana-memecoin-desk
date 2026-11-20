@@ -4,10 +4,30 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-20T15:10:16.873258+00:00",
+  "updated_at": "2026-11-20T16:09:45.871168+00:00",
   "starting_balance_usd": 10000.0,
-  "cash_usd": 6343.10476293,
-  "open_positions": [],
+  "cash_usd": 6152.81162004,
+  "open_positions": [
+    {
+      "token_symbol": "SWJ",
+      "token_name": "Stand With Jensen",
+      "token_address": "gHZhqEnFnitWCJ1MA2i9BzqTReFMhsGmbdL17xypump",
+      "pool_address": "488fdh1HgTFuBTkwE5Ycqa4arY1saEbDQYPbR6xNk6D5",
+      "dex_name": "PumpSwap",
+      "opened_at": "2026-11-20T16:09:45.871168+00:00",
+      "entry_price_usd": 0.0006804949244853639,
+      "entry_mark_price_usd": 0.000669351517017244,
+      "entry_cost_pct": 1.6648,
+      "entry_liquidity_usd": 57247.679423048336,
+      "token_amount": 279639.327264509,
+      "cost_basis_usd": 190.29314289,
+      "initial_stop_usd": 0.000639665229016242,
+      "highest_price_usd": 0.0006804949244853639,
+      "last_price_usd": 0.0006689926088234534,
+      "last_price_at": "2026-11-20T16:09:45.871168+00:00",
+      "current_stop_usd": 0.000639665229016242
+    }
+  ],
   "closed_trades": [
     {
       "token_symbol": "BRUH",
@@ -968,7 +988,7 @@
     "Fn95NtGXWPaJXc4N5y9rVkUq1NwZbjBNJzPVvNRLpump": "2026-11-19T22:47:16.253294+00:00"
   },
   "stats": {
-    "trades_opened": 42,
+    "trades_opened": 43,
     "trades_closed": 42,
     "wins": 10,
     "losses": 32,
@@ -4347,18 +4367,22 @@
     {
       "at": "2026-11-20T15:10:16.873258+00:00",
       "equity_usd": 6343.10476293
+    },
+    {
+      "at": "2026-11-20T16:09:45.871168+00:00",
+      "equity_usd": 6339.88826312
     }
   ],
   "last_run": {
-    "at": "2026-11-20T15:10:16.873258+00:00",
+    "at": "2026-11-20T16:09:45.871168+00:00",
     "mode": "after-scan",
     "scan_status": "ok",
-    "scan_at": "2026-11-20T15:10:16.556225+00:00",
+    "scan_at": "2026-11-20T16:09:45.548119+00:00",
     "entry_decisions": [
       {
         "token_symbol": "SWJ",
         "token_address": "gHZhqEnFnitWCJ1MA2i9BzqTReFMhsGmbdL17xypump",
-        "decision": "not_ready_in_previous_scan"
+        "decision": "open"
       },
       {
         "token_symbol": "GTAVI",
@@ -4366,8 +4390,8 @@
         "decision": "fresh_price_disagree"
       }
     ],
-    "open_positions": 0,
-    "equity_usd": 6343.10476293,
-    "run_number": "295"
+    "open_positions": 1,
+    "equity_usd": 6339.88826312,
+    "run_number": "296"
   }
 }
