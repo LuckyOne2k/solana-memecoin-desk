@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-20T04:09:23.802802+00:00",
+  "updated_at": "2026-11-20T04:12:27.840124+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 6160.5184425,
   "open_positions": [
@@ -23,18 +23,18 @@
       "cost_basis_usd": 190.53149822,
       "initial_stop_usd": 0.000771417319671968,
       "highest_price_usd": 0.0008206567230552851,
-      "last_price_usd": 0.0007997677442963482,
-      "last_price_at": "2026-11-20T04:09:23.802802+00:00",
+      "last_price_usd": 0.000799313397632281,
+      "last_price_at": "2026-11-20T04:12:27.840124+00:00",
       "current_stop_usd": 0.000771417319671968,
       "last_quote": {
-        "at": "2026-11-20T04:09:23.802802+00:00",
+        "at": "2026-11-20T04:12:27.840124+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.0007997677442963482,
-        "price_high_usd": 0.0008008278436938241,
-        "deviation_pct": 0.1326,
+        "price_low_usd": 0.000799313397632281,
+        "price_high_usd": 0.0007999772021510427,
+        "deviation_pct": 0.083,
         "errors": {}
       },
-      "last_liquidity_usd": 64711.16450053688,
+      "last_liquidity_usd": 65011.67885133192,
       "current_stop_kind": "initial"
     }
   ],
@@ -4203,34 +4203,18 @@
       "equity_usd": 6347.23081667
     },
     {
-      "at": "2026-11-20T04:09:23.802802+00:00",
-      "equity_usd": 6346.20015602
+      "at": "2026-11-20T04:12:27.840124+00:00",
+      "equity_usd": 6346.09467056
     }
   ],
   "last_run": {
-    "at": "2026-11-20T04:09:23.802802+00:00",
-    "mode": "after-scan",
-    "scan_status": "ok",
-    "scan_at": "2026-11-20T04:09:23.521417+00:00",
-    "entry_decisions": [
-      {
-        "token_symbol": "Leonida",
-        "token_address": "9rbKkz2BDQBVgZmrHY6d7PTq2ge91gkpEyE4y9PPpump",
-        "decision": "reentry_cooldown"
-      },
-      {
-        "token_symbol": "SHIT",
-        "token_address": "Fn95NtGXWPaJXc4N5y9rVkUq1NwZbjBNJzPVvNRLpump",
-        "decision": "reentry_cooldown"
-      },
-      {
-        "token_symbol": "ASWF",
-        "token_address": "w1wMtdikYDkCBGxKAGc1C8k3oYbjBucftqNzseupump",
-        "decision": "already_open"
-      }
-    ],
+    "at": "2026-11-20T04:12:27.840124+00:00",
+    "mode": "monitor",
+    "scan_status": "not_requested",
+    "scan_at": null,
+    "entry_decisions": [],
     "open_positions": 1,
-    "equity_usd": 6346.20015602,
-    "run_number": "284"
+    "equity_usd": 6346.09467056,
+    "run_number": "2447"
   }
 }
