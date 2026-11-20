@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-20T11:09:45.105704+00:00",
+  "updated_at": "2026-11-20T11:12:18.696951+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 6160.5184425,
   "open_positions": [
@@ -23,18 +23,18 @@
       "cost_basis_usd": 190.53149822,
       "initial_stop_usd": 0.000771417319671968,
       "highest_price_usd": 0.0008206567230552851,
-      "last_price_usd": 0.0008036469042566877,
-      "last_price_at": "2026-11-20T11:09:45.105704+00:00",
+      "last_price_usd": 0.0008029045103699098,
+      "last_price_at": "2026-11-20T11:12:18.696951+00:00",
       "current_stop_usd": 0.000771417319671968,
       "last_quote": {
-        "at": "2026-11-20T11:09:45.105704+00:00",
+        "at": "2026-11-20T11:12:18.696951+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.0008036469042566877,
-        "price_high_usd": 0.0008040036023333685,
-        "deviation_pct": 0.0444,
+        "price_low_usd": 0.0008029045103699098,
+        "price_high_usd": 0.00080330922225254,
+        "deviation_pct": 0.0504,
         "errors": {}
       },
-      "last_liquidity_usd": 65093.29046729057,
+      "last_liquidity_usd": 65083.69675553117,
       "current_stop_kind": "initial"
     }
   ],
@@ -4315,29 +4315,18 @@
       "equity_usd": 6347.37454286
     },
     {
-      "at": "2026-11-20T11:09:45.105704+00:00",
-      "equity_usd": 6347.10077882
+      "at": "2026-11-20T11:12:18.696951+00:00",
+      "equity_usd": 6346.92841757
     }
   ],
   "last_run": {
-    "at": "2026-11-20T11:09:45.105704+00:00",
-    "mode": "after-scan",
-    "scan_status": "ok",
-    "scan_at": "2026-11-20T11:09:44.810138+00:00",
-    "entry_decisions": [
-      {
-        "token_symbol": "GTAVI",
-        "token_address": "2iEtCtoAfgJGzGc2kTHiU4RrjKqehJCpu5dqokg3pump",
-        "decision": "fresh_price_disagree"
-      },
-      {
-        "token_symbol": "SHIT",
-        "token_address": "Fn95NtGXWPaJXc4N5y9rVkUq1NwZbjBNJzPVvNRLpump",
-        "decision": "reentry_cooldown"
-      }
-    ],
+    "at": "2026-11-20T11:12:18.696951+00:00",
+    "mode": "monitor",
+    "scan_status": "not_requested",
+    "scan_at": null,
+    "entry_decisions": [],
     "open_positions": 1,
-    "equity_usd": 6347.10077882,
-    "run_number": "291"
+    "equity_usd": 6346.92841757,
+    "run_number": "2524"
   }
 }
