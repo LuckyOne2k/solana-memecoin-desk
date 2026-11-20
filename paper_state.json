@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-20T18:09:39.445918+00:00",
+  "updated_at": "2026-11-20T19:09:27.440507+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 6339.21821321,
   "open_positions": [],
@@ -4392,22 +4392,31 @@
     {
       "at": "2026-11-20T18:09:39.445918+00:00",
       "equity_usd": 6339.21821321
+    },
+    {
+      "at": "2026-11-20T19:09:27.440507+00:00",
+      "equity_usd": 6339.21821321
     }
   ],
   "last_run": {
-    "at": "2026-11-20T18:09:39.445918+00:00",
+    "at": "2026-11-20T19:09:27.440507+00:00",
     "mode": "after-scan",
     "scan_status": "ok",
-    "scan_at": "2026-11-20T18:09:39.115544+00:00",
+    "scan_at": "2026-11-20T19:09:27.120144+00:00",
     "entry_decisions": [
       {
         "token_symbol": "SWJ",
         "token_address": "gHZhqEnFnitWCJ1MA2i9BzqTReFMhsGmbdL17xypump",
         "decision": "reentry_cooldown"
+      },
+      {
+        "token_symbol": "GTAVI",
+        "token_address": "2iEtCtoAfgJGzGc2kTHiU4RrjKqehJCpu5dqokg3pump",
+        "decision": "not_ready_in_previous_scan"
       }
     ],
     "open_positions": 0,
     "equity_usd": 6339.21821321,
-    "run_number": "298"
+    "run_number": "299"
   }
 }
