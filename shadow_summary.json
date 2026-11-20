@@ -1,23 +1,23 @@
 {
   "schema_version": 1,
   "purpose": "learning_only_no_trading",
-  "generated_at": "2026-11-20T01:09:39.050782+00:00",
+  "generated_at": "2026-11-20T02:09:39.690929+00:00",
   "note": "Kursveränderung ohne Kosten seit erster Beobachtung; keine Kaufempfehlung.",
-  "observations_total": 946,
-  "observations_open": 92,
+  "observations_total": 950,
+  "observations_open": 96,
   "by_status": [
     {
       "group": "rejected",
-      "observations": 483,
+      "observations": 486,
       "1h": {
-        "count": 480,
-        "mean_pct": -2.01,
+        "count": 483,
+        "mean_pct": -1.99,
         "median_pct": 0.0,
-        "positive_share_pct": 27.9
+        "positive_share_pct": 28.0
       },
       "6h": {
-        "count": 476,
-        "mean_pct": -3.38,
+        "count": 477,
+        "mean_pct": -3.37,
         "median_pct": 0.0,
         "positive_share_pct": 29.8
       },
@@ -30,10 +30,10 @@
     },
     {
       "group": "incomplete",
-      "observations": 407,
+      "observations": 408,
       "1h": {
-        "count": 405,
-        "mean_pct": -1.66,
+        "count": 407,
+        "mean_pct": -1.64,
         "median_pct": 0.0,
         "positive_share_pct": 47.2
       },
@@ -78,10 +78,10 @@
       "group": "incomplete:market_cap_usd",
       "observations": 355,
       "1h": {
-        "count": 354,
-        "mean_pct": -1.81,
+        "count": 355,
+        "mean_pct": -1.78,
         "median_pct": 0.0,
-        "positive_share_pct": 42.1
+        "positive_share_pct": 42.3
       },
       "6h": {
         "count": 352,
@@ -98,12 +98,12 @@
     },
     {
       "group": "rejected:lp_burn_or_lock_not_verified",
-      "observations": 228,
+      "observations": 230,
       "1h": {
-        "count": 227,
-        "mean_pct": -2.45,
+        "count": 228,
+        "mean_pct": -2.43,
         "median_pct": 0.0,
-        "positive_share_pct": 20.7
+        "positive_share_pct": 21.1
       },
       "6h": {
         "count": 225,
@@ -122,10 +122,10 @@
       "group": "rejected:market_cap_below_minimum",
       "observations": 68,
       "1h": {
-        "count": 66,
-        "mean_pct": 0.1,
+        "count": 68,
+        "mean_pct": 0.09,
         "median_pct": 0.0,
-        "positive_share_pct": 4.5
+        "positive_share_pct": 4.4
       },
       "6h": {
         "count": 66,
@@ -163,30 +163,8 @@
       }
     },
     {
-      "group": "rejected:no_24h_trading_activity",
-      "observations": 44,
-      "1h": {
-        "count": 44,
-        "mean_pct": -0.09,
-        "median_pct": 0.0,
-        "positive_share_pct": 13.6
-      },
-      "6h": {
-        "count": 43,
-        "mean_pct": 1.48,
-        "median_pct": 0.0,
-        "positive_share_pct": 18.6
-      },
-      "24h": {
-        "count": 37,
-        "mean_pct": -10.56,
-        "median_pct": -0.94,
-        "positive_share_pct": 21.6
-      }
-    },
-    {
       "group": "rejected:market_cap_above_maximum_onchain_lower_bound",
-      "observations": 44,
+      "observations": 45,
       "1h": {
         "count": 44,
         "mean_pct": -11.06,
@@ -207,13 +185,35 @@
       }
     },
     {
-      "group": "incomplete:liquidity_depth",
-      "observations": 42,
+      "group": "rejected:no_24h_trading_activity",
+      "observations": 44,
       "1h": {
-        "count": 41,
-        "mean_pct": -1.21,
-        "median_pct": 1.02,
-        "positive_share_pct": 80.5
+        "count": 44,
+        "mean_pct": -0.09,
+        "median_pct": 0.0,
+        "positive_share_pct": 13.6
+      },
+      "6h": {
+        "count": 44,
+        "mean_pct": 1.44,
+        "median_pct": 0.0,
+        "positive_share_pct": 18.2
+      },
+      "24h": {
+        "count": 37,
+        "mean_pct": -10.56,
+        "median_pct": -0.94,
+        "positive_share_pct": 21.6
+      }
+    },
+    {
+      "group": "incomplete:liquidity_depth",
+      "observations": 43,
+      "1h": {
+        "count": 42,
+        "mean_pct": -1.2,
+        "median_pct": 1.01,
+        "positive_share_pct": 78.6
       },
       "6h": {
         "count": 41,
