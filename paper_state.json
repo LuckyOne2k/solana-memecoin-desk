@@ -4,7 +4,7 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-20T01:09:37.392988+00:00",
+  "updated_at": "2026-11-20T01:12:35.718556+00:00",
   "starting_balance_usd": 10000.0,
   "cash_usd": 6160.5184425,
   "open_positions": [
@@ -23,18 +23,18 @@
       "cost_basis_usd": 190.53149822,
       "initial_stop_usd": 0.000771417319671968,
       "highest_price_usd": 0.0008206567230552851,
-      "last_price_usd": 0.0008093746998446312,
-      "last_price_at": "2026-11-20T01:09:37.392988+00:00",
+      "last_price_usd": 0.000800535511629869,
+      "last_price_at": "2026-11-20T01:12:35.718556+00:00",
       "current_stop_usd": 0.000771417319671968,
       "last_quote": {
-        "at": "2026-11-20T01:09:37.392988+00:00",
+        "at": "2026-11-20T01:12:35.718556+00:00",
         "status": "confirmed",
-        "price_low_usd": 0.0008093746998446312,
-        "price_high_usd": 0.0008100485005569336,
-        "deviation_pct": 0.0832,
+        "price_low_usd": 0.000800535511629869,
+        "price_high_usd": 0.0008070116558386247,
+        "deviation_pct": 0.809,
         "errors": {}
       },
-      "last_liquidity_usd": 65488.2599,
+      "last_liquidity_usd": 65366.1101,
       "current_stop_kind": "initial"
     }
   ],
@@ -4155,24 +4155,18 @@
       "equity_usd": 6344.8627715
     },
     {
-      "at": "2026-11-20T01:09:37.392988+00:00",
-      "equity_usd": 6348.43059852
+      "at": "2026-11-20T01:12:35.718556+00:00",
+      "equity_usd": 6346.37840821
     }
   ],
   "last_run": {
-    "at": "2026-11-20T01:09:37.392988+00:00",
-    "mode": "after-scan",
-    "scan_status": "ok",
-    "scan_at": "2026-11-20T01:09:37.113950+00:00",
-    "entry_decisions": [
-      {
-        "token_symbol": "ASWF",
-        "token_address": "w1wMtdikYDkCBGxKAGc1C8k3oYbjBucftqNzseupump",
-        "decision": "already_open"
-      }
-    ],
+    "at": "2026-11-20T01:12:35.718556+00:00",
+    "mode": "monitor",
+    "scan_status": "not_requested",
+    "scan_at": null,
+    "entry_decisions": [],
     "open_positions": 1,
-    "equity_usd": 6348.43059852,
-    "run_number": "281"
+    "equity_usd": 6346.37840821,
+    "run_number": "2414"
   }
 }
