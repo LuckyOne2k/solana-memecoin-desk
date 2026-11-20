@@ -4,40 +4,10 @@
   "live_trading": false,
   "currency": "USD",
   "created_at": "2026-11-10T19:26:57.379756+00:00",
-  "updated_at": "2026-11-20T16:57:17.880857+00:00",
+  "updated_at": "2026-11-20T17:02:31.091338+00:00",
   "starting_balance_usd": 10000.0,
-  "cash_usd": 6152.81162004,
-  "open_positions": [
-    {
-      "token_symbol": "SWJ",
-      "token_name": "Stand With Jensen",
-      "token_address": "gHZhqEnFnitWCJ1MA2i9BzqTReFMhsGmbdL17xypump",
-      "pool_address": "488fdh1HgTFuBTkwE5Ycqa4arY1saEbDQYPbR6xNk6D5",
-      "dex_name": "PumpSwap",
-      "opened_at": "2026-11-20T16:09:45.871168+00:00",
-      "entry_price_usd": 0.0006804949244853639,
-      "entry_mark_price_usd": 0.000669351517017244,
-      "entry_cost_pct": 1.6648,
-      "entry_liquidity_usd": 57247.679423048336,
-      "token_amount": 279639.327264509,
-      "cost_basis_usd": 190.29314289,
-      "initial_stop_usd": 0.000639665229016242,
-      "highest_price_usd": 0.0007300280697528569,
-      "last_price_usd": 0.0006986409173851561,
-      "last_price_at": "2026-11-20T16:57:17.880857+00:00",
-      "current_stop_usd": 0.0006920156001974511,
-      "last_quote": {
-        "at": "2026-11-20T16:57:17.880857+00:00",
-        "status": "confirmed",
-        "price_low_usd": 0.0006986409173851561,
-        "price_high_usd": 0.00071769915669525,
-        "deviation_pct": 2.7279,
-        "errors": {}
-      },
-      "last_liquidity_usd": 60098.6,
-      "current_stop_kind": "profit_lock"
-    }
-  ],
+  "cash_usd": 6339.21821321,
+  "open_positions": [],
   "closed_trades": [
     {
       "token_symbol": "BRUH",
@@ -957,6 +927,26 @@
       "exit_reason": "security_rejected",
       "highest_price_usd": 0.0008206567230552851,
       "partial": false
+    },
+    {
+      "token_symbol": "SWJ",
+      "token_address": "gHZhqEnFnitWCJ1MA2i9BzqTReFMhsGmbdL17xypump",
+      "pool_address": "488fdh1HgTFuBTkwE5Ycqa4arY1saEbDQYPbR6xNk6D5",
+      "opened_at": "2026-11-20T16:09:45.871168+00:00",
+      "closed_at": "2026-11-20T17:02:31.091338+00:00",
+      "holding_hours": 0.879,
+      "entry_price_usd": 0.0006804949244853639,
+      "exit_mark_price_usd": 0.0006777729489933204,
+      "exit_price_usd": 0.0006665964869435719,
+      "exit_cost_pct": 1.649,
+      "token_amount": 279639.327264509,
+      "cost_basis_usd": 190.29314289,
+      "proceeds_usd": 186.40659317,
+      "pnl_usd": -3.88654972,
+      "pnl_pct": -2.0424,
+      "exit_reason": "profit_lock",
+      "highest_price_usd": 0.0007300280697528569,
+      "partial": false
     }
   ],
   "last_exit_at": {
@@ -995,14 +985,15 @@
     "w1wMtdikYDkCBGxKAGc1C8k3oYbjBucftqNzseupump": "2026-11-20T13:09:42.303009+00:00",
     "9rbKkz2BDQBVgZmrHY6d7PTq2ge91gkpEyE4y9PPpump": "2026-11-19T08:27:11.651579+00:00",
     "VAYMVikuYQpWz5sXCeCsQDeho2QcGqDSNq9rhCspump": "2026-11-19T16:57:13.697279+00:00",
-    "Fn95NtGXWPaJXc4N5y9rVkUq1NwZbjBNJzPVvNRLpump": "2026-11-19T22:47:16.253294+00:00"
+    "Fn95NtGXWPaJXc4N5y9rVkUq1NwZbjBNJzPVvNRLpump": "2026-11-19T22:47:16.253294+00:00",
+    "gHZhqEnFnitWCJ1MA2i9BzqTReFMhsGmbdL17xypump": "2026-11-20T17:02:31.091338+00:00"
   },
   "stats": {
     "trades_opened": 43,
-    "trades_closed": 42,
+    "trades_closed": 43,
     "wins": 10,
-    "losses": 32,
-    "realized_pnl_usd": -3656.89523709,
+    "losses": 33,
+    "realized_pnl_usd": -3660.78178681,
     "partial_sales": 5
   },
   "equity_history": [
@@ -4393,16 +4384,20 @@
     {
       "at": "2026-11-20T16:57:17.880857+00:00",
       "equity_usd": 6348.17909618
+    },
+    {
+      "at": "2026-11-20T17:02:31.091338+00:00",
+      "equity_usd": 6339.21821321
     }
   ],
   "last_run": {
-    "at": "2026-11-20T16:57:17.880857+00:00",
+    "at": "2026-11-20T17:02:31.091338+00:00",
     "mode": "monitor",
     "scan_status": "not_requested",
     "scan_at": null,
     "entry_decisions": [],
-    "open_positions": 1,
-    "equity_usd": 6348.17909618,
-    "run_number": "2588"
+    "open_positions": 0,
+    "equity_usd": 6339.21821321,
+    "run_number": "2589"
   }
 }
